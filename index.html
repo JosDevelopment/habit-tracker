@@ -2008,61 +2008,87 @@ function closeAll(){
   SHEETS.forEach(s=>{ const sh=$(s); sh.classList.remove("on","dragging"); sh.style.transform=""; });
 }
 
-/* Arrastrar hacia abajo para cerrar. Se agarra desde el asa o desde cualquier
-   parte del contenido cuando la hoja ya está hasta arriba, como en las apps
-   nativas. Un arrastre no debe disparar el clic de lo que había debajo. */
+/* Arrastrar hacia abajo para cerrar.
+   En táctil NO usamos pointer events: iOS y Chrome disparan pointercancel en
+   cuanto deciden que el gesto es scroll, y la hoja rebotaba de vuelta. Con
+   touchmove + preventDefault el gesto es nuestro de principio a fin. Cuando la
+   hoja ya está hasta arriba también movemos su scroll a mano, para no perder
+   la posibilidad de subir el contenido. */
 function makeDraggable(sheet){
-  let y0=0, dy=0, armed=false, dragging=false, t0=0;
   const scrim=$("#scrim");
+  let y0=0, dy=0, decided=false, dragging=false, t0=0, top0=0, handle=false, tid=null;
 
-  sheet.addEventListener("pointerdown",e=>{
-    if(e.pointerType==="mouse"&&e.button!==0) return;
-    if(e.target.closest("input,textarea,select,.seek,.tones")) return;
-    y0=e.clientY; dy=0; t0=Date.now(); dragging=false;
-    armed=!!e.target.closest(".grab,h2")||sheet.scrollTop<=0;
-  });
+  const skip=t=>!!(t.closest&&t.closest("input,textarea,select,.seek,.tones"));
 
-  sheet.addEventListener("pointermove",e=>{
-    if(!armed) return;
-    const d=e.clientY-y0;
-    if(!dragging){
-      if(d>7){
-        dragging=true; sheet.classList.add("dragging");
-        try{ sheet.setPointerCapture(e.pointerId); }catch(err){}
-      }else if(d<-4){ armed=false; return; }
-      else return;
+  function begin(clientY,target){
+    y0=clientY; dy=0; t0=Date.now();
+    decided=false; dragging=false;
+    top0=sheet.scrollTop;
+    handle=!!(target.closest&&target.closest(".grab,h2"));
+  }
+  function move(clientY){
+    const d=clientY-y0;
+    if(!decided){
+      if(Math.abs(d)<5) return true;
+      decided=true;
+      dragging=(d>0)&&(handle||top0<=0);
+      if(dragging){ sheet.classList.add("dragging"); }
     }
-    dy=Math.max(0,d);
-    sheet.style.transform="translateY("+dy+"px)";
-    scrim.style.opacity=String(Math.max(0,1-dy/420));
-    if(e.cancelable) e.preventDefault();
-  },{passive:false});
-
-  const finish=()=>{
-    if(!armed) return;
-    const moved=dy>7;
-    armed=false;
+    if(dragging){
+      dy=Math.max(0,d);
+      sheet.style.transform="translateY("+dy+"px)";
+      scrim.style.opacity=String(Math.max(0,1-dy/420));
+      return true;
+    }
+    if(handle||top0<=0){ sheet.scrollTop=Math.max(0,top0-d); return true; }
+    return false;
+  }
+  function end(){
+    const moved=dy>5;
     sheet.classList.remove("dragging");
-    const fast=(Date.now()-t0)<300&&dy>40;
-    if(dragging&&(dy>90||fast)){
-      sheet.style.transform="";
-      closeAll();
+    if(dragging&&(dy>90||((Date.now()-t0)<300&&dy>40))){
+      sheet.style.transform=""; closeAll();
     }else{
-      sheet.style.transform="";
-      scrim.style.opacity="";
+      sheet.style.transform=""; scrim.style.opacity="";
     }
     if(dragging&&moved){
-      /* el clic sintético del toque llega justo después del pointerup, así que
-         basta con anularlo en este ciclo y soltarlo en el siguiente */
       const swallow=ev=>{ ev.stopPropagation(); ev.preventDefault(); };
       sheet.addEventListener("click",swallow,{capture:true,once:true});
       setTimeout(()=>sheet.removeEventListener("click",swallow,true),0);
     }
-    dragging=false; dy=0;
-  };
-  sheet.addEventListener("pointerup",finish);
-  sheet.addEventListener("pointercancel",finish);
-  sheet.addEventListener("lostpointercapture",finish);
+    decided=false; dragging=false; dy=0; tid=null;
+  }
+
+  /* ---- táctil ---- */
+  sheet.addEventListener("touchstart",e=>{
+    if(e.touches.length!==1||skip(e.target)){ tid=null; return; }
+    tid=e.touches[0].identifier;
+    begin(e.touches[0].clientY,e.target);
+  },{passive:true});
+
+  sheet.addEventListener("touchmove",e=>{
+    if(tid===null) return;
+    const t=[...e.touches].find(x=>x.identifier===tid); if(!t) return;
+    if(move(t.clientY)&&e.cancelable) e.preventDefault();
+  },{passive:false});
+
+  const done=e=>{ if(tid===null) return; end(); };
+  sheet.addEventListener("touchend",done);
+  sheet.addEventListener("touchcancel",done);
+
+  /* ---- ratón, para probarlo en la compu ---- */
+  let mouse=false;
+  sheet.addEventListener("pointerdown",e=>{
+    if(e.pointerType!=="mouse"||e.button!==0||skip(e.target)) return;
+    mouse=true; begin(e.clientY,e.target);
+  });
+  sheet.addEventListener("pointermove",e=>{
+    if(!mouse) return;
+    if(move(e.clientY)&&e.cancelable) e.preventDefault();
+  },{passive:false});
+  const mdone=()=>{ if(!mouse) return; mouse=false; end(); };
+  sheet.addEventListener("pointerup",mdone);
+  sheet.addEventListener("pointercancel",mdone);
 }
 SHEETS.forEach(s=>makeDraggable($(s)));
 $("#scrim").onclick=closeAll;

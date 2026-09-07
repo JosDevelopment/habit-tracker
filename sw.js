@@ -1,7 +1,7 @@
 /* Habit Ledger — service worker.
    Guarda la app en caché para que abra sin internet.
    Sube la versión cuando cambies index.html para forzar la actualización. */
-const CACHE = "habit-ledger-v6";
+const CACHE = "habit-ledger-v7";
 const ASSETS = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", e => {
