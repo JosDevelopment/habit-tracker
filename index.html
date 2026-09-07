@@ -76,7 +76,8 @@ p.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
 
 /* ---------- filas de hábito ---------- */
 .grp{margin-bottom:6px}
-.row{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--card);width:100%;text-align:left}
+.row{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--card);width:100%;
+  text-align:left;position:relative}
 .grp .row:first-child{border-radius:15px 15px 0 0}
 .grp .row:last-child{border-radius:0 0 15px 15px}
 .row + .row,.row + .more{box-shadow:inset 0 1px 0 var(--line)}
@@ -102,6 +103,29 @@ p.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
 .more{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:var(--card);
   padding:14px;border-radius:0 0 15px 15px;color:var(--acc);font-size:14px;font-weight:600}
 .more .n{background:var(--up);color:var(--muted);border-radius:999px;padding:1px 8px;font-size:11px;font-weight:700}
+
+.bulk{display:flex;gap:7px;margin:0 2px 9px;flex-wrap:wrap}
+.bulk button{border:1px solid var(--line);border-radius:999px;padding:7px 13px;font-size:12px;
+  color:var(--muted);background:var(--card);display:flex;align-items:center;gap:7px}
+.bulk button.bad{color:var(--alert);border-color:rgba(240,85,79,.38)}
+.bulk button.good{color:var(--acc);border-color:rgba(255,176,32,.38)}
+.bulk button .n{background:var(--up);border-radius:999px;padding:1px 7px;font-size:10px;
+  font-weight:700;color:var(--dim)}
+
+.swatches{display:flex;gap:10px;flex-wrap:wrap}
+.swatches .sw{width:38px;height:38px;border-radius:50%;border:2px solid transparent;padding:0;
+  position:relative;flex:0 0 auto}
+.swatches .sw.on{border-color:var(--text)}
+.swatches .sw.on::after{content:"";position:absolute;inset:3px;border-radius:50%;
+  border:2px solid var(--card)}
+.swatches .sw.custom{overflow:hidden;
+  background:conic-gradient(#F0554F,#F5A524,#3FC98A,#5AC8FA,#7B7BF5,#E86BB0,#F0554F)}
+.swatches .sw.custom input{position:absolute;inset:0;opacity:0;width:100%;height:100%;
+  padding:0;border:none;border-radius:50%}
+.hdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;flex:0 0 auto}
+.row::before{content:"";position:absolute;left:0;top:11px;bottom:11px;width:3px;
+  border-radius:0 3px 3px 0;background:var(--hc,transparent)}
+.chips button .hdot{width:7px;height:7px;margin-right:6px;vertical-align:0}
 
 /* ---------- panel de control del hábito ---------- */
 .pad{display:none;background:var(--card);padding:2px 16px 16px;box-shadow:inset 0 1px 0 var(--line)}
@@ -325,14 +349,24 @@ p.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
 .btnrow .btn{margin:0}
 
 /* ---------- hojas ---------- */
-.scrim{position:fixed;inset:0;background:rgba(4,5,9,.74);display:none;z-index:40}
-.scrim.on{display:block}
+.scrim{position:fixed;inset:0;background:rgba(4,5,9,.74);z-index:40;
+  opacity:0;visibility:hidden;transition:opacity .24s,visibility 0s linear .24s}
+.scrim.on{opacity:1;visibility:visible;transition:opacity .24s,visibility 0s}
 .sheet{position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--card);border-radius:20px 20px 0 0;
-  box-shadow:inset 0 1px 0 var(--line);padding:8px 16px calc(26px + env(safe-area-inset-bottom));
-  max-width:440px;margin:0 auto;transform:translateY(103%);transition:transform .22s ease;
-  max-height:88vh;overflow-y:auto;display:none}
-.sheet.on{transform:translateY(0);display:block}
-.grab{width:38px;height:4px;border-radius:2px;background:var(--line);margin:6px auto 14px}
+  box-shadow:inset 0 1px 0 var(--line);padding:0 16px calc(26px + env(safe-area-inset-bottom));
+  max-width:440px;margin:0 auto;transform:translateY(103%);
+  transition:transform .26s cubic-bezier(.32,.72,0,1),visibility 0s linear .26s;
+  max-height:88vh;overflow-y:auto;visibility:hidden;overscroll-behavior:contain;touch-action:pan-y}
+.sheet.on{transform:translateY(0);visibility:visible;
+  transition:transform .26s cubic-bezier(.32,.72,0,1),visibility 0s}
+.sheet.dragging{transition:none}
+/* el asa es toda la franja de arriba, para que se pueda agarrar sin puntería */
+.grab{position:sticky;top:0;z-index:2;width:calc(100% + 32px);margin:0 -16px 10px;
+  padding:12px 0 10px;display:flex;justify-content:center;background:var(--card);
+  touch-action:none;cursor:grab}
+.grab::before{content:"";width:42px;height:5px;border-radius:3px;background:var(--line);display:block}
+.sheet.dragging .grab{cursor:grabbing}
+.sheet h2{touch-action:none}
 .sheet h2{font-size:20px;font-weight:700;letter-spacing:-.03em;margin:0 0 4px}
 .sheet .lead{color:var(--muted);font-size:13px;margin:0 0 16px}
 .shk{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin:18px 0 4px}
@@ -569,8 +603,11 @@ nav button.on b{opacity:1}
     <input id="fName" placeholder="Gimnasio, leer, TikTok…" maxlength="40"></div>
   <div class="fld"><label>¿Quieres más de esto o menos?</label>
     <div class="seg two" id="fKind"><button data-k="build">Más</button><button data-k="avoid">Menos</button></div></div>
+  <div class="fld"><label>Color</label><div class="swatches" id="fColors"></div></div>
   <div class="fld"><label>¿Cómo lo mides?</label>
-    <div class="seg two" id="fMode"><button data-m="time">Por minutos</button><button data-m="rate">Yo lo califico</button></div></div>
+    <div class="seg" id="fMode"><button data-m="time">Minutos</button>
+      <button data-m="rate">Yo califico</button><button data-m="bin">Sí o no</button></div></div>
+  <p class="hint" id="binNote" style="display:none;margin:-6px 0 15px">Solo dos estados: hecho o no hecho. Sin término medio.</p>
   <div id="timeFields">
     <div class="fld"><label for="fGoal" id="goalLabel">Meta diaria</label>
       <div class="goalwrap"><input id="fGoal" type="number" inputmode="numeric" min="0" step="5" value="60">
@@ -652,6 +689,11 @@ const DEF_LABELS={
   avoid:["Caí muchísimo","Caí","Justo en el límite","Casi nada","Nada"]
 };
 const defLabels=k=>DEF_LABELS[k].slice();
+/* Colores de identidad del hábito. No tocan la escala de calificación:
+   sirven para reconocerlo de un vistazo, nada más. */
+const PALETTE=["#5AC8FA","#7B7BF5","#E86BB0","#3FC98A","#F5A524","#FF7A5C"];
+const nextColor=n=>PALETTE[n%PALETTE.length];
+
 function defStretch(h){
   if(h.mode!=="time") return 0;
   const g=h.goal||0;
@@ -660,6 +702,9 @@ function defStretch(h){
 function gradeOf(h,v){
   v=v||0;
   if(h.mode==="rate") return (v>=1&&v<=5)?v:null;
+  /* sí o no: solo los extremos. En los de construir, hacerlo es lo máximo;
+     en los de evitar, caer es lo mínimo. */
+  if(h.mode==="bin") return h.kind==="build" ? (v>=1?5:1) : (v>=1?1:5);
   const goal=h.goal||0, st=(h.stretch!=null?h.stretch:defStretch(h));
   if(h.kind==="build"){
     if(v<=0) return 1;
@@ -676,6 +721,7 @@ function gradeOf(h,v){
 }
 function goalText(h){
   if(h.mode==="rate") return "tú lo calificas";
+  if(h.mode==="bin") return h.kind==="build"?"sí o no, lo hiciste o no":"sí o no, caíste o no";
   return h.kind==="build"
     ? "meta "+fmtMin(h.goal)+" · excelente desde "+fmtMin(h.stretch)
     : "límite "+fmtMin(h.goal)+" · muy mal pasando "+fmtMin(h.stretch);
@@ -689,6 +735,7 @@ try{
   if(raw){const p=JSON.parse(raw); if(p&&Array.isArray(p.habits)) db=migrate(p);}
 }catch(e){}
 function migrate(p){
+  const wasVer=p.version||1;
   p.habits=p.habits||[]; p.days=p.days||{};
   if(!Array.isArray(p.trackers)) p.trackers=[];
   if(typeof p.assume!=="boolean") p.assume=true;
@@ -701,7 +748,9 @@ function migrate(p){
     if(!d.entries) d.entries={};
     if(d.wake===undefined) d.wake=null;
     if(d.sleep===undefined) d.sleep=null;
-    Object.keys(d.entries).forEach(id=>{ if(d.entries[id]===0) delete d.entries[id]; });
+    /* solo una vez: en el modelo viejo el 0 significaba "sin registrar".
+       Desde v6 un 0 es un dato real (el "no" de los hábitos de sí o no). */
+    if(wasVer<6) Object.keys(d.entries).forEach(id=>{ if(d.entries[id]===0) delete d.entries[id]; });
   });
   Object.entries(p.days).forEach(([k,d])=>{
     if(d.note){
@@ -720,13 +769,14 @@ function migrate(p){
     if(h.mode==="rate"&&!Array.isArray(h.labels)) h.labels=defLabels(h.kind);
     if(h.mode==="time"&&h.stretch==null) h.stretch=defStretch(h);
     if(!h.since) h.since=first;
+    if(!h.color) h.color=nextColor(p.habits.indexOf(h));
     if(!Array.isArray(h.rules)||!h.rules.length)
       h.rules=[{from:h.since,kind:h.kind,mode:h.mode,goal:h.goal,stretch:h.stretch,labels:h.labels||null}];
     h.rules.sort((a,b)=>a.from<b.from?-1:1);
     const last=h.rules[h.rules.length-1];
     h.kind=last.kind; h.mode=last.mode; h.goal=last.goal; h.stretch=last.stretch; h.labels=last.labels;
   });
-  p.version=5;
+  p.version=6;
   return p;
 }
 function save(){ try{localStorage.setItem(KEY,JSON.stringify(db));}
@@ -764,8 +814,9 @@ function specAt(h,k){
   let r=null;
   for(let i=0;i<rs.length;i++){ if(rs[i].from<=k) r=rs[i]; else break; }
   r=r||rs[0];
-  return r?{id:h.id,name:h.name,kind:r.kind,mode:r.mode,goal:r.goal,stretch:r.stretch,labels:r.labels}
-          :{id:h.id,name:h.name,kind:h.kind,mode:h.mode,goal:h.goal,stretch:h.stretch,labels:h.labels};
+  const base={id:h.id,name:h.name,color:h.color||PALETTE[0]};
+  return r?{...base,kind:r.kind,mode:r.mode,goal:r.goal,stretch:r.stretch,labels:r.labels}
+          :{...base,kind:h.kind,mode:h.mode,goal:h.goal,stretch:h.stretch,labels:h.labels};
 }
 const labelsFor=s=>defLabels(s.kind).map((x,i)=>(s.labels&&s.labels[i])||x);
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -789,7 +840,8 @@ function chgOn(k){
 function diffText(prev,next){
   const out=[];
   if(prev.kind!==next.kind) out.push(next.kind==="build"?"ahora es para hacer más":"ahora es para evitar");
-  if(prev.mode!==next.mode) out.push(next.mode==="time"?"ahora se mide en minutos":"ahora lo calificas tú");
+  if(prev.mode!==next.mode) out.push(next.mode==="time"?"ahora se mide en minutos"
+    :next.mode==="bin"?"ahora es sí o no":"ahora lo calificas tú");
   if(prev.mode==="time"&&next.mode==="time"){
     if(prev.goal!==next.goal){
       const w=next.kind==="build"?"mínimo":"límite";
@@ -824,6 +876,11 @@ function autoGrade(k){
   return n?Math.max(1,Math.min(5,Math.round(s/n))):null;
 }
 function dayGrade(k){ const d=rawDay(k); return (d&&d.verdict)||autoGrade(k); }
+function shownVal(s,has,v){
+  if(s.mode==="time") return has?fmtMin(v):"—";
+  if(s.mode==="bin") return has?(v>=1?"Sí":"No"):"—";
+  return null;
+}
 const meter=(g,asum)=>'<span class="bars'+(g?" g"+g:"")+(asum?" asum":"")+'"><i></i><i></i><i></i><i></i></span>';
 const gtag=(g,off,asum)=>'<span class="tagx'+(asum?" asum":"")+'">'+(off?"Libre":g?SHORT[g]:"—")+"</span>";
 const trOf=id=>db.trackers.find(t=>t.id===id);
@@ -918,6 +975,7 @@ function renderToday(){
       const hs=db.habits.filter(h=>kindOf(h)===kind); if(!hs.length) return;
       const head=document.createElement("h3"); head.className="sec"; head.textContent=title;
       host.appendChild(head);
+      if(hs.length>1) host.appendChild(bulkRow(kind,hs));
       const grp=document.createElement("div"); grp.className="grp";
       const shown=openPad?hs:hs.slice(0,LIMIT);
       shown.forEach(h=>grp.appendChild(habitRow(h)));
@@ -946,8 +1004,9 @@ function habitRow(h){
   const has=hasVal(cursor,h.id)&&!off, v=val(cursor,h.id);
   const g=hGrade(h,cursor), asum=isAssumed(h,cursor), labs=labelsFor(s);
   const row=document.createElement("button"); row.className="row";
+  row.style.setProperty("--hc",s.color);
   row.innerHTML='<span class="nm"><b></b><small></small></span>'
-    +(s.mode==="time"?'<span class="v'+(has?"":" na")+'">'+(has?fmtMin(v):"—")+"</span>":"")
+    +(()=>{const sv=shownVal(s,has,v);return sv?'<span class="v'+(has?"":" na")+'">'+sv+"</span>":"";})()
     +(off?'<span class="bars"><i></i><i></i><i></i><i></i></span>':meter(g,asum))
     +gtag(g,off,asum);
   row.querySelector("b").textContent=h.name;
@@ -964,7 +1023,21 @@ function habitRow(h){
 function padFor(h,s,off,has,v,labs){
   const p=document.createElement("div");
   p.className="pad"+(openPad===h.id?" open":"");
-  if(s.mode==="rate"){
+  if(s.mode==="bin"){
+    const box=document.createElement("div"); box.className="opts";
+    const yes=s.kind==="build"?"Sí, lo hice":"Sí, caí";
+    const no =s.kind==="build"?"No lo hice":"No caí";
+    [[1,yes],[0,no]].forEach(([n,label])=>{
+      const grade=gradeOf(s,n);
+      const b=document.createElement("button");
+      b.className=(has&&v===n)?"on":"";
+      b.innerHTML='<span class="sw o'+grade+'"></span><span class="lv">'+SHORT[grade]+'</span><span class="lb"></span>';
+      b.querySelector(".lb").textContent=label;
+      b.onclick=e=>{e.stopPropagation();setVal(h.id,(has&&v===n)?null:n);};
+      box.appendChild(b);
+    });
+    p.appendChild(box);
+  }else if(s.mode==="rate"){
     const box=document.createElement("div"); box.className="opts";
     [1,2,3,4,5].forEach(n=>{
       const b=document.createElement("button");
@@ -1003,6 +1076,53 @@ function padFor(h,s,off,has,v,labs){
   p.appendChild(ed);
   return p;
 }
+/* ---- marcar todo un grupo de un jalón ---- */
+function valueForGrade(s,g){
+  if(s.mode==="rate") return g;
+  if(s.mode==="bin") return s.kind==="build" ? (g>=4?1:0) : (g>=4?0:1);
+  const goal=s.goal||0, st=s.stretch||0;
+  if(g===3&&goal>0) return goal;                 // justo en la meta o el límite
+  if(s.kind==="build") return g<=1?0:Math.max(st,goal+1);
+  return g>=5?0:st+1;
+}
+function bulkRow(kind,hs){
+  const wrap=document.createElement("div"); wrap.className="bulk";
+  const opts = kind==="build"
+    ? [[1,"Really bad","bad","como si no hubieras hecho ninguno"],
+       [3,"Meh","","justo el mínimo de cada uno"]]
+    : [[5,"Really good","good","como si no hubieras caído en ninguno"],
+       [3,"Meh","","justo el límite de cada uno"]];
+  opts.forEach(([g,label,cls,tip])=>{
+    let targets=hs.filter(h=>!isOff(cursor,h.id));
+    if(g===3) targets=targets.filter(h=>specAt(h,cursor).mode!=="bin");
+    const blanks=targets.filter(h=>!hasVal(cursor,h.id));
+    const b=document.createElement("button");
+    if(cls) b.className=cls;
+    b.title=tip;
+    b.innerHTML="Todos en "+label+' <span class="n">'+(blanks.length||targets.length)+"</span>";
+    b.onclick=()=>bulkSet(g,hs);
+    wrap.appendChild(b);
+  });
+  return wrap;
+}
+function bulkSet(g,hs){
+  let targets=hs.filter(h=>!isOff(cursor,h.id));
+  if(!targets.length){ toast("Todos están en día libre"); return; }
+  /* los de sí o no no tienen término medio, así que el botón de Meh los salta */
+  const skipped=g===3?targets.filter(h=>specAt(h,cursor).mode==="bin").length:0;
+  if(g===3) targets=targets.filter(h=>specAt(h,cursor).mode!=="bin");
+  if(!targets.length){ toast("Los de sí o no no tienen Meh"); return; }
+  let list=targets.filter(h=>!hasVal(cursor,h.id));
+  if(!list.length){
+    if(!confirm("Ya los registraste todos. ¿Sobrescribir los "+targets.length+" con "+GRADE[g]+"?")) return;
+    list=targets;
+  }
+  const d=day(cursor);
+  list.forEach(h=>{ d.entries[h.id]=valueForGrade(specAt(h,cursor),g); });
+  _start=null; save(); renderBar(); renderToday(); renderRecord(); renderAllSheet();
+  toast(list.length+(list.length===1?" hábito":" hábitos")+" en "+GRADE[g]
+    +(skipped?" · "+skipped+" de sí o no sin tocar":""));
+}
 function setVal(id,n){
   const d=day(cursor);
   if(n===null) delete d.entries[id]; else d.entries[id]=n;
@@ -1028,11 +1148,11 @@ function renderAllSheet(){
       const has=hasVal(cursor,h.id)&&!off, v=val(cursor,h.id);
       const g=hGrade(h,cursor), asum=isAssumed(h,cursor), labs=labelsFor(s);
       const r=document.createElement("button"); r.className="shrow";
-      r.innerHTML='<span class="dot '+(kind==="avoid"?"a":"")+'"></span>'
-        +'<span class="nm"><b></b><small></small></span>'
-        +(s.mode==="time"?'<span class="v'+(has?"":" na")+'">'+(has?fmtMin(v):"—")+"</span>":"")
+      r.innerHTML='<span class="dot"></span><span class="nm"><b></b><small></small></span>'
+        +(()=>{const sv=shownVal(s,has,v);return sv?'<span class="v'+(has?"":" na")+'">'+sv+"</span>":"";})()
         +(off?'<span class="bars"><i></i><i></i><i></i><i></i></span>':meter(g,asum))
         +'<span class="go">›</span>';
+      r.querySelector(".dot").style.background=s.color;
       r.querySelector("b").textContent=h.name;
       r.querySelector("small").textContent=
         off?"día libre":(s.mode==="rate"&&has?labs[g-1]:goalText(s));
@@ -1331,13 +1451,15 @@ function scopeName(){
 }
 function renderScopePicker(){
   const p=$("#scopePicker"); p.innerHTML="";
-  const mk=(id,label)=>{
-    const b=document.createElement("button"); b.textContent=label;
+  const mk=(id,label,color)=>{
+    const b=document.createElement("button");
+    if(color){ b.innerHTML='<span class="hdot"></span>'; b.querySelector(".hdot").style.background=color; }
+    b.appendChild(document.createTextNode(label));
     b.classList.toggle("on",recScope===id);
     b.onclick=()=>{recScope=id;renderRecord();};
     p.appendChild(b);
   };
-  mk(null,"Todo el día"); db.habits.forEach(h=>mk(h.id,h.name));
+  mk(null,"Todo el día"); db.habits.forEach(h=>mk(h.id,h.name,specAt(h,todayKey()).color));
 }
 function allKeys(){
   const out=[]; let k=startKey(); const t=todayKey(); let guard=0;
@@ -1553,7 +1675,10 @@ function renderTrends(){
   if(!db.habits.length){ tr.innerHTML='<p class="hint">Nada que graficar aún.</p>'; return; }
   db.habits.forEach(h=>{
     const row=document.createElement("div"); row.className="strip";
-    const nm=document.createElement("span"); nm.className="nm"; nm.textContent=h.name;
+    const nm=document.createElement("span"); nm.className="nm";
+    nm.innerHTML='<span class="hdot"></span>';
+    nm.querySelector(".hdot").style.background=specAt(h,todayKey()).color;
+    nm.appendChild(document.createTextNode(h.name));
     const cs=document.createElement("span"); cs.className="cs";
     days.forEach(k=>{
       const i=document.createElement("i"), g=hGrade(h,k);
@@ -1570,7 +1695,10 @@ function renderTrends(){
   db.habits.forEach(h=>{
     let s=0,n=0;
     const t=document.createElement("div"); t.className="t";
-    const k1=document.createElement("div"); k1.className="tk"; k1.textContent=h.name;
+    const k1=document.createElement("div"); k1.className="tk";
+    k1.innerHTML='<span class="hdot"></span>';
+    k1.querySelector(".hdot").style.background=specAt(h,todayKey()).color;
+    k1.appendChild(document.createTextNode(h.name));
     const sk=document.createElement("div"); sk.className="spark";
     days.forEach(k=>{
       const g=hGrade(h,k), i=document.createElement("i");
@@ -1715,8 +1843,9 @@ function renderRecord(){
       const has=hasVal(cursor,h.id)&&!off, v=val(cursor,h.id);
       const g=hGrade(h,cursor), asum=isAssumed(h,cursor), labs=labelsFor(s);
       const r=document.createElement("button"); r.className="row";
+      r.style.setProperty("--hc",s.color);
       r.innerHTML='<span class="nm"><b></b><small></small></span>'
-        +(s.mode==="time"?'<span class="v'+(has?"":" na")+'">'+(has?fmtMin(v):"—")+"</span>":"")
+        +(()=>{const sv=shownVal(s,has,v);return sv?'<span class="v'+(has?"":" na")+'">'+sv+"</span>":"";})()
         +(off?'<span class="bars"><i></i><i></i><i></i><i></i></span>':meter(g,asum))
         +gtag(g,off,asum);
       r.querySelector("b").textContent=h.name;
@@ -1802,8 +1931,9 @@ function renderManage(){
     shown.forEach(h=>{
       const s=specAt(h,todayKey());
       const r=document.createElement("button"); r.className="mrow";
-      r.innerHTML='<span class="dot '+(s.kind==="avoid"?"a":"")+'"></span>'
+      r.innerHTML='<span class="dot"></span>'
         +'<span class="nm"><b></b><small></small></span><span class="go">›</span>';
+      r.querySelector(".dot").style.background=s.color;
       r.querySelector("b").textContent=h.name;
       r.querySelector("small").textContent=goalText(s);
       r.onclick=()=>openSheet(h);
@@ -1848,7 +1978,9 @@ $("#assumeSeg").onclick=e=>{
   toast(db.assume?"Los días sin registrar ahora cuentan":"Los días sin registrar quedan en blanco");
 };
 function seed(){
-  const mk=o=>({id:uid(),since:todayKey(),rules:[{from:todayKey(),kind:o.kind,mode:o.mode,goal:o.goal,stretch:o.stretch,labels:o.labels}],...o});
+  let ci=0;
+  const mk=o=>({id:uid(),since:todayKey(),color:nextColor(ci++),
+    rules:[{from:todayKey(),kind:o.kind,mode:o.mode,goal:o.goal,stretch:o.stretch,labels:o.labels}],...o});
   const t=(name,kind,goal)=>mk({name,kind,mode:"time",goal,stretch:defStretch({kind,mode:"time",goal}),labels:null});
   const r=(name,kind)=>mk({name,kind,mode:"rate",goal:0,stretch:0,labels:defLabels(kind)});
   db.habits=[t("Gimnasio","build",60),t("Leer","build",15),t("TikTok","avoid",30),r("Comer bien","build")];
@@ -1864,20 +1996,88 @@ function seedTrackers(){
 }
 
 /* ================= hojas ================= */
-function openSheetEl(sel){ $("#scrim").classList.add("on"); $(sel).classList.add("on"); }
-function closeAll(){ $("#scrim").classList.remove("on");
-  ["#sheet","#trSheet","#mSheet","#allSheet"].forEach(s=>$(s).classList.remove("on")); }
+const SHEETS=["#sheet","#trSheet","#mSheet","#allSheet"];
+function openSheetEl(sel){
+  const sh=$(sel);
+  sh.style.transform=""; sh.scrollTop=0;
+  $("#scrim").style.opacity="";
+  $("#scrim").classList.add("on"); sh.classList.add("on");
+}
+function closeAll(){
+  $("#scrim").classList.remove("on"); $("#scrim").style.opacity="";
+  SHEETS.forEach(s=>{ const sh=$(s); sh.classList.remove("on","dragging"); sh.style.transform=""; });
+}
+
+/* Arrastrar hacia abajo para cerrar. Se agarra desde el asa o desde cualquier
+   parte del contenido cuando la hoja ya está hasta arriba, como en las apps
+   nativas. Un arrastre no debe disparar el clic de lo que había debajo. */
+function makeDraggable(sheet){
+  let y0=0, dy=0, armed=false, dragging=false, t0=0;
+  const scrim=$("#scrim");
+
+  sheet.addEventListener("pointerdown",e=>{
+    if(e.pointerType==="mouse"&&e.button!==0) return;
+    if(e.target.closest("input,textarea,select,.seek,.tones")) return;
+    y0=e.clientY; dy=0; t0=Date.now(); dragging=false;
+    armed=!!e.target.closest(".grab,h2")||sheet.scrollTop<=0;
+  });
+
+  sheet.addEventListener("pointermove",e=>{
+    if(!armed) return;
+    const d=e.clientY-y0;
+    if(!dragging){
+      if(d>7){
+        dragging=true; sheet.classList.add("dragging");
+        try{ sheet.setPointerCapture(e.pointerId); }catch(err){}
+      }else if(d<-4){ armed=false; return; }
+      else return;
+    }
+    dy=Math.max(0,d);
+    sheet.style.transform="translateY("+dy+"px)";
+    scrim.style.opacity=String(Math.max(0,1-dy/420));
+    if(e.cancelable) e.preventDefault();
+  },{passive:false});
+
+  const finish=()=>{
+    if(!armed) return;
+    const moved=dy>7;
+    armed=false;
+    sheet.classList.remove("dragging");
+    const fast=(Date.now()-t0)<300&&dy>40;
+    if(dragging&&(dy>90||fast)){
+      sheet.style.transform="";
+      closeAll();
+    }else{
+      sheet.style.transform="";
+      scrim.style.opacity="";
+    }
+    if(dragging&&moved){
+      /* el clic sintético del toque llega justo después del pointerup, así que
+         basta con anularlo en este ciclo y soltarlo en el siguiente */
+      const swallow=ev=>{ ev.stopPropagation(); ev.preventDefault(); };
+      sheet.addEventListener("click",swallow,{capture:true,once:true});
+      setTimeout(()=>sheet.removeEventListener("click",swallow,true),0);
+    }
+    dragging=false; dy=0;
+  };
+  sheet.addEventListener("pointerup",finish);
+  sheet.addEventListener("pointercancel",finish);
+  sheet.addEventListener("lostpointercapture",finish);
+}
+SHEETS.forEach(s=>makeDraggable($(s)));
 $("#scrim").onclick=closeAll;
 document.addEventListener("click",e=>{ if(e.target.closest("[data-close]")) closeAll(); });
 
 function openSheet(h){
-  form={kind:h?specAt(h,todayKey()).kind:"build",mode:h?specAt(h,todayKey()).mode:"time",editing:h?h.id:null};
+  form={kind:h?specAt(h,todayKey()).kind:"build",mode:h?specAt(h,todayKey()).mode:"time",
+        editing:h?h.id:null, color:h?(h.color||PALETTE[0]):nextColor(db.habits.length)};
   const s=h?specAt(h,todayKey()):null;
   $("#sheetTitle").textContent=h?h.name:"Agregar hábito";
   $("#fName").value=h?h.name:"";
   $("#fGoal").value=s&&s.mode==="time"?s.goal:60;
   $("#fStretch").value=s&&s.mode==="time"?s.stretch:90;
   renderLabelInputs(s?s.labels:null);
+  renderColors();
   $("#fromField").style.display=h?"":"none";
   $("#fFrom").max=todayKey(); $("#fFrom").value=todayKey();
   renderRuleHist(h||null);
@@ -1906,6 +2106,26 @@ function renderRuleHist(h){
     host.appendChild(row);
   });
 }
+function renderColors(){
+  const host=$("#fColors"); host.innerHTML="";
+  PALETTE.forEach(c=>{
+    const b=document.createElement("button");
+    b.className="sw"+(form.color===c?" on":"");
+    b.style.background=c; b.setAttribute("aria-label","Color "+c);
+    b.onclick=()=>{form.color=c;renderColors();};
+    host.appendChild(b);
+  });
+  /* el séptimo abre el selector del teléfono */
+  const custom=!PALETTE.includes(form.color);
+  const lab=document.createElement("label");
+  lab.className="sw custom"+(custom?" on":"");
+  if(custom) lab.style.background=form.color;
+  lab.innerHTML='<input type="color" aria-label="Elegir otro color">';
+  const i=lab.querySelector("input");
+  i.value=form.color;
+  i.onchange=()=>{ form.color=i.value; renderColors(); };
+  host.appendChild(lab);
+}
 function renderLabelInputs(vals){
   const host=$("#fLabels"); host.innerHTML="";
   const d=defLabels(form.kind);
@@ -1928,6 +2148,7 @@ function syncSheet(resetStretch){
   document.querySelectorAll("#fMode button").forEach(b=>b.classList.toggle("on",b.dataset.m===form.mode));
   $("#timeFields").style.display=form.mode==="time"?"":"none";
   $("#rateFields").style.display=form.mode==="rate"?"":"none";
+  $("#binNote").style.display=form.mode==="bin"?"":"none";
   const build=form.kind==="build";
   $("#goalLabel").textContent=build?"Meta diaria (llegar justo aquí es Meh)":"Límite diario (llegar justo aquí es Meh)";
   $("#goalWord").textContent=build?"minutos, mínimo":"minutos, máximo";
@@ -1940,6 +2161,12 @@ function syncSheet(resetStretch){
 }
 function drawPreview(){
   const p=$("#preview");
+  if(form.mode==="bin"){
+    const b=form.kind==="build";
+    p.innerHTML='<div><span>'+(b?"Lo hice":"No caí")+'</span><span class="lv c5">'+SHORT[5]+"</span></div>"
+      +'<div><span>'+(b?"No lo hice":"Caí")+'</span><span class="lv c1">'+SHORT[1]+"</span></div>";
+    return;
+  }
   if(form.mode==="rate"){
     const labs=readLabels();
     p.innerHTML=[1,2,3,4,5].map(n=>'<div><span>'+esc(labs[n-1])+'</span><span class="lv c'+n+'">'+SHORT[n]+"</span></div>").join("");
@@ -1968,13 +2195,13 @@ $("#saveHabit").onclick=()=>{
     stretch=Math.max(0,parseInt($("#fStretch").value,10)||0);
     if(form.kind==="build"&&stretch<=goal) stretch=goal>0?Math.round(goal*1.5):30;
     if(form.kind==="avoid"&&stretch<=goal) stretch=goal>0?goal*2:30;
-  }else labels=readLabels();
+  }else if(form.mode==="rate") labels=readLabels();
   const spec={kind:form.kind,mode:form.mode,goal,stretch,labels};
   const same=(a,b)=>a.kind===b.kind&&a.mode===b.mode&&a.goal===b.goal&&a.stretch===b.stretch
     &&JSON.stringify(a.labels||null)===JSON.stringify(b.labels||null);
   if(form.editing){
     const h=db.habits.find(x=>x.id===form.editing);
-    h.name=name;
+    h.name=name; h.color=form.color;
     let from=$("#fFrom").value||todayKey();
     if(from>todayKey()) from=todayKey();
     if(from<h.since) from=h.since;
@@ -1990,7 +2217,7 @@ $("#saveHabit").onclick=()=>{
     toast(changed?"Cambio guardado desde el "+d.getDate()+" de "+MESES[d.getMonth()]:"Actualizado");
   }else{
     const from=todayKey();
-    db.habits.push({id:uid(),name,...spec,since:from,rules:[{from,...spec}]});
+    db.habits.push({id:uid(),name,color:form.color,...spec,since:from,rules:[{from,...spec}]});
     toast("Agregado "+name);
   }
   _start=null; _chg=null; save(); closeAll(); renderAll();
