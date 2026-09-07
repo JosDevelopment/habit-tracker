@@ -8,6 +8,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Ledger">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23101322'/%3E%3Crect x='30' y='100' width='22' height='34' rx='4' fill='%23D9425F'/%3E%3Crect x='58' y='86' width='22' height='48' rx='4' fill='%239C4A5C'/%3E%3Crect x='86' y='72' width='22' height='62' rx='4' fill='%2359627F'/%3E%3Crect x='114' y='58' width='22' height='76' rx='4' fill='%23A8802F'/%3E%3Crect x='142' y='44' width='8' height='90' rx='4' fill='%23F0AB3A'/%3E%3C/svg%3E">
 <title>Habit Ledger</title>
 <style>
@@ -45,6 +47,7 @@
   .g5{background:var(--g5);color:var(--g5t)}
   .chip.auto,.chip.none{background:none;border:1px dashed var(--line);color:var(--muted);font-weight:500}
   .chip.asum{opacity:.46}
+  .chip.off{background:var(--surface-2);border:1px dashed var(--muted);color:var(--muted);font-weight:500}
 
   .screen{display:none;padding-top:16px}
   .screen.on{display:block}
@@ -79,6 +82,8 @@
   .pad button{border:1px solid var(--line);border-radius:20px;padding:8px 13px;font-size:14px;background:var(--surface)}
   .pad input{width:76px;padding:8px 10px;text-align:center}
   .pad .clr{margin-left:auto;color:var(--muted);border-color:transparent;background:none}
+  .pad .offbtn{width:100%;margin-top:2px;color:var(--muted);border-style:dashed;text-align:center;background:none}
+  .pad .offbtn.on{color:var(--paper);border-style:solid;border-color:var(--muted);background:var(--surface-2)}
   .ratepad{flex-direction:column;align-items:stretch;gap:5px;padding-top:6px}
   .ratepad button.opt{display:flex;align-items:center;gap:11px;width:100%;text-align:left;
     padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface)}
@@ -150,7 +155,8 @@
   .trend .cells i.v3{background:var(--g3)} .trend .cells i.v4{background:var(--g4)}
   .trend .cells i.v5{background:var(--g5)}
   .trend .cells i.dim{opacity:.4}
-  .trend .cells i.sel{box-shadow:0 0 0 1.5px var(--paper)}
+  .trend .cells i.chg{box-shadow:inset 0 0 0 1.5px var(--paper)}
+  .trend .cells i.sel{outline:2px solid var(--paper);outline-offset:1px}
 
   .picker{display:flex;gap:6px;overflow-x:auto;padding:2px 18px 2px;margin:0 -18px 14px;scrollbar-width:none}
   .picker::-webkit-scrollbar{display:none}
@@ -171,14 +177,31 @@
   .ycol i.v1{background:var(--g1)} .ycol i.v2{background:var(--g2)} .ycol i.v3{background:var(--g3)}
   .ycol i.v4{background:var(--g4)} .ycol i.v5{background:var(--g5)}
   .ycol i.dim{opacity:.42}
-  .ycol i.sel{box-shadow:0 0 0 1.5px var(--paper)}
+  .ycol i.chg{box-shadow:inset 0 0 0 1.5px var(--paper)}
+  .ycol i.sel{outline:2px solid var(--paper);outline-offset:1px}
 
   .monthhead{display:flex;align-items:center;justify-content:space-between;margin:6px 0 12px}
   .monthhead h2{font-family:var(--disp);font-weight:700;letter-spacing:-.025em;font-size:19px;margin:0}
   .dow{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;color:var(--muted);font-size:11px;text-align:center;margin-bottom:5px}
   .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
   .cell{aspect-ratio:1;border-radius:7px;background:var(--surface);border:1px solid var(--line);display:flex;
-    align-items:center;justify-content:center;font-size:12px;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums}
+    align-items:center;justify-content:center;font-size:12px;font-weight:500;color:var(--muted);
+    font-variant-numeric:tabular-nums;position:relative}
+  .cell.chg::after{content:"";position:absolute;top:4px;right:4px;width:5px;height:5px;border-radius:50%;
+    background:var(--paper);box-shadow:0 0 0 1.5px rgba(16,19,34,.6)}
+  .clog{display:flex;gap:11px;padding:12px 0;border-bottom:1px solid var(--line);align-items:flex-start}
+  .clog .when{font-size:12px;color:var(--muted);width:74px;flex:0 0 auto;padding:2px 0 0;text-align:left;
+    border:none;background:none;font-variant-numeric:tabular-nums}
+  .clog .what{flex:1;min-width:0;font-size:14px;line-height:1.45}
+  .clog .what b{font-weight:600;display:block}
+  .clog .what i{color:var(--muted);font-size:13px;font-style:normal}
+  .daychg{border-left:2px solid var(--paper);padding:3px 0 3px 12px;margin:18px 0 0;font-size:13px;line-height:1.55}
+  .daychg b{font-weight:600}
+  .daychg small{display:block;color:var(--muted);font-size:12px;margin-top:3px}
+  .rulerow{display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+  .rulerow .d{color:var(--muted);width:78px;flex:0 0 auto;font-variant-numeric:tabular-nums}
+  .rulerow .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rulerow .x{color:var(--muted);font-size:17px;padding:4px 7px;flex:0 0 auto}
   .cell.blank{visibility:hidden}
   .cell.v1{background:var(--g1);color:var(--g1t);border-color:transparent}
   .cell.v2{background:var(--g2);color:var(--g2t);border-color:transparent}
@@ -311,6 +334,7 @@
   </div>
   <p class="scalefoot" id="scaleFoot"></p>
   <div id="lists"></div>
+  <div id="dayChgT"></div>
 
   <h3 class="sec">Sueño</h3>
   <div class="sleep">
@@ -339,6 +363,7 @@
   <h3 class="sec" style="margin-top:6px">Ese día, hábito por hábito</h3>
   <p class="hint" id="dayBreakHint"></p>
   <div id="dayBreak"></div>
+  <div id="dayChgR"></div>
   <div id="daySleep"></div>
   <div id="dayMoments"></div>
   <div id="dayNotesRO"></div>
@@ -358,6 +383,10 @@
     <button data-v="patterns" aria-pressed="false">Patrones</button>
   </div>
   <div id="viewBody"></div>
+
+  <h3 class="sec">Cambios de metas</h3>
+  <p class="hint">Cada vez que subes o bajas un mínimo queda aquí, y el día se marca en las cuadrículas.</p>
+  <div id="changes"></div>
 
   <h3 class="sec">Tus noches</h3>
   <p class="hint">Horas dormidas en las últimas dos semanas.</p>
@@ -390,7 +419,8 @@
   </div>
 
   <h3 class="sec">Tus datos</h3>
-  <p class="hint">Todo vive solo en este navegador. Si borras los datos de navegación, se va. El respaldo incluye tus notas de voz.</p>
+  <p class="hint">Todo vive solo en este teléfono. Nada se sube a ningún servidor. El respaldo incluye tus notas de voz.</p>
+  <p class="hint" id="storeInfo"></p>
   <div class="btnrow">
     <button class="btn ghost" id="exportBtn">Exportar respaldo</button>
     <button class="btn ghost" id="importBtn">Restaurar</button>
@@ -423,6 +453,12 @@
   <div id="rateFields" style="display:none">
     <div class="field"><label>¿Qué significa cada nivel para este hábito?</label><div id="fLabels"></div></div>
   </div>
+  <div class="field" id="fromField" style="display:none">
+    <label for="fFrom">Este cambio aplica desde</label>
+    <input id="fFrom" type="date">
+    <p class="hint" style="margin:7px 0 0">Los días anteriores se siguen calificando con la meta que tenían entonces.</p>
+  </div>
+  <div id="ruleHist" style="margin-bottom:15px"></div>
   <div class="preview" id="preview"></div>
   <button class="btn" id="saveHabit">Guardar</button>
   <div class="btnrow"><button class="btn ghost" id="cancelHabit">Cancelar</button></div>
@@ -486,7 +522,6 @@ const DEF_LABELS={
   avoid:["Caí muchísimo","Caí","Justo en el límite","Casi nada","Nada"]
 };
 const defLabels=k=>DEF_LABELS[k].slice();
-const labelsOf=h=>defLabels(h.kind).map((x,i)=>(h.labels&&h.labels[i])||x);
 function defStretch(h){
   if(h.mode!=="time") return 0;
   const g=h.goal||0;
@@ -547,6 +582,11 @@ function migrate(p){
     if(h.mode==="rate"&&!Array.isArray(h.labels)) h.labels=defLabels(h.kind);
     if(h.mode==="time"&&h.stretch==null) h.stretch=defStretch(h);
     if(!h.since) h.since=first;
+    if(!Array.isArray(h.rules)||!h.rules.length)
+      h.rules=[{from:h.since,kind:h.kind,mode:h.mode,goal:h.goal,stretch:h.stretch,labels:h.labels||null}];
+    h.rules.sort((a,b)=>a.from<b.from?-1:1);
+    const last=h.rules[h.rules.length-1];
+    h.kind=last.kind; h.mode=last.mode; h.goal=last.goal; h.stretch=last.stretch; h.labels=last.labels;
   });
   p.version=5;
   return p;
@@ -561,7 +601,8 @@ function day(k){
 const rawDay=k=>db.days[k]||null;
 const entryOf=(k,id)=>((rawDay(k)||{}).entries||{})[id];
 const hasVal=(k,id)=>entryOf(k,id)!==undefined;
-const val=(k,id)=>entryOf(k,id)||0;
+const isOff=(k,id)=>entryOf(k,id)==="off";
+const val=(k,id)=>{const v=entryOf(k,id);return typeof v==="number"?v:0;};
 
 function logged(k){
   const d=rawDay(k); if(!d) return false;
@@ -579,12 +620,61 @@ function startKey(){
 const inRange=k=>k>=startKey()&&k<=todayKey();
 const hStart=h=>{const s=h.since||startKey();return s<startKey()?startKey():s;};
 
+/* La meta que estaba vigente ese día. Cambiar la meta hoy no reescribe el pasado. */
+function specAt(h,k){
+  const rs=h.rules||[];
+  let r=null;
+  for(let i=0;i<rs.length;i++){ if(rs[i].from<=k) r=rs[i]; else break; }
+  r=r||rs[0];
+  return r?{id:h.id,name:h.name,kind:r.kind,mode:r.mode,goal:r.goal,stretch:r.stretch,labels:r.labels}
+          :{id:h.id,name:h.name,kind:h.kind,mode:h.mode,goal:h.goal,stretch:h.stretch,labels:h.labels};
+}
+const labelsFor=s=>defLabels(s.kind).map((x,i)=>(s.labels&&s.labels[i])||x);
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* mapa fecha -> cambios de meta que entraron en vigor ese día */
+let _chg=null;
+function chgMap(){
+  if(_chg) return _chg;
+  _chg={};
+  db.habits.forEach(h=>{
+    const rs=h.rules||[];
+    for(let i=1;i<rs.length;i++)
+      (_chg[rs[i].from]=_chg[rs[i].from]||[]).push({h,prev:rs[i-1],next:rs[i]});
+  });
+  return _chg;
+}
+function chgOn(k){
+  const l=chgMap()[k]; if(!l) return false;
+  return recScope ? l.some(c=>c.h.id===recScope) : true;
+}
+function diffText(prev,next){
+  const out=[];
+  if(prev.kind!==next.kind) out.push(next.kind==="build"?"ahora es para hacer más":"ahora es para evitar");
+  if(prev.mode!==next.mode) out.push(next.mode==="time"?"ahora se mide en minutos":"ahora lo calificas tú");
+  if(prev.mode==="time"&&next.mode==="time"){
+    if(prev.goal!==next.goal){
+      const w=next.kind==="build"?"mínimo":"límite";
+      const up=next.goal>prev.goal;
+      const tag=next.kind==="build"?(up?"subió":"bajó"):(up?"más holgado":"más estricto");
+      out.push(w+" de "+fmtMin(prev.goal)+" a "+fmtMin(next.goal)+" ("+tag+")");
+    }
+    if(prev.stretch!==next.stretch)
+      out.push((next.kind==="build"?"excelente":"muy mal")+" de "+fmtMin(prev.stretch)+" a "+fmtMin(next.stretch));
+  }
+  if(next.mode==="rate"&&JSON.stringify(prev.labels||null)!==JSON.stringify(next.labels||null))
+    out.push("cambiaron las etiquetas");
+  return out.length?out.join(" · "):"ajuste";
+}
+
 function hGrade(h,k){
-  if(hasVal(k,h.id)) return gradeOf(h,val(k,h.id));
+  if(isOff(k,h.id)) return null;
+  const s=specAt(h,k);
+  if(hasVal(k,h.id)) return gradeOf(s,val(k,h.id));
   if(!db.assume) return null;
   if(k>=todayKey()) return null;
   if(k<hStart(h)) return null;
-  return h.kind==="build"?1:3;
+  return s.kind==="build"?1:3;
 }
 function isAssumed(h,k){
   return !hasVal(k,h.id)&&db.assume&&k<todayKey()&&k>=hStart(h);
@@ -685,13 +775,14 @@ function renderToday(){
     $("#firstAdd").onclick=()=>openSheet(); $("#seedBtn").onclick=seed;
   }else{
     [["build","Construyendo","más de esto"],["avoid","Evitando","menos de esto"]].forEach(([kind,t,s])=>{
-      const hs=db.habits.filter(h=>h.kind===kind); if(!hs.length) return;
+      const hs=db.habits.filter(h=>specAt(h,cursor).kind===kind); if(!hs.length) return;
       const g=document.createElement("div"); g.className="group "+kind;
       g.innerHTML="<h2>"+t+"<span>"+s+"</span></h2>";
       hs.forEach(h=>g.appendChild(habitRow(h)));
       host.appendChild(g);
     });
   }
+  $("#dayChgT").innerHTML=dayChgHTML(cursor);
   const dd=rawDay(cursor)||{};
   $("#wakeIn").value=dd.wake||""; $("#sleepIn").value=dd.sleep||"";
   const sh=sleepHours(cursor);
@@ -705,19 +796,23 @@ function renderToday(){
 
 function habitRow(h){
   const frag=document.createDocumentFragment();
-  const has=hasVal(cursor,h.id), v=val(cursor,h.id);
-  const g=hGrade(h,cursor), asum=isAssumed(h,cursor), labs=labelsOf(h);
+  const s=specAt(h,cursor);
+  const off=isOff(cursor,h.id);
+  const has=hasVal(cursor,h.id)&&!off, v=val(cursor,h.id);
+  const g=hGrade(h,cursor), asum=isAssumed(h,cursor), labs=labelsFor(s);
   const row=document.createElement("button"); row.className="row";
   row.innerHTML='<span class="nm"><b></b><small></small></span>'
-    +(h.mode==="time"?'<span class="val'+(has?"":" na")+'">'+(has?fmtMin(v):"—")+"</span>":"")
-    +chipFor(g,asum);
+    +(s.mode==="time"?'<span class="val'+(has?"":" na")+'">'+(has?fmtMin(v):"—")+"</span>":"")
+    +(off?'<span class="chip off">No cuenta</span>':chipFor(g,asum));
   row.querySelector("b").textContent=h.name;
   row.querySelector("small").textContent=
-    asum?"no lo registraste — se asume":(h.mode==="rate"&&has?labs[g-1]:goalText(h));
+    off?"día libre — no entra al promedio"
+    :asum?"no lo registraste — se asume"
+    :(s.mode==="rate"&&has?labs[g-1]:goalText(s));
   frag.appendChild(row);
   const p=document.createElement("div");
-  p.className="pad"+(h.mode==="rate"?" ratepad":"")+(openPad===h.id?" open":"");
-  if(h.mode==="rate"){
+  p.className="pad"+(s.mode==="rate"?" ratepad":"")+(openPad===h.id?" open":"");
+  if(s.mode==="rate"){
     [1,2,3,4,5].forEach(n=>{
       const b=document.createElement("button");
       b.className="opt"+(has&&v===n?" sel g"+n:"");
@@ -742,6 +837,11 @@ function habitRow(h){
     const c=document.createElement("button");c.className="clr";c.textContent="Borrar";
     c.onclick=e=>{e.stopPropagation();setVal(h.id,null);};p.appendChild(c);
   }
+  const ob=document.createElement("button");
+  ob.className="offbtn"+(off?" on":"");
+  ob.textContent=off?"Volver a contarlo este día":"No contar este día";
+  ob.onclick=e=>{e.stopPropagation();setVal(h.id,off?null:"off");};
+  p.appendChild(ob);
   frag.appendChild(p);
   row.onclick=()=>{openPad=openPad===h.id?null:h.id;renderToday();};
   return frag;
@@ -1011,8 +1111,9 @@ function viewYear(){
         const g=scopeGrade(k);
         if(g!=null) i.className="v"+g;
         if(g!=null&&!logged(k)) i.classList.add("dim");
+        if(chgOn(k)) i.classList.add("chg");
         if(k===cursor) i.classList.add("sel");
-        i.title=k+(g?" — "+GRADE[g]+(logged(k)?"":" (supuesto)"):"");
+        i.title=k+(g?" — "+GRADE[g]+(logged(k)?"":" (supuesto)"):"")+(chgOn(k)?" · cambió la meta":"");
         i.onclick=()=>setDay(k);
       }
       c.appendChild(i);
@@ -1025,7 +1126,8 @@ function viewYear(){
   lg.innerHTML=[1,2,3,4,5].map(g=>'<span class="chip g'+g+'">'+GRADE[g]+"</span>").join("");
   w.appendChild(lg);
   const p=document.createElement("p"); p.className="hint"; p.style.marginTop="12px";
-  p.textContent="365 días de "+scopeName()+". Los tenues son días que no registraste. Desliza para ver atrás.";
+  p.textContent="365 días de "+scopeName()+". Los tenues son días que no registraste; "
+    +"los que traen borde claro son días en que cambió una meta. Desliza para ver atrás.";
   w.appendChild(p);
   return w;
 }
@@ -1048,8 +1150,8 @@ function viewMonth(){
   for(let n=1;n<=len;n++){
     const k=mCur.y+"-"+pad(mCur.m+1)+"-"+pad(n), g=scopeGrade(k);
     const c=document.createElement("button");
-    c.className="cell"+(g?" v"+g:"")+(g&&!logged(k)?" dim":"")+(k===cursor?" sel":"");
-    c.textContent=n; c.title=k; if(g) counts[g]++;
+    c.className="cell"+(g?" v"+g:"")+(g&&!logged(k)?" dim":"")+(chgOn(k)?" chg":"")+(k===cursor?" sel":"");
+    c.textContent=n; c.title=k+(chgOn(k)?" · cambió la meta":""); if(g) counts[g]++;
     c.onclick=()=>setDay(k);
     grid.appendChild(c);
   }
@@ -1057,6 +1159,9 @@ function viewMonth(){
   const lg=document.createElement("div"); lg.className="legend";
   lg.innerHTML=[1,2,3,4,5].map(g=>'<span class="chip g'+g+'">'+GRADE[g]+" "+counts[g]+"</span>").join("");
   w.appendChild(lg);
+  const note=document.createElement("p"); note.className="hint"; note.style.marginTop="10px";
+  note.textContent="El punto blanco marca los días en que cambió una meta.";
+  w.appendChild(note);
   return w;
 }
 function allKeys(){
@@ -1187,6 +1292,33 @@ function renderViews(){
   body.appendChild({year:viewYear,month:viewMonth,week:viewWeek,trend:viewTrend,patterns:viewPatterns}[recView]());
 }
 
+function dayChgHTML(k){
+  const list=chgMap()[k]||[];
+  if(!list.length) return "";
+  return '<div class="daychg">'
+    +list.map(c=>"<b>"+esc(c.h.name)+"</b>: "+esc(diffText(c.prev,c.next))).join("<br>")
+    +"<small>Desde este día aplica la meta nueva. Los días anteriores conservan la vieja.</small></div>";
+}
+function renderChanges(){
+  const host=$("#changes"); host.innerHTML="";
+  const m=chgMap(), keys=Object.keys(m).sort().reverse();
+  if(!keys.length){
+    host.innerHTML='<p class="hint">Todavía no has cambiado ninguna meta. Edita un hábito en Ajustes y elige desde qué día aplica.</p>';
+    return;
+  }
+  keys.forEach(k=>{
+    const d=parseKey(k);
+    m[k].forEach(c=>{
+      const el=document.createElement("div"); el.className="clog";
+      el.innerHTML='<button class="when"></button><span class="what"><b></b><i></i></span>';
+      el.querySelector(".when").textContent=d.getDate()+" "+MES3[d.getMonth()]+" "+String(d.getFullYear()).slice(2);
+      el.querySelector(".when").onclick=()=>setDay(k);
+      el.querySelector("b").textContent=c.h.name;
+      el.querySelector("i").textContent=diffText(c.prev,c.next);
+      host.appendChild(el);
+    });
+  });
+}
 function renderNights(){
   const body=$("#nightsBody"); body.innerHTML="";
   const days=[]; for(let i=13;i>=0;i--) days.push(shift(todayKey(),-i));
@@ -1282,15 +1414,19 @@ function renderRecord(){
   const bk=$("#dayBreak"); bk.innerHTML="";
   if(!db.habits.length) bk.innerHTML='<p class="hint">Agrega un hábito primero.</p>';
   db.habits.forEach(h=>{
-    const has=hasVal(cursor,h.id), v=val(cursor,h.id);
-    const g=hGrade(h,cursor), asum=isAssumed(h,cursor), labs=labelsOf(h);
+    const s=specAt(h,cursor);
+    const off=isOff(cursor,h.id);
+    const has=hasVal(cursor,h.id)&&!off, v=val(cursor,h.id);
+    const g=hGrade(h,cursor), asum=isAssumed(h,cursor), labs=labelsFor(s);
     const r=document.createElement("div"); r.className="brow";
-    r.innerHTML='<span class="tag '+h.kind+'"></span><span class="nm"><b></b><small></small></span>'
-      +(h.mode==="time"?'<span class="val'+(has?"":" na")+'">'+(has?fmtMin(v):"—")+"</span>":"")
-      +chipFor(g,asum);
+    r.innerHTML='<span class="tag '+s.kind+'"></span><span class="nm"><b></b><small></small></span>'
+      +(s.mode==="time"?'<span class="val'+(has?"":" na")+'">'+(has?fmtMin(v):"—")+"</span>":"")
+      +(off?'<span class="chip off">No cuenta</span>':chipFor(g,asum));
     r.querySelector("b").textContent=h.name;
     r.querySelector("small").textContent=
-      asum?"no lo registraste — se asume":(h.mode==="rate"&&has?labs[g-1]:goalText(h));
+      off?"día libre — no entra al promedio"
+      :asum?"no lo registraste — se asume"
+      :(s.mode==="rate"&&has?labs[g-1]:goalText(s));
     bk.appendChild(r);
   });
 
@@ -1331,35 +1467,44 @@ function renderRecord(){
       const i=document.createElement("i"), g=hGrade(h,k);
       if(g!=null) i.className="v"+g;
       if(g!=null&&isAssumed(h,k)) i.classList.add("dim");
+      const ch=(chgMap()[k]||[]).some(c=>c.h.id===h.id);
+      if(ch) i.classList.add("chg");
       if(k===cursor) i.classList.add("sel");
-      i.title=k; i.onclick=()=>setDay(k);
+      i.title=k+(ch?" · cambió la meta":""); i.onclick=()=>setDay(k);
       cells.appendChild(i);
     });
     row.appendChild(nm); row.appendChild(cells); tr.appendChild(row);
   });
 
-  renderScopePicker(); renderViews(); renderNights(); renderHours();
+  $("#dayChgR").innerHTML=dayChgHTML(cursor);
+  renderScopePicker(); renderViews(); renderChanges(); renderNights(); renderHours();
 
   const keys=allKeys(), st=$("#stats");
   if(!db.habits.length){ st.innerHTML='<p class="hint">Sin hábitos.</p>'; return; }
   st.innerHTML="";
   db.habits.forEach(h=>{
-    let total=0,sum=0,n=0,good=0,skipped=0;
+    let total=0,sum=0,n=0,good=0,skipped=0,rest=0;
     keys.forEach(k=>{
       const g=hGrade(h,k);
-      if(hasVal(k,h.id)&&h.mode==="time") total+=val(k,h.id);
-      if(isAssumed(h,k)) skipped++;
+      if(h.mode==="time") total+=val(k,h.id);
+      if(isOff(k,h.id)) rest++;
+      else if(isAssumed(h,k)) skipped++;
       if(g!=null){sum+=g;n++;if(g>=4)good++;}
     });
-    let streak=0,k=todayKey();
+    let streak=0,k=todayKey(),guard=0;
     if(!hasVal(k,h.id)) k=shift(k,-1);
-    while(inRange(k)&&(hGrade(h,k)||0)>=4){streak++;k=shift(k,-1);}
+    while(inRange(k)&&guard++<4000){
+      if(isOff(k,h.id)){k=shift(k,-1);continue;}
+      const g=hGrade(h,k);
+      if(g!=null&&g>=4){streak++;k=shift(k,-1);} else break;
+    }
     const avg=n?sum/n:0, ag=n?Math.max(1,Math.min(5,Math.round(avg))):0;
     const el=document.createElement("div"); el.className="stat";
     el.innerHTML='<span class="nm"><b></b><small>'
       +(h.mode==="time"?fmtMin(total)+" en total · ":"")
       +good+" de "+n+" días bien · racha "+streak
-      +(skipped?" · "+skipped+" sin registrar":"")+"</small></span>"
+      +(skipped?" · "+skipped+" sin registrar":"")
+      +(rest?" · "+rest+" libres":"")+"</small></span>"
       +'<span class="fig">'+(n?avg.toFixed(1):"—")+'<small>'+(ag?GRADE[ag].toLowerCase():"sin datos")+"</small></span>";
     el.querySelector("b").textContent=h.name;
     st.appendChild(el);
@@ -1428,8 +1573,9 @@ $("#assumeSeg").onclick=e=>{
   toast(db.assume?"Los días sin registrar ahora cuentan":"Los días sin registrar quedan en blanco");
 };
 function seed(){
-  const t=(name,kind,goal)=>({id:uid(),name,kind,mode:"time",goal,stretch:defStretch({kind,mode:"time",goal}),labels:null,since:todayKey()});
-  const r=(name,kind)=>({id:uid(),name,kind,mode:"rate",goal:0,stretch:0,labels:defLabels(kind),since:todayKey()});
+  const mk=o=>({id:uid(),since:todayKey(),rules:[{from:todayKey(),kind:o.kind,mode:o.mode,goal:o.goal,stretch:o.stretch,labels:o.labels}],...o});
+  const t=(name,kind,goal)=>mk({name,kind,mode:"time",goal,stretch:defStretch({kind,mode:"time",goal}),labels:null});
+  const r=(name,kind)=>mk({name,kind,mode:"rate",goal:0,stretch:0,labels:defLabels(kind)});
   db.habits=[t("Gimnasio","build",60),t("Leer","build",15),t("TikTok","avoid",30),r("Comer bien","build")];
   _start=null; save(); renderAll(); toast("Cuatro hábitos listos — edítalos cuando quieras");
 }
@@ -1455,8 +1601,34 @@ function openSheet(h){
   $("#fGoal").value=h&&h.mode==="time"?h.goal:60;
   $("#fStretch").value=h&&h.mode==="time"?(h.stretch!=null?h.stretch:defStretch(h)):90;
   renderLabelInputs(h?h.labels:null);
+  $("#fromField").style.display=h?"":"none";
+  $("#fFrom").max=todayKey();
+  $("#fFrom").value=todayKey();
+  renderRuleHist(h||null);
   syncSheet(!h);
   openSheetEl("#sheet"); if(!h) setTimeout(()=>$("#fName").focus(),240);
+}
+function renderRuleHist(h){
+  const host=$("#ruleHist"); host.innerHTML="";
+  if(!h||!h.rules||h.rules.length<2) return;
+  const t=document.createElement("p"); t.className="hint"; t.style.margin="0 0 4px";
+  t.textContent="Metas que ha tenido este hábito"; host.appendChild(t);
+  h.rules.forEach((r,i)=>{
+    const d=parseKey(r.from);
+    const row=document.createElement("div"); row.className="rulerow";
+    row.innerHTML='<span class="d"></span><span class="t"></span>'
+      +(i>0?'<button class="x" aria-label="Quitar este cambio">&times;</button>':"");
+    row.querySelector(".d").textContent=d.getDate()+" "+MES3[d.getMonth()]+" "+String(d.getFullYear()).slice(2);
+    row.querySelector(".t").textContent=goalText(r);
+    if(i>0) row.querySelector(".x").onclick=()=>{
+      if(!confirm("¿Quitar este cambio? Esos días vuelven a calificarse con la meta anterior.")) return;
+      h.rules.splice(i,1);
+      const last=h.rules[h.rules.length-1];
+      Object.assign(h,{kind:last.kind,mode:last.mode,goal:last.goal,stretch:last.stretch,labels:last.labels});
+      _chg=null; save(); renderRuleHist(h); renderAll(); toast("Cambio quitado");
+    };
+    host.appendChild(row);
+  });
 }
 function renderLabelInputs(vals){
   const host=$("#fLabels"); host.innerHTML="";
@@ -1521,14 +1693,31 @@ $("#saveHabit").onclick=()=>{
     if(form.kind==="build"&&stretch<=goal) stretch=goal>0?Math.round(goal*1.5):30;
     if(form.kind==="avoid"&&stretch<=goal) stretch=goal>0?goal*2:30;
   }else labels=readLabels();
+  const spec={kind:form.kind,mode:form.mode,goal,stretch,labels};
+  const same=(a,b)=>a.kind===b.kind&&a.mode===b.mode&&a.goal===b.goal&&a.stretch===b.stretch
+    &&JSON.stringify(a.labels||null)===JSON.stringify(b.labels||null);
   if(form.editing){
-    Object.assign(db.habits.find(x=>x.id===form.editing),{name,kind:form.kind,mode:form.mode,goal,stretch,labels});
-    toast("Actualizado");
+    const h=db.habits.find(x=>x.id===form.editing);
+    h.name=name;
+    let from=$("#fFrom").value||todayKey();
+    if(from>todayKey()) from=todayKey();
+    if(from<h.since) from=h.since;
+    const changed=!same(specAt(h,from),spec);
+    if(changed){
+      const i=h.rules.findIndex(r=>r.from===from);
+      if(i>=0) h.rules[i]={from,...spec}; else h.rules.push({from,...spec});
+      h.rules.sort((a,b)=>a.from<b.from?-1:1);
+    }
+    const last=h.rules[h.rules.length-1];
+    Object.assign(h,{kind:last.kind,mode:last.mode,goal:last.goal,stretch:last.stretch,labels:last.labels});
+    const d=parseKey(from);
+    toast(changed?"Cambio guardado desde el "+d.getDate()+" de "+MESES[d.getMonth()]:"Actualizado");
   }else{
-    db.habits.push({id:uid(),name,kind:form.kind,mode:form.mode,goal,stretch,labels,since:todayKey()});
+    const from=todayKey();
+    db.habits.push({id:uid(),name,...spec,since:from,rules:[{from,...spec}]});
     toast("Agregado "+name);
   }
-  _start=null; save(); closeAll(); renderAll();
+  _start=null; _chg=null; save(); closeAll(); renderAll();
 };
 
 function openTr(tr){
@@ -1622,6 +1811,7 @@ $("#exportBtn").onclick=async()=>{
   a.href=URL.createObjectURL(new Blob([JSON.stringify({...db,audio},null,2)],{type:"application/json"}));
   a.download="habit-ledger-"+todayKey()+".json"; a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+  db.lastBackup=Date.now(); save(); renderManage();
   toast("Respaldo descargado");
 };
 $("#importBtn").onclick=()=>$("#importFile").click();
@@ -1647,7 +1837,7 @@ $("#wipeBtn").onclick=async()=>{
   player.pause(); loadedId=null; pos={}; lens={};
   try{ for(const id of await allAudioKeys()) await delAudio(id); }catch(e){}
   db={version:5,habits:[],trackers:[],days:{},assume:true};
-  recScope=null; trScope=null; _start=null;
+  recScope=null; trScope=null; _start=null; _chg=null;
   save(); renderAll(); toast("Todo borrado");
 };
 
@@ -1672,9 +1862,47 @@ function go(v){
   window.scrollTo(0,0); renderBar();
 }
 document.querySelector("nav").onclick=e=>{const b=e.target.closest("button");if(b)go(b.dataset.view);};
-function renderAll(){ _start=null; renderBar(); renderToday(); renderRecord(); renderManage(); }
+function renderAll(){ _start=null; _chg=null; renderBar(); renderToday(); renderRecord(); renderManage(); }
 window.addEventListener("resize",renderBar);
 renderAll();
+
+/* ================= offline y almacenamiento ================= */
+if("serviceWorker" in navigator &&
+   (location.protocol==="https:"||location.hostname==="localhost")){
+  window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
+/* Pide almacenamiento persistente: sin esto el navegador puede desalojar
+   los datos si le falta espacio. En Chrome se concede casi siempre si la
+   app está instalada en la pantalla de inicio. */
+if(navigator.storage&&navigator.storage.persist){
+  navigator.storage.persisted().then(p=>{ if(!p) return navigator.storage.persist(); })
+    .then(()=>renderStorage()).catch(()=>{});
+}
+async function renderStorage(){
+  const el=$("#storeInfo"); if(!el) return;
+  const parts=[];
+  try{
+    if(navigator.storage&&navigator.storage.persisted){
+      parts.push(await navigator.storage.persisted()
+        ? "Almacenamiento persistente: el navegador no lo borrará por falta de espacio."
+        : "Almacenamiento normal: el sistema podría borrarlo si el teléfono se queda sin espacio.");
+    }
+    if(navigator.storage&&navigator.storage.estimate){
+      const e=await navigator.storage.estimate();
+      if(e.usage!=null){
+        parts.push("Ocupas "+(e.usage/1048576).toFixed(1)+" MB"
+          +(e.quota?" de "+(e.quota/1073741824).toFixed(1)+" GB disponibles":"")+".");
+      }
+    }
+  }catch(err){}
+  if(db.lastBackup){
+    const d=Math.floor((Date.now()-db.lastBackup)/86400000);
+    parts.push(d<=0?"Respaldaste hoy.":"Tu último respaldo fue hace "+d+" día"+(d===1?"":"s")+".");
+    if(d>=14) parts.push("Ya toca uno nuevo.");
+  }else parts.push("Nunca has exportado un respaldo — hazlo antes de acumular meses de datos.");
+  el.textContent=parts.join(" ");
+}
+renderStorage();
 </script>
 </body>
 </html>
