@@ -352,19 +352,25 @@ p.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
 .scrim{position:fixed;inset:0;background:rgba(4,5,9,.74);z-index:40;
   opacity:0;visibility:hidden;transition:opacity .24s,visibility 0s linear .24s}
 .scrim.on{opacity:1;visibility:visible;transition:opacity .24s,visibility 0s}
+/* La hoja NO scrollea: el scroll vive en .sbody. Así el asa queda fuera de
+   todo contenedor scrolleable y el navegador nunca le roba el gesto. */
 .sheet{position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--card);border-radius:20px 20px 0 0;
-  box-shadow:inset 0 1px 0 var(--line);padding:0 16px calc(26px + env(safe-area-inset-bottom));
+  box-shadow:inset 0 1px 0 var(--line);padding:0;
   max-width:440px;margin:0 auto;transform:translateY(103%);
   transition:transform .26s cubic-bezier(.32,.72,0,1),visibility 0s linear .26s;
-  max-height:88vh;overflow-y:auto;visibility:hidden;overscroll-behavior:contain;touch-action:pan-y}
+  max-height:88vh;visibility:hidden;touch-action:none;
+  display:flex;flex-direction:column;overflow:hidden}
 .sheet.on{transform:translateY(0);visibility:visible;
   transition:transform .26s cubic-bezier(.32,.72,0,1),visibility 0s}
 .sheet.dragging{transition:none}
-/* el asa es toda la franja de arriba, para que se pueda agarrar sin puntería */
-.grab{position:sticky;top:0;z-index:2;width:calc(100% + 32px);margin:0 -16px 10px;
-  padding:12px 0 10px;display:flex;justify-content:center;background:var(--card);
-  touch-action:none;cursor:grab}
-.grab::before{content:"";width:42px;height:5px;border-radius:3px;background:var(--line);display:block}
+.sbody{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  touch-action:pan-y;overscroll-behavior:contain;
+  padding:0 16px calc(26px + env(safe-area-inset-bottom))}
+/* toda la franja de arriba es el asa, para agarrarla sin puntería */
+.grab{flex:0 0 auto;width:100%;padding:16px 0 13px;display:flex;justify-content:center;
+  background:var(--card);touch-action:none;cursor:grab}
+.grab::before{content:"";width:44px;height:5px;border-radius:3px;background:var(--line);display:block}
+.sheet.dragging .grab::before{background:var(--muted)}
 .sheet.dragging .grab{cursor:grabbing}
 .sheet h2{touch-action:none}
 .sheet h2{font-size:20px;font-weight:700;letter-spacing:-.03em;margin:0 0 4px}
@@ -1999,7 +2005,8 @@ function seedTrackers(){
 const SHEETS=["#sheet","#trSheet","#mSheet","#allSheet"];
 function openSheetEl(sel){
   const sh=$(sel);
-  sh.style.transform=""; sh.scrollTop=0;
+  sh.style.transform="";
+  const b=sh.querySelector(".sbody"); if(b) b.scrollTop=0;
   $("#scrim").style.opacity="";
   $("#scrim").classList.add("on"); sh.classList.add("on");
 }
@@ -2014,8 +2021,19 @@ function closeAll(){
    touchmove + preventDefault el gesto es nuestro de principio a fin. Cuando la
    hoja ya está hasta arriba también movemos su scroll a mano, para no perder
    la posibilidad de subir el contenido. */
+/* mueve todo el contenido a un .sbody scrolleable, dejando el asa fuera */
+function wrapSheet(sheet){
+  let body=sheet.querySelector(":scope > .sbody");
+  if(body) return body;
+  body=document.createElement("div"); body.className="sbody";
+  const grab=sheet.querySelector(":scope > .grab");
+  [...sheet.children].forEach(n=>{ if(n!==grab) body.appendChild(n); });
+  sheet.appendChild(body);
+  return body;
+}
 function makeDraggable(sheet){
   const scrim=$("#scrim");
+  const body=wrapSheet(sheet);
   let y0=0, dy=0, decided=false, dragging=false, t0=0, top0=0, handle=false, tid=null;
 
   const skip=t=>!!(t.closest&&t.closest("input,textarea,select,.seek,.tones"));
@@ -2023,8 +2041,8 @@ function makeDraggable(sheet){
   function begin(clientY,target){
     y0=clientY; dy=0; t0=Date.now();
     decided=false; dragging=false;
-    top0=sheet.scrollTop;
-    handle=!!(target.closest&&target.closest(".grab,h2"));
+    handle=!(target.closest&&target.closest(".sbody"))||!!(target.closest&&target.closest("h2"));
+    top0=handle?0:body.scrollTop;
   }
   function move(clientY){
     const d=clientY-y0;
@@ -2040,7 +2058,7 @@ function makeDraggable(sheet){
       scrim.style.opacity=String(Math.max(0,1-dy/420));
       return true;
     }
-    if(handle||top0<=0){ sheet.scrollTop=Math.max(0,top0-d); return true; }
+    if(!handle&&top0<=0){ body.scrollTop=Math.max(0,-d); return true; }
     return false;
   }
   function end(){
