@@ -490,6 +490,47 @@ p.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
 .throw .txt{flex:1;color:var(--muted);font-size:12px}
 .throw input{width:88px;flex:0 0 auto;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
 
+/* ---------- editor de estados ---------- */
+.strow{border:1px solid var(--line);border-radius:12px;background:var(--up);margin-bottom:8px;overflow:hidden}
+.sthead{display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:12px 13px}
+.sthead .sw{width:14px;height:26px;border-radius:4px;flex:0 0 auto}
+.sthead .lb{flex:1;min-width:0;font-size:14px;font-weight:500;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.sthead .pv{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;flex:0 0 auto}
+.sthead .pv.pos{color:var(--acc)} .sthead .pv.neg{color:var(--alert)} .sthead .pv.zero{color:var(--dim)}
+.sthead .car{color:var(--dim);font-size:13px;transition:transform .18s;flex:0 0 auto}
+.strow.open .car{transform:rotate(90deg)}
+.stbody{display:none;padding:0 13px 13px}
+.strow.open .stbody{display:block}
+.stbody input.nmi{margin-bottom:10px}
+.stlab{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--dim);margin:2px 0 7px}
+/* dos filas alineadas por magnitud: cada negativo tiene su positivo debajo */
+.ptsgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
+.ptsgrid button{padding:11px 0;border:1px solid var(--line);border-radius:9px;background:var(--card);
+  font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--muted)}
+.ptsgrid .gap{}
+.ptsgrid button.zero.on{background:var(--v3);color:var(--v3t);border-color:transparent}
+.ptsgrid button.neg{color:#C9736D}
+.ptsgrid button.neg.on{background:var(--alert);color:#fff;border-color:transparent}
+.ptsgrid button.pos{color:var(--acc)}
+.ptsgrid button.pos.on{background:var(--acc);color:var(--onacc);border-color:transparent}
+.ptsrows{display:flex;justify-content:space-between;color:var(--dim);font-size:10px;margin:7px 2px 0}
+.stcolors{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.stcolors .sw{width:30px;height:30px;border-radius:50%;border:2px solid transparent;padding:0;position:relative}
+.stcolors .sw.on{border-color:var(--text)}
+.stcolors .sw.auto{background:var(--up);box-shadow:inset 0 0 0 1px var(--line);
+  display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted)}
+.stcolors .sw.custom{overflow:hidden;
+  background:conic-gradient(#F0554F,#F5A524,#3FC98A,#5AC8FA,#7B7BF5,#E86BB0,#F0554F)}
+.stcolors .sw.custom input{position:absolute;inset:0;opacity:0;width:100%;height:100%;padding:0;border:none}
+.stdel{width:100%;margin-top:11px;padding:10px;border-radius:9px;border:1px dashed var(--line);
+  color:var(--alert);font-size:13px}
+.opts .pv{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;flex:0 0 auto}
+.opts .pv.pos{color:var(--acc)} .opts .pv.neg{color:var(--alert)} .opts .pv.zero{color:var(--dim)}
+.lvlrow .n{background:var(--up);border-radius:999px;padding:1px 8px;font-size:11px;
+  font-weight:700;color:var(--muted);flex:0 0 auto}
+
 /* ---------- modal de confirmación propio ---------- */
 .askicon{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;
   font-size:22px;margin-bottom:14px;background:var(--up);color:var(--muted)}
@@ -622,7 +663,6 @@ nav button svg{display:block;width:23px;height:23px;margin:0 auto 5px;fill:none;
 
   <div class="pane on" id="p-rec-d">
     <p class="hint" id="dayBreakHint"></p>
-    <div id="dayBreak"></div>
     <div id="dayChgR"></div>
     <div id="dayPts"></div>
     <div id="daySleep"></div>
@@ -722,9 +762,8 @@ nav button svg{display:block;width:23px;height:23px;margin:0 auto 5px;fill:none;
     <div class="seg two" id="fKind"><button data-k="build">Más</button><button data-k="avoid">Menos</button></div></div>
   <div class="fld"><label>Color</label><div class="swatches" id="fColors"></div></div>
   <div class="fld"><label>¿Cómo lo mides?</label>
-    <div class="seg" id="fMode"><button data-m="time">Minutos</button>
-      <button data-m="rate">Yo califico</button><button data-m="bin">Sí o no</button></div></div>
-  <p class="hint" id="binNote" style="display:none;margin:-6px 0 15px">Solo dos estados: hecho o no hecho. Sin término medio.</p>
+    <div class="seg two" id="fMode"><button data-m="time">Minutos</button>
+      <button data-m="rate">Yo califico</button></div></div>
   <div id="timeFields">
     <div class="fld"><label for="fGoal" id="goalLabel">Meta diaria</label>
       <div class="goalwrap"><input id="fGoal" type="number" inputmode="numeric" min="0" step="5" value="60">
@@ -733,8 +772,10 @@ nav button svg{display:block;width:23px;height:23px;margin:0 auto 5px;fill:none;
       <div class="goalwrap"><input id="fStretch" type="number" inputmode="numeric" min="0" step="5" value="90">
         <span id="stretchWord">desde aquí, excelente</span></div></div>
   </div>
-  <div id="rateFields" style="display:none">
-    <div class="fld"><label>¿Qué significa cada nivel?</label><div id="fLabels"></div></div>
+  <div class="fld"><label id="stLabel">Estados posibles</label>
+    <p class="hint" id="stHint" style="margin:-2px 0 9px"></p>
+    <div id="stList"></div>
+    <button class="btn gh" id="addState" style="margin-top:8px">Agregar estado</button>
   </div>
   <div class="fld" id="fromField" style="display:none"><label for="fFrom">Este cambio aplica desde</label>
     <input id="fFrom" type="date">
@@ -906,94 +947,94 @@ function clock(sec){sec=Math.max(0,Math.floor(sec||0));return Math.floor(sec/60)
 /* ================= calificaciones ================= */
 const GRADE=["","Really bad","Bad","Meh","Good","Really good"];
 const SHORT=["","R.bad","Bad","Meh","Good","Great"];
-const DEF_LABELS={
-  build:["No lo hice","Apenas algo","Lo mínimo","Bien","Excelente"],
-  avoid:["Caí muchísimo","Caí","Justo en el límite","Casi nada","Nada"]
-};
-const defLabels=k=>DEF_LABELS[k].slice();
-/* Colores de identidad del hábito. No tocan la escala de calificación:
-   sirven para reconocerlo de un vistazo, nada más. */
 const PALETTE=["#5AC8FA","#7B7BF5","#E86BB0","#3FC98A","#F5A524","#FF7A5C"];
-
-/* ---- puntos ----
-   Cada nivel de un hábito tiene un valor pequeño; el peso del hábito lo
-   multiplica. Construir: el peor nivel es 0 y de ahí suma. Evitar: el mejor
-   nivel es 0 y de ahí resta. Así resistir no premia, pero caer sí castiga. */
+const nextColor=n=>PALETTE[n%PALETTE.length];
 const DEF_WEIGHT=10;
-const LV_BUILD=[0,1,2,3,4];      // índice 0 = Really bad
-const LV_AVOID=[-4,-3,-2,-1,0];  // índice 4 = Really good
-const levelsOf=s=>(s.levels&&s.levels.length)?s.levels:(s.kind==="build"?LV_BUILD:LV_AVOID);
-/* los de sí o no solo tienen sus dos extremos */
-const hasGrade=(s,g)=>s.mode==="bin"?(g===1||g===5):(g>=1&&g<=levelsOf(s).length);
 const weightOf=h=>(h.weight==null?DEF_WEIGHT:h.weight);
-function pointsOf(h,k){
-  const g=hGrade(h,k); if(g==null) return 0;
-  const lv=levelsOf(specAt(h,k));
-  return weightOf(h)*(lv[g-1]||0);
-}
-function dayPoints(k){
-  let p=0; db.habits.forEach(h=>{ p+=pointsOf(h,k); }); return p;
-}
-function bestPoints(){
-  let m=0; db.habits.forEach(h=>{
-    const lv=levelsOf(specAt(h,todayKey())), b=Math.max.apply(null,lv);
-    if(b>0) m+=weightOf(h)*b;
-  }); return m;
-}
-function worstPoints(){
-  let m=0; db.habits.forEach(h=>{
-    const lv=levelsOf(specAt(h,todayKey())), w=Math.min.apply(null,lv);
-    if(w<0) m+=weightOf(h)*w;
-  }); return m;
-}
-function autoThresholds(){
-  const m=bestPoints()||10;
-  return [Math.round(m*.25),Math.round(m*.5),Math.round(m*.7),Math.round(m*.9)];
-}
-function thresholds(){ return (Array.isArray(db.thresholds)&&db.thresholds.length===4)?db.thresholds:autoThresholds(); }
-function gradeFromPoints(p){
-  const t=thresholds();
-  if(p>=t[3]) return 5;
-  if(p>=t[2]) return 4;
-  if(p>=t[1]) return 3;
-  if(p>=t[0]) return 2;
-  return 1;
-}
 const fmtPts=p=>(p>0?"+":"")+Math.round(p);
 
-const nextColor=n=>PALETTE[n%PALETTE.length];
-
+/* ================= estados =================
+   Cada hábito define sus propios estados: nombre, puntos y color, ordenados de
+   peor a mejor. Construir y evitar ya solo agrupan visualmente; quién suma y
+   quién resta lo decide cada estado. Por eso "no caí" ahora puede premiar. */
+const PTS_MIN=-5, PTS_MAX=5, MIN_STATES=2, MAX_STATES=8;
+const sid=()=>"s"+Math.random().toString(36).slice(2,8);
+const ST_DEF={
+  time:{
+    build:{l:["No lo hice","Menos del mínimo","Justo el mínimo","Arriba del mínimo","Excelente"],p:[0,1,2,3,4]},
+    avoid:{l:["Muy por encima","Me pasé","Justo en el límite","Por debajo del límite","Nada"],p:[-5,-3,0,1,3]}
+  },
+  rate:{
+    build:{l:["No lo hice","Apenas algo","Lo mínimo","Bien","Excelente"],p:[0,1,2,3,4]},
+    avoid:{l:["Caí muchísimo","Caí","Justo en el límite","Casi nada","Nada"],p:[-5,-3,0,1,3]}
+  },
+  bin:{
+    build:{l:["No lo hice","Lo hice"],p:[0,3]},
+    avoid:{l:["Caí","No caí"],p:[-4,3]}
+  },
+  /* con lo que nace un hábito nuevo: lo más simple que sirve */
+  simple:{
+    build:{l:["No lo hice","Sí lo hice"],p:[-1,1]},
+    avoid:{l:["Caí","No caí"],p:[-1,1]}
+  }
+};
+function mkStates(kind,mode,labels){
+  const d=(ST_DEF[mode]||ST_DEF.rate)[kind==="avoid"?"avoid":"build"];
+  return d.p.map((p,i)=>({id:sid(),label:(labels&&labels[i])||d.l[i],pts:p,color:null}));
+}
+const statesOf=s=>(s&&Array.isArray(s.states)&&s.states.length>=MIN_STATES)
+  ? s.states : mkStates((s&&s.kind)||"build",(s&&s.mode)||"rate",null);
+/* posición normalizada a 1..5 para los colores y las rejillas */
+function isDefaultStates(states,kind,mode){
+  if(!Array.isArray(states)) return true;
+  return ["simple","rate","time","bin"].some(m=>{
+    const d=(ST_DEF[m]||{})[kind==="avoid"?"avoid":"build"];
+    if(!d||d.p.length!==states.length) return false;
+    return states.every((x,i)=>x.label===d.l[i]&&x.pts===d.p[i]&&!x.color);
+  });
+}
+function normGrade(s,i){
+  const n=statesOf(s).length;
+  return n<=1?3:Math.max(1,Math.min(5,Math.round(1+(i/(n-1))*4)));
+}
+function stateColor(s,i){
+  const x=statesOf(s)[i];
+  return (x&&x.color)?x.color:"var(--v"+normGrade(s,i)+")";
+}
 function defStretch(h){
   if(h.mode!=="time") return 0;
   const g=h.goal||0;
   return h.kind==="build"?(g>0?Math.round(g*1.5):30):(g>0?g*2:30);
 }
-function gradeOf(h,v){
-  v=v||0;
-  if(h.mode==="rate") return (v>=1&&v<=5)?v:null;
-  /* sí o no: solo los extremos. En los de construir, hacerlo es lo máximo;
-     en los de evitar, caer es lo mínimo. */
-  if(h.mode==="bin") return h.kind==="build" ? (v>=1?5:1) : (v>=1?1:5);
-  const goal=h.goal||0, st=(h.stretch!=null?h.stretch:defStretch(h));
-  if(h.kind==="build"){
-    if(v<=0) return 1;
-    if(goal<=0) return v>=st?5:4;
-    if(v<goal) return 2;
-    if(v===goal) return 3;
-    return v>=st?5:4;
+/* en los de minutos, los minutos deciden el estado */
+function timeIdx(s,v){
+  const goal=s.goal||0, st=(s.stretch!=null?s.stretch:defStretch(s));
+  if(s.kind==="build"){
+    if(v<=0) return 0;
+    if(goal<=0) return v>=st?4:3;
+    if(v<goal) return 1;
+    if(v===goal) return 2;
+    return v>=st?4:3;
   }
-  if(v<=0) return 5;
-  if(goal<=0) return v>st?1:2;
-  if(v<goal) return 4;
-  if(v===goal) return 3;
-  return v>st?1:2;
+  if(v<=0) return 4;
+  if(goal<=0) return v>st?0:1;
+  if(v<goal) return 3;
+  if(v===goal) return 2;
+  return v>st?0:1;
+}
+function minutesForIdx(s,i){
+  const g=s.goal||0, st=(s.stretch!=null?s.stretch:defStretch(s));
+  const arr=s.kind==="build"
+    ? [0,Math.max(1,g-1),g,g+1,Math.max(st,g+1)]
+    : [st+1,g+1,g,Math.max(0,g-1),0];
+  return arr[Math.max(0,Math.min(4,i))];
 }
 function goalText(h){
-  if(h.mode==="rate") return "tú lo calificas";
-  if(h.mode==="bin") return h.kind==="build"?"sí o no, lo hiciste o no":"sí o no, caíste o no";
-  return h.kind==="build"
-    ? "meta "+fmtMin(h.goal)+" · excelente desde "+fmtMin(h.stretch)
-    : "límite "+fmtMin(h.goal)+" · muy mal pasando "+fmtMin(h.stretch);
+  if(h.mode==="time")
+    return h.kind==="build"
+      ? "meta "+fmtMin(h.goal)+" · excelente desde "+fmtMin(h.stretch)
+      : "límite "+fmtMin(h.goal)+" · muy mal pasando "+fmtMin(h.stretch);
+  return statesOf(h).map(x=>x.label).join(" · ");
 }
 
 /* ================= datos ================= */
@@ -1036,19 +1077,44 @@ function migrate(p){
       const on=h.kind==="build"?5:1;
       Object.values(p.days).forEach(d=>{ if(d.entries[h.id]===1) d.entries[h.id]=on; });
     }
-    if(h.mode==="rate"&&!Array.isArray(h.labels)) h.labels=defLabels(h.kind);
     if(h.mode==="time"&&h.stretch==null) h.stretch=defStretch(h);
+    /* v7: de niveles fijos a estados propios. Los valores guardados eran
+       posiciones (1..5) o 0/1 en los de sí o no; aquí se traducen al id del
+       estado, que es estable aunque después reordenes o borres estados. */
+    if(!Array.isArray(h.states)||h.states.length<MIN_STATES){
+      const wasBin=h.mode==="bin";
+      h.states=mkStates(h.kind,wasBin?"bin":h.mode,wasBin?null:h.labels);
+      const st=h.states;
+      Object.values(p.days).forEach(d=>{
+        const v=d.entries[h.id];
+        if(v===undefined||v==="off") return;
+        if(wasBin){
+          const on=h.kind==="build"?1:0;   // hacerlo es el mejor; caer es el peor
+          d.entries[h.id]=st[v===1?on:(1-on)].id;
+        }else if(h.mode==="rate"&&typeof v==="number"){
+          const i=Math.max(0,Math.min(st.length-1,v-1));
+          d.entries[h.id]=st[i].id;
+        }
+      });
+      if(wasBin) h.mode="rate";
+      /* las reglas versionadas también traían el modo y las etiquetas viejas */
+      (h.rules||[]).forEach(r=>{
+        if(r.mode==="bin"||r.mode==="check") r.mode="rate";
+        delete r.labels;
+      });
+      delete h.labels; delete h.levels;
+    }
     if(!h.since) h.since=first;
     if(!h.color) h.color=nextColor(p.habits.indexOf(h));
     if(h.weight==null) h.weight=DEF_WEIGHT;
     if(!Array.isArray(h.levels)) h.levels=null;
     if(!Array.isArray(h.rules)||!h.rules.length)
-      h.rules=[{from:h.since,kind:h.kind,mode:h.mode,goal:h.goal,stretch:h.stretch,labels:h.labels||null}];
+      h.rules=[{from:h.since,kind:h.kind,mode:h.mode,goal:h.goal,stretch:h.stretch}];
     h.rules.sort((a,b)=>a.from<b.from?-1:1);
     const last=h.rules[h.rules.length-1];
-    h.kind=last.kind; h.mode=last.mode; h.goal=last.goal; h.stretch=last.stretch; h.labels=last.labels;
+    h.kind=last.kind; h.mode=last.mode; h.goal=last.goal; h.stretch=last.stretch;
   });
-  p.version=6;
+  p.version=7;
   return p;
 }
 function save(){ try{localStorage.setItem(KEY,JSON.stringify(db));}
@@ -1086,11 +1152,11 @@ function specAt(h,k){
   let r=null;
   for(let i=0;i<rs.length;i++){ if(rs[i].from<=k) r=rs[i]; else break; }
   r=r||rs[0];
-  const base={id:h.id,name:h.name,color:h.color||PALETTE[0],levels:h.levels||null,weight:weightOf(h)};
+  const base={id:h.id,name:h.name,color:h.color||PALETTE[0],states:h.states||null,weight:weightOf(h)};
   return r?{...base,kind:r.kind,mode:r.mode,goal:r.goal,stretch:r.stretch,labels:r.labels}
           :{...base,kind:h.kind,mode:h.mode,goal:h.goal,stretch:h.stretch,labels:h.labels};
 }
-const labelsFor=s=>defLabels(s.kind).map((x,i)=>(s.labels&&s.labels[i])||x);
+const labelsFor=s=>statesOf(s).map(x=>x.label);
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 /* mapa fecha -> cambios de meta que entraron en vigor ese día */
@@ -1129,20 +1195,63 @@ function diffText(prev,next){
   return out.length?out.join(" · "):"ajuste";
 }
 
-function hGrade(h,k){
+/* índice del estado en que quedó el hábito ese día, o null */
+function stateIdx(h,k){
   if(isOff(k,h.id)) return null;
-  const s=specAt(h,k);
-  if(hasVal(k,h.id)) return gradeOf(s,val(k,h.id));
-  if(!db.assume) return null;
-  if(k>todayKey()||k<hStart(h)) return null;
-  /* un hábito bueno que no registraste es un hábito que no hiciste, hoy también.
-     Uno que evitas no se supone: sin dato no hay juicio. */
-  return s.kind==="build"?1:null;
+  const e=entryOf(k,h.id), sp=specAt(h,k);
+  if(e===undefined){
+    if(!db.assume) return null;
+    if(k>todayKey()||k<hStart(h)) return null;
+    /* un hábito bueno sin registrar es un hábito que no hiciste; uno que
+       evitas no se supone, porque no hay dato */
+    return sp.kind==="build"?0:null;
+  }
+  if(sp.mode==="time") return timeIdx(sp,typeof e==="number"?e:0);
+  const st=statesOf(sp), i=st.findIndex(x=>x.id===e);
+  return i<0?null:i;
+}
+function hGrade(h,k){
+  const i=stateIdx(h,k);
+  return i==null?null:normGrade(specAt(h,k),i);
+}
+function stateOf(h,k){
+  const i=stateIdx(h,k);
+  return i==null?null:statesOf(specAt(h,k))[i];
 }
 function isAssumed(h,k){
   if(hasVal(k,h.id)||isOff(k,h.id)||!db.assume) return false;
   if(k>todayKey()||k<hStart(h)) return false;
   return specAt(h,k).kind==="build";
+}
+function pointsOf(h,k){
+  const st=stateOf(h,k);
+  return st?weightOf(h)*(st.pts||0):0;
+}
+function dayPoints(k){ let p=0; db.habits.forEach(h=>{p+=pointsOf(h,k);}); return p; }
+function bestPoints(){
+  let m=0; db.habits.forEach(h=>{
+    const b=Math.max.apply(null,statesOf(specAt(h,todayKey())).map(x=>x.pts));
+    if(b>0) m+=weightOf(h)*b;
+  }); return m;
+}
+function worstPoints(){
+  let m=0; db.habits.forEach(h=>{
+    const w=Math.min.apply(null,statesOf(specAt(h,todayKey())).map(x=>x.pts));
+    if(w<0) m+=weightOf(h)*w;
+  }); return m;
+}
+function autoThresholds(){
+  const m=bestPoints()||10;
+  return [Math.round(m*.25),Math.round(m*.5),Math.round(m*.7),Math.round(m*.9)];
+}
+function thresholds(){ return (Array.isArray(db.thresholds)&&db.thresholds.length===4)?db.thresholds:autoThresholds(); }
+function gradeFromPoints(p){
+  const t=thresholds();
+  if(p>=t[3]) return 5;
+  if(p>=t[2]) return 4;
+  if(p>=t[1]) return 3;
+  if(p>=t[0]) return 2;
+  return 1;
 }
 function autoGrade(k){
   if(!inRange(k)) return null;
@@ -1152,11 +1261,23 @@ function autoGrade(k){
 function dayGrade(k){ const d=rawDay(k); return (d&&d.verdict)||autoGrade(k); }
 function shownVal(s,has,v){
   if(s.mode==="time") return has?fmtMin(v):"—";
-  if(s.mode==="bin") return has?(v>=1?"Sí":"No"):"—";
   return null;
 }
-const meter=(g,asum)=>'<span class="bars'+(g?" g"+g:"")+(asum?" asum":"")+'"><i></i><i></i><i></i><i></i></span>';
-const gtag=(g,off,asum)=>'<span class="tagx'+(asum?" asum":"")+'">'+(off?"Libre":g?SHORT[g]:"—")+"</span>";
+function meter(h,k,asum){
+  const i=stateIdx(h,k);
+  if(i==null) return '<span class="bars"><i></i><i></i><i></i><i></i></span>';
+  const sp=specAt(h,k), c=stateColor(sp,i);
+  const on=Math.max(1,Math.round(normGrade(sp,i)/5*4));
+  let out='<span class="bars'+(asum?" asum":"")+'">';
+  for(let b=1;b<=4;b++) out+='<i'+(b<=on?' style="background:'+c+'"':'')+"></i>";
+  return out+"</span>";
+}
+function gtag(h,k,off,asum){
+  if(off) return '<span class="tagx">Libre</span>';
+  const i=stateIdx(h,k);
+  if(i==null) return '<span class="tagx">—</span>';
+  return '<span class="tagx'+(asum?" asum":"")+'">'+SHORT[normGrade(specAt(h,k),i)]+"</span>";
+}
 const trOf=id=>db.trackers.find(t=>t.id===id);
 const tagOf=(t,id)=>t&&(t.tags||[]).find(x=>x.id===id);
 
@@ -1205,6 +1326,15 @@ let trForm={editing:null,tags:[]};
 let mForm={tr:null,tag:null};
 const LIMIT=3;
 let sparkPage=0, statPage=0, stripPage=0, setPage=0;
+let ptsPage=0, chgPage=0, notePage=0, momPage=0, rulePage=0, wPage=0, allPage={build:0,avoid:0};
+/* toda lista que pueda crecer sin límite se pagina */
+function paged(host,items,per,page,onPage,render){
+  const pages=Math.max(1,Math.ceil(items.length/per));
+  const p=Math.min(Math.max(0,page),pages-1);
+  if(pages>1) host.appendChild(pager(pages,p,onPage,per,items.length));
+  items.slice(p*per,(p+1)*per).forEach(render);
+  return p;
+}
 function pager(pages,cur,go,per,total){
   const w=document.createElement("div"); w.className="pager";
   for(let i=0;i<pages;i++){
@@ -1220,6 +1350,7 @@ let toastT;
 function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("on");
   clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("on"),2000);}
 function setDay(k){ if(k>todayKey()) return; cursor=k; openPad=null;
+  ptsPage=0; notePage=0; momPage=0; allPage={build:0,avoid:0};
   const d=parseKey(k); mCur={y:d.getFullYear(),m:d.getMonth()}; renderAll(); }
 const kindOf=h=>specAt(h,cursor).kind;
 
@@ -1330,57 +1461,50 @@ function habitRow(h,ctx){
   const frag=document.createDocumentFragment();
   const s=specAt(h,cursor), off=isOff(cursor,h.id);
   const has=hasVal(cursor,h.id)&&!off, v=val(cursor,h.id);
-  const g=hGrade(h,cursor), asum=isAssumed(h,cursor), labs=labelsFor(s);
+  const asum=isAssumed(h,cursor), stt=stateOf(h,cursor);
   const row=document.createElement("button"); row.className="row";
   row.style.setProperty("--hc",s.color);
   row.innerHTML='<span class="nm"><b></b><small></small></span>'
     +(()=>{const sv=shownVal(s,has,v);return sv?'<span class="v'+(has?"":" na")+'">'+sv+"</span>":"";})()
-    +(off?'<span class="bars"><i></i><i></i><i></i><i></i></span>':meter(g,asum))
-    +ptsTag(h,off)+gtag(g,off,asum);
+    +(off?'<span class="bars"><i></i><i></i><i></i><i></i></span>':meter(h,cursor,asum))
+    +ptsTag(h,off)+gtag(h,cursor,off,asum);
   row.querySelector("b").textContent=h.name;
   row.querySelector("small").textContent=
-    off?"día libre, no entra al promedio"
+    off?"día libre, no cuenta"
     :asum?"no lo registraste, se asume"
-    :(s.mode==="rate"&&has?labs[g-1]:goalText(s));
+    :(s.mode==="rate"&&stt?stt.label:goalText(s));
   frag.appendChild(row);
-  frag.appendChild(padFor(h,s,off,has,v,labs,ctx));
+  frag.appendChild(padFor(h,s,off,has,v,ctx));
   row.onclick=()=>{ ctx.set(ctx.get()===h.id?null:h.id); ctx.redraw(); };
   return frag;
 }
 
-function padFor(h,s,off,has,v,labs,ctx){
+function padFor(h,s,off,has,v,ctx){
   const p=document.createElement("div");
   p.className="pad"+(ctx.get()===h.id?" open":"");
-  if(s.mode==="bin"){
+  if(s.mode==="rate"){
     const box=document.createElement("div"); box.className="opts";
-    const yes=s.kind==="build"?"Sí, lo hice":"Sí, caí";
-    const no =s.kind==="build"?"No lo hice":"No caí";
-    [[1,yes],[0,no]].forEach(([n,label])=>{
-      const grade=gradeOf(s,n);
-      const b=document.createElement("button");
-      b.className=(has&&v===n)?"on":"";
-      b.innerHTML='<span class="sw o'+grade+'"></span><span class="lv">'+SHORT[grade]+'</span><span class="lb"></span>';
-      b.querySelector(".lb").textContent=label;
-      b.onclick=e=>{e.stopPropagation();setVal(h.id,(has&&v===n)?null:n);};
-      box.appendChild(b);
-    });
-    p.appendChild(box);
-  }else if(s.mode==="rate"){
-    const box=document.createElement("div"); box.className="opts";
-    [1,2,3,4,5].forEach(n=>{
-      const b=document.createElement("button");
-      b.className=(has&&v===n)?"on":"";
-      b.innerHTML='<span class="sw o'+n+'"></span><span class="lv">'+SHORT[n]+'</span><span class="lb"></span>';
-      b.querySelector(".lb").textContent=labs[n-1];
-      b.onclick=e=>{e.stopPropagation();setVal(h.id,(has&&v===n)?null:n);};
-      box.appendChild(b);
+    const cur=entryOf(cursor,h.id);
+    statesOf(s).forEach((x,i)=>{
+      const b2=document.createElement("button");
+      b2.className=(cur===x.id)?"on":"";
+      b2.innerHTML='<span class="sw"></span><span class="lv"></span><span class="lb"></span>'
+        +'<span class="pv"></span>';
+      b2.querySelector(".sw").style.background=stateColor(s,i);
+      b2.querySelector(".lv").textContent=SHORT[normGrade(s,i)];
+      b2.querySelector(".lb").textContent=x.label;
+      const pv=b2.querySelector(".pv");
+      pv.textContent=fmtPts(weightOf(h)*x.pts);
+      pv.className="pv "+(x.pts>0?"pos":x.pts<0?"neg":"zero");
+      b2.onclick=e=>{e.stopPropagation();setVal(h.id,cur===x.id?null:x.id);};
+      box.appendChild(b2);
     });
     p.appendChild(box);
   }else{
     const q=document.createElement("div"); q.className="qr";
     [5,15,30,60].forEach(n=>{
-      const b=document.createElement("button"); b.textContent="+"+(n<60?n+"m":"1h");
-      b.onclick=e=>{e.stopPropagation();setVal(h.id,v+n);}; q.appendChild(b);
+      const b2=document.createElement("button"); b2.textContent="+"+(n<60?n+"m":"1h");
+      b2.onclick=e=>{e.stopPropagation();setVal(h.id,v+n);}; q.appendChild(b2);
     });
     const inp=document.createElement("input");
     inp.type="number";inp.inputMode="numeric";inp.min="0";inp.value=has?v:"";inp.placeholder="min";
@@ -1401,13 +1525,17 @@ function padFor(h,s,off,has,v,labs,ctx){
   return p;
 }
 /* ---- marcar todo un grupo de un jalón ---- */
-function valueForGrade(s,g){
-  if(s.mode==="rate") return g;
-  if(s.mode==="bin") return s.kind==="build" ? (g>=4?1:0) : (g>=4?0:1);
-  const goal=s.goal||0, st=s.stretch||0;
-  if(g===3&&goal>0) return goal;                 // justo en la meta o el límite
-  if(s.kind==="build") return g<=1?0:Math.max(st,goal+1);
-  return g>=5?0:st+1;
+/* "mejor", "peor" y "neutral" existen en cualquier hábito, sin importar
+   cuántos estados tenga ni cómo los haya numerado */
+function idxFor(s,which){
+  const st=statesOf(s);
+  if(which==="best"){ let b=0; st.forEach((x,i)=>{ if(x.pts>st[b].pts) b=i; }); return b; }
+  if(which==="worst"){ let b=0; st.forEach((x,i)=>{ if(x.pts<st[b].pts) b=i; }); return b; }
+  const z=st.findIndex(x=>x.pts===0);
+  return z<0?null:z;
+}
+function storeFor(s,i){
+  return s.mode==="time"?minutesForIdx(s,i):statesOf(s)[i].id;
 }
 function setVal(id,n){
   const d=day(cursor);
@@ -1440,7 +1568,8 @@ function renderAllSheet(){
     }
     body.appendChild(head);
     const grp=document.createElement("div"); grp.className="grp";
-    hs.forEach(h=>grp.appendChild(habitRow(h,ctx)));
+    allPage[kind]=paged(body,hs,8,allPage[kind]||0,n=>{allPage[kind]=n;renderAllSheet();},
+      h=>grp.appendChild(habitRow(h,ctx)));
     body.appendChild(grp);
   });
 }
@@ -1449,36 +1578,42 @@ function renderAllSheet(){
 function openBulk(kind,hs){
   const host=$("#bulkBody"); host.innerHTML="";
   $("#bulkTitle").textContent="Todos en… ("+(kind==="build"?"Construyendo":"Evitando")+")";
-  $("#bulkLead").textContent=hs.length+" hábitos. Se aplica a todos menos los de día libre.";
-  const opts=[[5,"Really good"],[4,"Good"],[3,"Meh"],[2,"Bad"],[1,"Really bad"],[null,"Sin calificar"]];
-  opts.forEach(([g,label])=>{
+  $("#bulkLead").textContent=hs.length+" hábitos. Cada uno toma su propio estado, no un número igual para todos.";
+  const opts=[["best","Su mejor estado","o5"],["zero","Su estado neutral (0 puntos)","o3"],
+              ["worst","Su peor estado","o1"],[null,"Sin calificar","onone"]];
+  opts.forEach(([which,label,cls])=>{
+    const n=which===null?hs.length:hs.filter(h=>idxFor(specAt(h,cursor),which)!=null).length;
+    if(!n) return;
     const b=document.createElement("button"); b.className="lvlrow";
-    b.innerHTML='<span class="sw '+(g?"o"+g:"onone")+'"></span><span class="lb"></span><span class="go">›</span>';
+    b.innerHTML='<span class="sw '+cls+'"></span><span class="lb"></span>'
+      +'<span class="n">'+n+'</span><span class="go">›</span>';
     b.querySelector(".lb").textContent=label;
-    b.onclick=()=>{ closeBulk(); bulkSet(g,hs,kind); };
+    b.onclick=()=>{ closeBulk(); bulkSet(which,hs,kind); };
     host.appendChild(b);
   });
   openSheetEl("#bulkSheet");
 }
 function closeBulk(){ closeSheet("#bulkSheet"); }
-async function bulkSet(g,hs,kind){
+async function bulkSet(which,hs,kind){
   let targets=hs.filter(h=>!isOff(cursor,h.id));
-  const skipped=g?targets.filter(h=>!hasGrade(specAt(h,cursor),g)).length:0;
-  if(g) targets=targets.filter(h=>hasGrade(specAt(h,cursor),g));
-  if(!targets.length){ toast("No hay a cuáles aplicarlo"); return; }
-  const label=g?GRADE[g]:"sin calificar";
+  const skipped=which?targets.filter(h=>idxFor(specAt(h,cursor),which)==null).length:0;
+  if(which) targets=targets.filter(h=>idxFor(specAt(h,cursor),which)!=null);
+  if(!targets.length){ toast("Ninguno tiene ese estado"); return; }
+  const label={best:"su mejor estado",worst:"su peor estado",zero:"su estado neutral"}[which]||"sin calificar";
   const done=targets.filter(h=>hasVal(cursor,h.id)).length;
   if(!await ask({danger:done>0,title:"Todos en "+label,
     text:targets.length+" hábitos de "+(kind==="build"?"Construyendo":"Evitando")+"."
-      +(done?"\n"+done+" ya tenían un valor y se van a sobrescribir.":""),
+      +(done?"\n"+done+" ya tenían un valor y se van a sobrescribir.":"")
+      +(skipped?"\n"+skipped+" no tienen ese estado y no se tocan.":""),
     ok:"Mantén para aplicar"})) return;
   const d=day(cursor);
   targets.forEach(h=>{
-    if(g===null) delete d.entries[h.id];
-    else d.entries[h.id]=valueForGrade(specAt(h,cursor),g);
+    const sp=specAt(h,cursor);
+    if(which===null) delete d.entries[h.id];
+    else d.entries[h.id]=storeFor(sp,idxFor(sp,which));
   });
   _start=null; save(); renderBar(); renderToday(); renderRecord(); renderAllSheet();
-  toast(targets.length+" en "+label+(skipped?" · "+skipped+" sin ese nivel":""));
+  toast(targets.length+" en "+label+(skipped?" · "+skipped+" sin ese estado":""));
 }
 
 /* ================= sueño ================= */
@@ -1536,7 +1671,7 @@ function renderNoteList(host,k){
   if(!arr.length) return;
   const kk=document.createElement("div"); kk.className="shk"; kk.textContent="Guardado este día";
   host.appendChild(kk);
-  arr.forEach(n=>{
+  notePage=paged(host,arr,8,notePage,n=>{notePage=n;renderNotes();renderRecord();},n=>{
     const t=new Date(n.at);
     const el=document.createElement("div"); el.className="saved";
     el.dataset.vn=n.id;
@@ -1730,7 +1865,8 @@ function momentTimeline(k){
 }
 function momentList(k){
   const wrap=document.createElement("div");
-  checksOf(k).slice().sort((a,b)=>a.at-b.at).forEach(c=>{
+  const arr=checksOf(k).slice().sort((a,b)=>a.at-b.at);
+  momPage=paged(wrap,arr,8,momPage,n=>{momPage=n;renderToday();renderRecord();},c=>{
     const t=trOf(c.tr), tg=tagOf(t,c.tag), d=new Date(c.at);
     const el=document.createElement("div"); el.className="mrec";
     el.innerHTML='<span class="hh">'+pad(d.getHours())+":"+pad(d.getMinutes())+"</span>"
@@ -2163,18 +2299,21 @@ function dayChgHTML(k){
 function renderChanges(){
   const host=$("#changes"); host.innerHTML="";
   const m=chgMap(), keys=Object.keys(m).sort().reverse();
-  if(!keys.length){ host.innerHTML='<p class="hint">Todavía no has cambiado ninguna meta. Edita un hábito y elige desde qué día aplica.</p>'; return; }
-  keys.forEach(k=>{
+  const flat=[];
+  keys.forEach(k=>m[k].forEach(c=>flat.push([k,c])));
+  if(!flat.length){
+    host.innerHTML='<p class="hint">Todavía no has cambiado ninguna meta. Edita un hábito y elige desde qué día aplica.</p>';
+    return;
+  }
+  chgPage=paged(host,flat,8,chgPage,n=>{chgPage=n;renderChanges();},([k,c])=>{
     const d=parseKey(k);
-    m[k].forEach(c=>{
-      const el=document.createElement("div"); el.className="clog";
-      el.innerHTML='<button class="when"></button><span class="what"><b></b><i></i></span>';
-      el.querySelector(".when").textContent=d.getDate()+" "+MES3[d.getMonth()]+" "+String(d.getFullYear()).slice(2);
-      el.querySelector(".when").onclick=()=>setDay(k);
-      el.querySelector("b").textContent=c.h.name;
-      el.querySelector("i").textContent=diffText(c.prev,c.next);
-      host.appendChild(el);
-    });
+    const el=document.createElement("div"); el.className="clog";
+    el.innerHTML='<button class="when"></button><span class="what"><b></b><i></i></span>';
+    el.querySelector(".when").textContent=d.getDate()+" "+MES3[d.getMonth()]+" "+String(d.getFullYear()).slice(2);
+    el.querySelector(".when").onclick=()=>setDay(k);
+    el.querySelector("b").textContent=c.h.name;
+    el.querySelector("i").textContent=diffText(c.prev,c.next);
+    host.appendChild(el);
   });
 }
 
@@ -2183,42 +2322,13 @@ function renderRecord(){
   const d=parseKey(cursor);
   $("#dayBreakHint").textContent=cap(DIAS[d.getDay()])+" "+d.getDate()+" de "+MESES[d.getMonth()]
     +(logged(cursor)?"":cursor<todayKey()?" · no lo registraste":" · sin registrar todavía");
-  const bk=$("#dayBreak"); bk.innerHTML="";
-  if(!db.habits.length){ bk.innerHTML='<p class="hint">Agrega un hábito primero.</p>'; }
-  else{
-    const grp=document.createElement("div"); grp.className="grp";
-    const shown=db.habits.slice(0,4);
-    shown.forEach(h=>{
-      const s=specAt(h,cursor), off=isOff(cursor,h.id);
-      const has=hasVal(cursor,h.id)&&!off, v=val(cursor,h.id);
-      const g=hGrade(h,cursor), asum=isAssumed(h,cursor), labs=labelsFor(s);
-      const r=document.createElement("button"); r.className="row";
-      r.style.setProperty("--hc",s.color);
-      r.innerHTML='<span class="nm"><b></b><small></small></span>'
-        +(()=>{const sv=shownVal(s,has,v);return sv?'<span class="v'+(has?"":" na")+'">'+sv+"</span>":"";})()
-        +(off?'<span class="bars"><i></i><i></i><i></i><i></i></span>':meter(g,asum))
-        +ptsTag(h,off)+gtag(g,off,asum);
-      r.querySelector("b").textContent=h.name;
-      r.querySelector("small").textContent=
-        off?"día libre":asum?"no lo registraste, se asume":(s.mode==="rate"&&has?labs[g-1]:goalText(s));
-      r.onclick=()=>openAll("record");
-      grp.appendChild(r);
-    });
-    if(db.habits.length>shown.length){
-      const b=document.createElement("button"); b.className="more";
-      b.innerHTML='Ver los '+db.habits.length+' de este día <span class="n">+'+(db.habits.length-shown.length)+"</span>";
-      b.onclick=()=>openAll("record");
-      grp.appendChild(b);
-    }
-    bk.appendChild(grp);
-  }
   $("#dayChgR").innerHTML=dayChgHTML(cursor);
   const pc=$("#dayPts"); pc.innerHTML="";
   if(db.habits.length){
     const total=dayPoints(cursor), dg=dayGrade(cursor);
     const c=document.createElement("div"); c.className="card"; c.style.marginTop="14px";
     c.innerHTML='<div class="k">Puntos de ese día</div>';
-    db.habits.forEach(hh=>{
+    ptsPage=paged(c,db.habits,8,ptsPage,n=>{ptsPage=n;renderRecord();},hh=>{
       const p=pointsOf(hh,cursor), off=isOff(cursor,hh.id);
       const r=document.createElement("div"); r.className="ptsrow";
       r.innerHTML='<span class="hdot"></span><span class="nm"></span>'
@@ -2377,10 +2487,12 @@ $("#assumeSeg").onclick=e=>{
 };
 function seed(){
   let ci=0;
-  const mk=o=>({id:uid(),since:todayKey(),color:nextColor(ci++),weight:DEF_WEIGHT,levels:null,
+  const mk=o=>({id:uid(),since:todayKey(),color:nextColor(ci++),weight:DEF_WEIGHT,
+    states:o.states||mkStates(o.kind,o.mode,null),
     rules:[{from:todayKey(),kind:o.kind,mode:o.mode,goal:o.goal,stretch:o.stretch,labels:o.labels}],...o});
   const t=(name,kind,goal)=>mk({name,kind,mode:"time",goal,stretch:defStretch({kind,mode:"time",goal}),labels:null});
-  const r=(name,kind)=>mk({name,kind,mode:"rate",goal:0,stretch:0,labels:defLabels(kind)});
+  const r=(name,kind)=>mk({name,kind,mode:"rate",goal:0,stretch:0,states:mkStates(kind,"rate",null)});
+  const s2=(name,kind)=>mk({name,kind,mode:"rate",goal:0,stretch:0,states:mkStates(kind,"simple",null)});
   db.habits=[t("Gimnasio","build",60),t("Leer","build",15),t("TikTok","avoid",30),r("Comer bien","build")];
   _start=null; save(); renderAll(); toast("Cuatro hábitos listos, edítalos cuando quieras");
 }
@@ -2655,15 +2767,16 @@ function makeDraggable(sheet,sel){
 SHEETS.forEach(s=>{ if($(s)) makeDraggable($(s),s); });
 
 function openSheet(h){
-  form={kind:h?specAt(h,todayKey()).kind:"build",mode:h?specAt(h,todayKey()).mode:"time",
-        editing:h?h.id:null, color:h?(h.color||PALETTE[0]):nextColor(db.habits.length)};
+  const sp0=h?specAt(h,todayKey()):null;
+  form={kind:sp0?sp0.kind:"build",mode:sp0?sp0.mode:"rate",
+        editing:h?h.id:null, color:h?(h.color||PALETTE[0]):nextColor(db.habits.length),
+        states:h?statesOf(sp0).map(x=>({...x})):mkStates("build","simple",null)};
   const s=h?specAt(h,todayKey()):null;
   $("#sheetTitle").textContent=h?h.name:"Agregar hábito";
   $("#fName").value=h?h.name:"";
   $("#fGoal").value=s&&s.mode==="time"?s.goal:60;
   $("#fStretch").value=s&&s.mode==="time"?s.stretch:90;
-  renderLabelInputs(s?s.labels:null);
-  renderColors();
+  renderColors(); renderStates();
   $("#fromField").style.display=h?"":"none";
   $("#delHabit").style.display=h?"":"none";
   $("#fFrom").max=todayKey(); $("#fFrom").value=todayKey();
@@ -2676,7 +2789,9 @@ function renderRuleHist(h){
   if(!h||!h.rules||h.rules.length<2) return;
   const t=document.createElement("div"); t.className="shk"; t.textContent="Metas que ha tenido";
   host.appendChild(t);
-  h.rules.forEach((r,i)=>{
+  const idx=h.rules.map((r,i)=>i);
+  rulePage=paged(host,idx,6,rulePage,n=>{rulePage=n;renderRuleHist(h);},i=>{
+    const r=h.rules[i];
     const d=parseKey(r.from);
     const row=document.createElement("div"); row.className="rulerow";
     row.innerHTML='<span class="d"></span><span class="t"></span>'
@@ -2689,7 +2804,7 @@ function renderRuleHist(h){
           +" se volverán a calificar con la meta anterior.",ok:"Mantén para quitar"})) return;
       h.rules.splice(i,1);
       const last=h.rules[h.rules.length-1];
-      Object.assign(h,{kind:last.kind,mode:last.mode,goal:last.goal,stretch:last.stretch,labels:last.labels});
+      Object.assign(h,{kind:last.kind,mode:last.mode,goal:last.goal,stretch:last.stretch});
       _chg=null; save(); renderRuleHist(h); renderAll(); toast("Cambio quitado");
     };
     host.appendChild(row);
@@ -2715,62 +2830,146 @@ function renderColors(){
   i.onchange=()=>{ form.color=i.value; renderColors(); };
   host.appendChild(lab);
 }
-function renderLabelInputs(vals){
-  const host=$("#fLabels"); host.innerHTML="";
-  const d=defLabels(form.kind);
-  for(let n=1;n<=5;n++){
-    const r=document.createElement("div"); r.className="lblrow";
-    r.innerHTML='<span class="lv c'+n+'">'+SHORT[n]+'</span><input maxlength="32">';
-    const i=r.querySelector("input");
-    i.placeholder=d[n-1];
-    i.value=(vals&&vals[n-1]&&vals[n-1]!==d[n-1])?vals[n-1]:"";
-    i.oninput=drawPreview;
-    host.appendChild(r);
-  }
+let stOpen=-1;
+function renderStates(){
+  const host=$("#stList"); if(!host) return;
+  const time=form.mode==="time";
+  $("#stLabel").textContent=time?"Los cinco estados y sus puntos":"Estados posibles";
+  $("#stHint").textContent=time
+    ? "Los minutos deciden en cuál caes. Los nombres son fijos, pero los puntos y el color son tuyos."
+    : "De peor a mejor. Toca uno para cambiar sus puntos, su color o borrarlo.";
+  $("#addState").style.display=(!time&&form.states.length<MAX_STATES)?"":"none";
+  host.innerHTML="";
+  const fake={kind:form.kind,mode:form.mode,states:form.states};
+  form.states.forEach((x,i)=>{
+    const row=document.createElement("div");
+    row.className="strow"+(stOpen===i?" open":"");
+    row.innerHTML='<button class="sthead"><span class="sw"></span><span class="lb"></span>'
+      +'<span class="pv"></span><span class="car">›</span></button>'
+      +'<div class="stbody"></div>';
+    row.querySelector(".sw").style.background=stateColor(fake,i);
+    row.querySelector(".lb").textContent=x.label||"(sin nombre)";
+    const pv=row.querySelector(".pv");
+    pv.textContent=fmtPts(x.pts); pv.className="pv "+(x.pts>0?"pos":x.pts<0?"neg":"zero");
+    row.querySelector(".sthead").onclick=()=>{ stOpen=(stOpen===i?-1:i); renderStates(); };
+
+    const body=row.querySelector(".stbody");
+    if(!time){
+      const nm=document.createElement("input");
+      nm.className="nmi"; nm.maxLength=32; nm.value=x.label; nm.placeholder="Nombre del estado";
+      nm.oninput=()=>{ x.label=nm.value; row.querySelector(".lb").textContent=nm.value||"(sin nombre)"; drawPreview(); };
+      body.appendChild(nm);
+    }
+    const pl=document.createElement("div"); pl.className="stlab"; pl.textContent="Puntos";
+    body.appendChild(pl);
+    /* arriba el 0 y los negativos, abajo los positivos, cada uno bajo su par */
+    const grid=document.createElement("div"); grid.className="ptsgrid";
+    const cell=p=>{
+      const b=document.createElement("button");
+      b.textContent=p>0?"+"+p:String(p);
+      b.className=(p<0?"neg":p>0?"pos":"zero")+(x.pts===p?" on":"");
+      b.setAttribute("aria-label",p+" puntos");
+      b.onclick=()=>{ x.pts=p; renderStates(); };
+      return b;
+    };
+    grid.appendChild(cell(0));
+    for(let p=-1;p>=PTS_MIN;p--) grid.appendChild(cell(p));
+    const gap=document.createElement("span"); gap.className="gap"; grid.appendChild(gap);
+    for(let p=1;p<=PTS_MAX;p++) grid.appendChild(cell(p));
+    body.appendChild(grid);
+    const rows=document.createElement("div"); rows.className="ptsrows";
+    rows.innerHTML="<span>neutral</span><span>quita más →</span>";
+    body.appendChild(rows);
+
+    const cl=document.createElement("div"); cl.className="stlab"; cl.style.marginTop="12px";
+    cl.textContent="Color"; body.appendChild(cl);
+    const cols=document.createElement("div"); cols.className="stcolors";
+    const auto=document.createElement("button");
+    auto.className="sw auto"+(x.color?"":" on"); auto.textContent="auto";
+    auto.onclick=()=>{ x.color=null; renderStates(); };
+    cols.appendChild(auto);
+    PALETTE.forEach(c=>{
+      const b=document.createElement("button");
+      b.className="sw"+(x.color===c?" on":""); b.style.background=c;
+      b.onclick=()=>{ x.color=c; renderStates(); };
+      cols.appendChild(b);
+    });
+    const lab=document.createElement("label");
+    const custom=x.color&&!PALETTE.includes(x.color);
+    lab.className="sw custom"+(custom?" on":"");
+    if(custom) lab.style.background=x.color;
+    lab.innerHTML='<input type="color" aria-label="Otro color">';
+    const ci=lab.querySelector("input");
+    ci.value=x.color||"#888888";
+    ci.onchange=()=>{ x.color=ci.value; renderStates(); };
+    cols.appendChild(lab);
+    body.appendChild(cols);
+
+    if(!time&&form.states.length>MIN_STATES){
+      const del=document.createElement("button");
+      del.className="stdel"; del.textContent="Eliminar este estado";
+      del.onclick=async()=>{
+        if(!await ask({danger:1,title:"Eliminar «"+(x.label||"sin nombre")+"»",
+          text:"Los días en que habías marcado este estado quedarán sin calificar.",
+          ok:"Mantén para eliminar"})) return;
+        form.states.splice(i,1); stOpen=-1; renderStates(); drawPreview();
+      };
+      body.appendChild(del);
+    }
+    host.appendChild(row);
+  });
+  drawPreview();
 }
-const readLabels=()=>{
-  const d=defLabels(form.kind);
-  return [...$("#fLabels").querySelectorAll("input")].map((i,x)=>i.value.trim()||d[x]);
+$("#addState").onclick=()=>{
+  if(form.states.length>=MAX_STATES){ toast("Máximo "+MAX_STATES+" estados"); return; }
+  form.states.push({id:sid(),label:"",pts:0,color:null});
+  stOpen=form.states.length-1; renderStates();
+  setTimeout(()=>{ const i=$("#stList .strow.open input.nmi"); if(i) i.focus(); },60);
 };
 function syncSheet(resetStretch){
   document.querySelectorAll("#fKind button").forEach(b=>b.classList.toggle("on",b.dataset.k===form.kind));
   document.querySelectorAll("#fMode button").forEach(b=>b.classList.toggle("on",b.dataset.m===form.mode));
   $("#timeFields").style.display=form.mode==="time"?"":"none";
-  $("#rateFields").style.display=form.mode==="rate"?"":"none";
-  $("#binNote").style.display=form.mode==="bin"?"":"none";
   const build=form.kind==="build";
   $("#goalLabel").textContent=build?"Meta diaria (llegar justo aquí es Meh)":"Límite diario (llegar justo aquí es Meh)";
   $("#goalWord").textContent=build?"minutos, mínimo":"minutos, máximo";
   $("#stretchLabel").textContent=build?"Umbral de Really good":"Umbral de Really bad";
   $("#stretchWord").textContent=build?"desde aquí, excelente":"pasando esto, muy mal";
   if(resetStretch&&!form.editing) $("#fStretch").value=defStretch({kind:form.kind,mode:"time",goal:+$("#fGoal").value||0});
-  const cur=[...$("#fLabels").querySelectorAll("input")].map(i=>i.value);
-  renderLabelInputs(cur.some(Boolean)?cur:null);
-  drawPreview();
+  renderStates();
 }
 function drawPreview(){
   const p=$("#preview");
-  if(form.mode==="bin"){
-    const b=form.kind==="build";
-    p.innerHTML='<div><span>'+(b?"Lo hice":"No caí")+'</span><span class="lv c5">'+SHORT[5]+"</span></div>"
-      +'<div><span>'+(b?"No lo hice":"Caí")+'</span><span class="lv c1">'+SHORT[1]+"</span></div>";
-    return;
-  }
-  if(form.mode==="rate"){
-    const labs=readLabels();
-    p.innerHTML=[1,2,3,4,5].map(n=>'<div><span>'+esc(labs[n-1])+'</span><span class="lv c'+n+'">'+SHORT[n]+"</span></div>").join("");
-    return;
-  }
-  const h={kind:form.kind,mode:"time",goal:Math.max(0,+$("#fGoal").value||0),stretch:Math.max(0,+$("#fStretch").value||0)};
-  const G=h.goal,S=h.stretch, mid=Math.max(G+1,Math.min(S-1,G+Math.round((S-G)/2)));
-  const pts=h.kind==="build"?[0,Math.max(1,Math.round(G/2)),G,mid,S]:[0,Math.max(1,Math.round(G/2)),G,mid,S+10];
-  const seen=new Set();
-  p.innerHTML=pts.filter(v=>{if(v<0||seen.has(v))return false;seen.add(v);return true;})
-    .map(v=>{const g=gradeOf(h,v);
-      return '<div><span>'+fmtMin(v)+'</span><span class="lv c'+g+'">'+SHORT[g]+"</span></div>";}).join("");
+  const fake={kind:form.kind,mode:form.mode,states:form.states,
+    goal:Math.max(0,+$("#fGoal").value||0),stretch:Math.max(0,+$("#fStretch").value||0)};
+  const w=form.editing?weightOf(db.habits.find(x=>x.id===form.editing)):DEF_WEIGHT;
+  p.innerHTML=form.states.map((x,i)=>{
+    const left=form.mode==="time"?fmtMin(minutesForIdx(fake,i)):(x.label||"(sin nombre)");
+    const pts=w*x.pts;
+    return '<div><span>'+esc(left)+'</span><span class="lv" style="color:'
+      +stateColor(fake,i)+'">'+esc(x.label&&form.mode==="time"?x.label:"")+"</span>"
+      +'<span class="lv '+(pts>0?"c5":pts<0?"c1":"c3")+'">'+fmtPts(pts)+"</span></div>";
+  }).join("");
 }
-$("#fKind").onclick=e=>{const b=e.target.closest("button");if(!b)return;form.kind=b.dataset.k;syncSheet(true);};
-$("#fMode").onclick=e=>{const b=e.target.closest("button");if(!b)return;form.mode=b.dataset.m;syncSheet(true);};
+/* cambiar de tipo no debe borrar estados que ya tocaste; cambiar de modo sí,
+   porque los de minutos son cinco por estructura */
+function reseed(force){
+  const prevKind=form.states.length===2?"simple":(form.mode==="time"?"time":"rate");
+  if(force||isDefaultStates(form.states,form.prevKind||form.kind,prevKind)){
+    form.states=mkStates(form.kind,form.mode==="time"?"time":(form.states.length===2?"simple":"rate"),null);
+  }
+  stOpen=-1;
+}
+$("#fKind").onclick=e=>{
+  const b=e.target.closest("button"); if(!b||b.dataset.k===form.kind) return;
+  form.prevKind=form.kind; form.kind=b.dataset.k; reseed(false); syncSheet(true);
+};
+$("#fMode").onclick=e=>{
+  const b=e.target.closest("button"); if(!b||b.dataset.m===form.mode) return;
+  const was=form.mode; form.mode=b.dataset.m;
+  if(was==="time"||form.mode==="time") reseed(true); else reseed(false);
+  syncSheet(true);
+};
 /* solo al crear: si ya existe, el umbral es una decisión tuya y no se pisa */
 $("#fGoal").oninput=()=>{
   if(!form.editing) $("#fStretch").value=defStretch({kind:form.kind,mode:"time",goal:+$("#fGoal").value||0});
@@ -2804,20 +3003,20 @@ $("#delTr").onclick=async()=>{
 $("#saveHabit").onclick=()=>{
   const name=$("#fName").value.trim();
   if(!name){$("#fName").focus();toast("Ponle nombre");return;}
-  let goal=0,stretch=0,labels=null;
+  let goal=0,stretch=0;
   if(form.mode==="time"){
     goal=Math.max(0,parseInt($("#fGoal").value,10)||0);
     stretch=Math.max(0,parseInt($("#fStretch").value,10)||0);
     if(stretch<=goal){ /* solo se corrige si quedó imposible */
       stretch=form.kind==="build"?(goal>0?Math.round(goal*1.5):30):(goal>0?goal*2:30);
     }
-  }else if(form.mode==="rate") labels=readLabels();
-  const spec={kind:form.kind,mode:form.mode,goal,stretch,labels};
-  const same=(a,b)=>a.kind===b.kind&&a.mode===b.mode&&a.goal===b.goal&&a.stretch===b.stretch
-    &&JSON.stringify(a.labels||null)===JSON.stringify(b.labels||null);
+  }
+  form.states.forEach((x,i)=>{ if(!x.label.trim()) x.label="Estado "+(i+1); });
+  const spec={kind:form.kind,mode:form.mode,goal,stretch};
+  const same=(a,b)=>a.kind===b.kind&&a.mode===b.mode&&a.goal===b.goal&&a.stretch===b.stretch;
   if(form.editing){
     const h=db.habits.find(x=>x.id===form.editing);
-    h.name=name; h.color=form.color;
+    h.name=name; h.color=form.color; h.states=form.states.map(x=>({...x}));
     let from=$("#fFrom").value||todayKey();
     if(from>todayKey()) from=todayKey();
     if(from<h.since) from=h.since;
@@ -2828,12 +3027,13 @@ $("#saveHabit").onclick=()=>{
       h.rules.sort((a,b)=>a.from<b.from?-1:1);
     }
     const last=h.rules[h.rules.length-1];
-    Object.assign(h,{kind:last.kind,mode:last.mode,goal:last.goal,stretch:last.stretch,labels:last.labels});
+    Object.assign(h,{kind:last.kind,mode:last.mode,goal:last.goal,stretch:last.stretch});
     const d=parseKey(from);
     toast(changed?"Cambio guardado desde el "+d.getDate()+" de "+MESES[d.getMonth()]:"Actualizado");
   }else{
     const from=todayKey();
-    db.habits.push({id:uid(),name,color:form.color,weight:DEF_WEIGHT,levels:null,...spec,since:from,rules:[{from,...spec}]});
+    db.habits.push({id:uid(),name,color:form.color,weight:DEF_WEIGHT,
+      states:form.states.map(x=>({...x})),...spec,since:from,rules:[{from,...spec}]});
     toast("Agregado "+name);
   }
   _start=null; _chg=null; save(); closeAll(); renderAll();
@@ -2917,8 +3117,8 @@ $("#saveMoment").onclick=()=>{
 /* ================= pesos y umbrales ================= */
 function renderWeights(){
   const host=$("#wBody"); host.innerHTML="";
-  db.habits.forEach(h=>{
-    const s=specAt(h,todayKey()), lv=levelsOf(s);
+  wPage=paged(host,db.habits,8,wPage,n=>{wPage=n;renderWeights();},h=>{
+    const s=specAt(h,todayKey()), lv=statesOf(s).map(x=>x.pts);
     const top=Math.max.apply(null,lv), low=Math.min.apply(null,lv);
     const r=document.createElement("div"); r.className="wrow";
     r.innerHTML='<span class="dot"></span><span class="nm"><b></b><small></small></span>'
@@ -2931,8 +3131,7 @@ function renderWeights(){
     const paint=()=>{
       const w=weightOf(h);
       inp.value=w;
-      r.querySelector("small").textContent=s.kind==="build"
-        ? "hasta "+fmtPts(w*top)+" al día" : "hasta "+fmtPts(w*low)+" al día";
+      r.querySelector("small").textContent="de "+fmtPts(w*low)+" a "+fmtPts(w*top)+" al día";
     };
     const setW=n=>{ h.weight=Math.max(1,Math.min(99,n||1)); save(); paint();
       renderProfileSums(); renderPoints(); };
