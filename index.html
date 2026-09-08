@@ -457,6 +457,39 @@ p.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
 .lvlrow .lb{flex:1;font-size:15px;font-weight:600}
 .lvlrow .go{color:var(--dim);font-size:18px}
 
+/* ---------- puntos ---------- */
+.ptshead{display:flex;align-items:baseline;gap:10px;margin-bottom:12px}
+.ptshead .n{font-size:30px;font-weight:700;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.ptshead .of{margin-left:auto;color:var(--muted);font-size:12px;text-align:right}
+.ptsbar{position:relative;height:14px;border-radius:7px;background:var(--up);overflow:hidden}
+.ptsbar .fill{position:absolute;top:0;bottom:0;border-radius:7px}
+.ptsbar .zero{position:absolute;top:0;bottom:0;width:1px;background:var(--dim);opacity:.6}
+.ptsbar .tick{position:absolute;top:0;bottom:0;width:2px;background:var(--bg);opacity:.85}
+.ptsticks{display:flex;justify-content:space-between;color:var(--dim);font-size:10px;margin-top:7px}
+.ptsrow{display:flex;align-items:center;gap:11px;padding:11px 0;box-shadow:inset 0 -1px 0 var(--line)}
+.ptsrow .nm{flex:1;min-width:0;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ptsrow .p{font-weight:700;font-variant-numeric:tabular-nums;font-size:15px;flex:0 0 auto}
+.ptsrow .p.pos{color:var(--acc)} .ptsrow .p.neg{color:var(--alert)} .ptsrow .p.zero{color:var(--dim)}
+.row .pts,.brow .pts{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;
+  width:34px;text-align:right;flex:0 0 auto}
+.row .pts.pos,.brow .pts.pos{color:var(--acc)}
+.row .pts.neg,.brow .pts.neg{color:var(--alert)}
+.row .pts.zero,.brow .pts.zero{color:var(--dim);font-weight:400}
+.wrow{display:flex;align-items:center;gap:12px;padding:14px 0;box-shadow:inset 0 -1px 0 var(--line)}
+.wrow .dot{width:5px;height:28px;border-radius:3px;flex:0 0 auto}
+.wrow .nm{flex:1;min-width:0}
+.wrow .nm b{display:block;font-size:15px;font-weight:600}
+.wrow .nm small{color:var(--muted);font-size:11px}
+.step{display:flex;align-items:center;gap:2px;flex:0 0 auto;background:var(--up);border-radius:999px;
+  border:1px solid var(--line);padding:3px}
+.step button{width:32px;height:30px;border-radius:999px;font-size:17px;color:var(--text);line-height:1}
+.step input{width:46px;border:none;background:none;text-align:center;padding:0;font-size:15px;
+  font-weight:700;font-variant-numeric:tabular-nums;border-radius:0}
+.throw{display:flex;align-items:center;gap:12px;padding:12px 0;box-shadow:inset 0 -1px 0 var(--line)}
+.throw .lv{width:86px;flex:0 0 auto;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.throw .txt{flex:1;color:var(--muted);font-size:12px}
+.throw input{width:88px;flex:0 0 auto;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+
 /* ---------- perfil ---------- */
 .phead{display:flex;align-items:center;gap:14px;padding:6px 2px 18px}
 .avatar{width:62px;height:62px;border-radius:50%;flex:0 0 auto;background:var(--up);
@@ -512,6 +545,7 @@ nav button svg{display:block;width:23px;height:23px;margin:0 auto 5px;fill:none;
       <div class="picklbl"><span>Really bad</span><span>Really good</span></div>
       <p class="hint" id="scaleFoot" style="margin:10px 0 0"></p>
     </div>
+    <div class="card" id="ptsCard"></div>
     <div id="lists"></div>
     <div id="dayChgT"></div>
   </div>
@@ -570,6 +604,7 @@ nav button svg{display:block;width:23px;height:23px;margin:0 auto 5px;fill:none;
     <p class="hint" id="dayBreakHint"></p>
     <div id="dayBreak"></div>
     <div id="dayChgR"></div>
+    <div id="dayPts"></div>
     <div id="daySleep"></div>
     <div id="dayMoments"></div>
     <div id="dayNotesRO"></div>
@@ -704,6 +739,29 @@ nav button svg{display:block;width:23px;height:23px;margin:0 auto 5px;fill:none;
   <button class="btn dg" id="delTr">Eliminar registro</button>
 </div>
 
+<div class="sheet" id="wSheet" role="dialog" aria-modal="true">
+  <div class="grab"></div>
+  <h2>Peso de cada hábito</h2>
+  <p class="lead">Cuánto pesa cada uno en el total del día. Todos empiezan en 10.
+    Cambiarlo recalcula también tus días pasados.</p>
+  <div id="wBody"></div>
+  <button class="btn gh" data-close="1">Listo</button>
+  <button class="btn dg" id="wReset">Regresar todos a 10</button>
+</div>
+
+<div class="sheet" id="thSheet" role="dialog" aria-modal="true">
+  <div class="grab"></div>
+  <h2>Umbrales del día</h2>
+  <p class="lead">Cuántos puntos necesitas para cada calificación.</p>
+  <div class="seg" id="thMode" style="margin-bottom:16px">
+    <button data-m="auto">Calcularlos solos</button>
+    <button data-m="manual">Los pongo yo</button>
+  </div>
+  <div id="thBody"></div>
+  <p class="hint" id="thHint" style="margin-top:12px"></p>
+  <button class="btn gh" data-close="1">Listo</button>
+</div>
+
 <div class="sheet" id="bulkSheet" role="dialog" aria-modal="true">
   <div class="grab"></div>
   <h2 id="bulkTitle">Todos en…</h2>
@@ -747,6 +805,18 @@ nav button svg{display:block;width:23px;height:23px;margin:0 auto 5px;fill:none;
       <button data-l="en">English</button>
     </div>
     <p class="hint" style="margin:10px 0 0">La traducción llega junto con la cuenta. <span class="soon">Pronto</span></p>
+  </div>
+
+  <h3 class="sec">Puntos</h3>
+  <div class="card">
+    <p class="hint" style="margin:0 0 12px">Cada hábito aporta <b style="color:var(--text)">peso × nivel</b>.
+      Construir suma desde 0; evitar resta hasta 0. La suma del día decide su calificación.</p>
+    <div class="grp">
+      <button class="mrow" id="openWeights"><span class="dot"></span>
+        <span class="nm"><b>Peso de cada hábito</b><small id="wSum"></small></span><span class="go">›</span></button>
+      <button class="mrow" id="openThr"><span class="dot n"></span>
+        <span class="nm"><b>Umbrales del día</b><small id="thSum"></small></span><span class="go">›</span></button>
+    </div>
   </div>
 
   <h3 class="sec">Cuenta</h3>
@@ -806,6 +876,53 @@ const defLabels=k=>DEF_LABELS[k].slice();
 /* Colores de identidad del hábito. No tocan la escala de calificación:
    sirven para reconocerlo de un vistazo, nada más. */
 const PALETTE=["#5AC8FA","#7B7BF5","#E86BB0","#3FC98A","#F5A524","#FF7A5C"];
+
+/* ---- puntos ----
+   Cada nivel de un hábito tiene un valor pequeño; el peso del hábito lo
+   multiplica. Construir: el peor nivel es 0 y de ahí suma. Evitar: el mejor
+   nivel es 0 y de ahí resta. Así resistir no premia, pero caer sí castiga. */
+const DEF_WEIGHT=10;
+const LV_BUILD=[0,1,2,3,4];      // índice 0 = Really bad
+const LV_AVOID=[-4,-3,-2,-1,0];  // índice 4 = Really good
+const levelsOf=s=>(s.levels&&s.levels.length)?s.levels:(s.kind==="build"?LV_BUILD:LV_AVOID);
+/* los de sí o no solo tienen sus dos extremos */
+const hasGrade=(s,g)=>s.mode==="bin"?(g===1||g===5):(g>=1&&g<=levelsOf(s).length);
+const weightOf=h=>(h.weight==null?DEF_WEIGHT:h.weight);
+function pointsOf(h,k){
+  const g=hGrade(h,k); if(g==null) return 0;
+  const lv=levelsOf(specAt(h,k));
+  return weightOf(h)*(lv[g-1]||0);
+}
+function dayPoints(k){
+  let p=0; db.habits.forEach(h=>{ p+=pointsOf(h,k); }); return p;
+}
+function bestPoints(){
+  let m=0; db.habits.forEach(h=>{
+    const lv=levelsOf(specAt(h,todayKey())), b=Math.max.apply(null,lv);
+    if(b>0) m+=weightOf(h)*b;
+  }); return m;
+}
+function worstPoints(){
+  let m=0; db.habits.forEach(h=>{
+    const lv=levelsOf(specAt(h,todayKey())), w=Math.min.apply(null,lv);
+    if(w<0) m+=weightOf(h)*w;
+  }); return m;
+}
+function autoThresholds(){
+  const m=bestPoints()||10;
+  return [Math.round(m*.25),Math.round(m*.5),Math.round(m*.7),Math.round(m*.9)];
+}
+function thresholds(){ return (Array.isArray(db.thresholds)&&db.thresholds.length===4)?db.thresholds:autoThresholds(); }
+function gradeFromPoints(p){
+  const t=thresholds();
+  if(p>=t[3]) return 5;
+  if(p>=t[2]) return 4;
+  if(p>=t[1]) return 3;
+  if(p>=t[0]) return 2;
+  return 1;
+}
+const fmtPts=p=>(p>0?"+":"")+Math.round(p);
+
 const nextColor=n=>PALETTE[n%PALETTE.length];
 
 function defStretch(h){
@@ -853,6 +970,7 @@ function migrate(p){
   p.habits=p.habits||[]; p.days=p.days||{};
   if(!Array.isArray(p.trackers)) p.trackers=[];
   if(typeof p.assume!=="boolean") p.assume=true;
+  if(!Array.isArray(p.thresholds)) p.thresholds=null;
   const vmap={good:4,mixed:3,bad:2};
   Object.values(p.days).forEach(d=>{
     if(typeof d.verdict==="string") d.verdict=vmap[d.verdict]||null;
@@ -884,6 +1002,8 @@ function migrate(p){
     if(h.mode==="time"&&h.stretch==null) h.stretch=defStretch(h);
     if(!h.since) h.since=first;
     if(!h.color) h.color=nextColor(p.habits.indexOf(h));
+    if(h.weight==null) h.weight=DEF_WEIGHT;
+    if(!Array.isArray(h.levels)) h.levels=null;
     if(!Array.isArray(h.rules)||!h.rules.length)
       h.rules=[{from:h.since,kind:h.kind,mode:h.mode,goal:h.goal,stretch:h.stretch,labels:h.labels||null}];
     h.rules.sort((a,b)=>a.from<b.from?-1:1);
@@ -928,7 +1048,7 @@ function specAt(h,k){
   let r=null;
   for(let i=0;i<rs.length;i++){ if(rs[i].from<=k) r=rs[i]; else break; }
   r=r||rs[0];
-  const base={id:h.id,name:h.name,color:h.color||PALETTE[0]};
+  const base={id:h.id,name:h.name,color:h.color||PALETTE[0],levels:h.levels||null,weight:weightOf(h)};
   return r?{...base,kind:r.kind,mode:r.mode,goal:r.goal,stretch:r.stretch,labels:r.labels}
           :{...base,kind:h.kind,mode:h.mode,goal:h.goal,stretch:h.stretch,labels:h.labels};
 }
@@ -988,9 +1108,8 @@ function isAssumed(h,k){
 }
 function autoGrade(k){
   if(!inRange(k)) return null;
-  let s=0,n=0;
-  db.habits.forEach(h=>{const g=hGrade(h,k); if(g!=null){s+=g;n++;}});
-  return n?Math.max(1,Math.min(5,Math.round(s/n))):null;
+  if(!db.habits.some(h=>hGrade(h,k)!=null)) return null;
+  return gradeFromPoints(dayPoints(k));
 }
 function dayGrade(k){ const d=rawDay(k); return (d&&d.verdict)||autoGrade(k); }
 function shownVal(s,has,v){
@@ -1125,10 +1244,42 @@ function renderToday(){
     }
   }
   $("#dayChgT").innerHTML=dayChgHTML(cursor);
-  renderSleep(); renderMomToday(); renderNotes();
+  renderPoints(); renderSleep(); renderMomToday(); renderNotes();
 }
 
 let modalPad=null;
+const ptsTag=(h,off)=>{
+  if(off) return '<span class="pts zero">—</span>';
+  const p=pointsOf(h,cursor);
+  return '<span class="pts '+(p>0?"pos":p<0?"neg":"zero")+'">'+(p?fmtPts(p):"0")+"</span>";
+};
+
+/* barra de puntos del día con los umbrales marcados */
+function renderPoints(){
+  const card=$("#ptsCard"); if(!card) return;
+  if(!db.habits.length){ card.style.display="none"; return; }
+  card.style.display="";
+  const p=dayPoints(cursor), t=thresholds();
+  const max=Math.max(bestPoints(),t[3],1), min=Math.min(worstPoints(),0);
+  const span=(max-min)||1, at=v=>((v-min)/span)*100;
+  const g=gradeFromPoints(p);
+  card.innerHTML='<div class="k">Puntos de hoy</div>'
+    +'<div class="ptshead"><span class="n">'+fmtPts(p)+'</span>'
+    +'<span class="cap">'+GRADE[g]+'</span><span class="of"></span></div>'
+    +'<div class="ptsbar"><span class="fill"></span>'
+    +t.map(v=>'<span class="tick" style="left:'+at(v).toFixed(1)+'%"></span>').join("")
+    +(min<0?'<span class="zero" style="left:'+at(0).toFixed(1)+'%"></span>':"")
+    +'</div><div class="ptsticks"><span>'+Math.round(min)+"</span><span>"+Math.round(max)+"</span></div>";
+  const fill=card.querySelector(".fill");
+  const a=Math.min(at(p),100), b=at(0);
+  fill.style.left=Math.min(a,b)+"%";
+  fill.style.width=Math.abs(a-b)+"%";
+  fill.style.background=p<0?"var(--alert)":"var(--acc)";
+  const next=t.find(v=>v>p);
+  card.querySelector(".of").textContent=next!=null
+    ? (Math.round(next-p))+" para "+GRADE[gradeFromPoints(next)] : "es lo más alto";
+}
+
 function habitRow(h,ctx){
   ctx=ctx||{get:()=>openPad,set:v=>{openPad=v;},redraw:renderToday};
   const frag=document.createDocumentFragment();
@@ -1140,7 +1291,7 @@ function habitRow(h,ctx){
   row.innerHTML='<span class="nm"><b></b><small></small></span>'
     +(()=>{const sv=shownVal(s,has,v);return sv?'<span class="v'+(has?"":" na")+'">'+sv+"</span>":"";})()
     +(off?'<span class="bars"><i></i><i></i><i></i><i></i></span>':meter(g,asum))
-    +gtag(g,off,asum);
+    +ptsTag(h,off)+gtag(g,off,asum);
   row.querySelector("b").textContent=h.name;
   row.querySelector("small").textContent=
     off?"día libre, no entra al promedio"
@@ -1267,8 +1418,8 @@ function openBulk(kind,hs){
 function closeBulk(){ closeSheet("#bulkSheet"); }
 function bulkSet(g,hs,kind){
   let targets=hs.filter(h=>!isOff(cursor,h.id));
-  const skipped=g===3?targets.filter(h=>specAt(h,cursor).mode==="bin").length:0;
-  if(g===3) targets=targets.filter(h=>specAt(h,cursor).mode!=="bin");
+  const skipped=g?targets.filter(h=>!hasGrade(specAt(h,cursor),g)).length:0;
+  if(g) targets=targets.filter(h=>hasGrade(specAt(h,cursor),g));
   if(!targets.length){ toast("No hay a cuáles aplicarlo"); return; }
   const label=g?GRADE[g]:"sin calificar";
   const done=targets.filter(h=>hasVal(cursor,h.id)).length;
@@ -1282,7 +1433,7 @@ function bulkSet(g,hs,kind){
     else d.entries[h.id]=valueForGrade(specAt(h,cursor),g);
   });
   _start=null; save(); renderBar(); renderToday(); renderRecord(); renderAllSheet();
-  toast(targets.length+" en "+label+(skipped?" · "+skipped+" de sí o no sin tocar":""));
+  toast(targets.length+" en "+label+(skipped?" · "+skipped+" sin ese nivel":""));
 }
 
 /* ================= sueño ================= */
@@ -1989,7 +2140,7 @@ function renderRecord(){
       r.innerHTML='<span class="nm"><b></b><small></small></span>'
         +(()=>{const sv=shownVal(s,has,v);return sv?'<span class="v'+(has?"":" na")+'">'+sv+"</span>":"";})()
         +(off?'<span class="bars"><i></i><i></i><i></i><i></i></span>':meter(g,asum))
-        +gtag(g,off,asum);
+        +ptsTag(h,off)+gtag(g,off,asum);
       r.querySelector("b").textContent=h.name;
       r.querySelector("small").textContent=
         off?"día libre":asum?"no lo registraste, se asume":(s.mode==="rate"&&has?labs[g-1]:goalText(s));
@@ -2005,6 +2156,30 @@ function renderRecord(){
     bk.appendChild(grp);
   }
   $("#dayChgR").innerHTML=dayChgHTML(cursor);
+  const pc=$("#dayPts"); pc.innerHTML="";
+  if(db.habits.length){
+    const total=dayPoints(cursor), dg=dayGrade(cursor);
+    const c=document.createElement("div"); c.className="card"; c.style.marginTop="14px";
+    c.innerHTML='<div class="k">Puntos de ese día</div>';
+    db.habits.forEach(hh=>{
+      const p=pointsOf(hh,cursor), off=isOff(cursor,hh.id);
+      const r=document.createElement("div"); r.className="ptsrow";
+      r.innerHTML='<span class="hdot"></span><span class="nm"></span>'
+        +'<span class="p '+(off?"zero":p>0?"pos":p<0?"neg":"zero")+'">'+(off?"libre":fmtPts(p))+"</span>";
+      r.querySelector(".hdot").style.background=specAt(hh,cursor).color;
+      r.querySelector(".nm").textContent=hh.name;
+      c.appendChild(r);
+    });
+    const tot=document.createElement("div"); tot.className="ptsrow"; tot.style.boxShadow="none";
+    tot.innerHTML='<span class="nm" style="font-weight:700">Total</span>'
+      +'<span class="p '+(total>0?"pos":total<0?"neg":"zero")+'" style="font-size:19px">'+fmtPts(total)+"</span>";
+    c.appendChild(tot);
+    const th=document.createElement("p"); th.className="hint"; th.style.margin="8px 0 0";
+    th.textContent="Umbrales: "+thresholds().map((v,i)=>SHORT[i+2]+" "+v).join(" · ")
+      +(dg?" · ese día fue "+GRADE[dg]:"");
+    c.appendChild(th);
+    pc.appendChild(c);
+  }
 
   const ds=$("#daySleep"); ds.innerHTML="";
   const dd=rawDay(cursor)||{}, sh=sleepHours(cursor);
@@ -2123,7 +2298,7 @@ function renderManage(){
   $("#assumeHint").textContent=db.assume
     ? "Un día pasado sin registrar cuenta Really bad en los buenos y Meh en los que evitas. Se ven tenues."
     : "Los días que no registraste se quedan en blanco y no cuentan.";
-  renderStorage();
+  renderStorage(); renderProfileSums();
 }
 $("#assumeSeg").onclick=e=>{
   const b=e.target.closest("button"); if(!b) return;
@@ -2132,7 +2307,7 @@ $("#assumeSeg").onclick=e=>{
 };
 function seed(){
   let ci=0;
-  const mk=o=>({id:uid(),since:todayKey(),color:nextColor(ci++),
+  const mk=o=>({id:uid(),since:todayKey(),color:nextColor(ci++),weight:DEF_WEIGHT,levels:null,
     rules:[{from:todayKey(),kind:o.kind,mode:o.mode,goal:o.goal,stretch:o.stretch,labels:o.labels}],...o});
   const t=(name,kind,goal)=>mk({name,kind,mode:"time",goal,stretch:defStretch({kind,mode:"time",goal}),labels:null});
   const r=(name,kind)=>mk({name,kind,mode:"rate",goal:0,stretch:0,labels:defLabels(kind)});
@@ -2163,19 +2338,28 @@ function makeSortable(list,apply){
   /* Si el dedo llega al borde de la pantalla, la página se desplaza sola.
      Al hacerlo hay que corregir el punto de partida, o la fila se despega
      del dedo tanto como haya scrolleado. */
+  /* En iOS, window.scrollBy suele ignorarse mientras hay un dedo abajo con
+     preventDefault activo. Mover scrollTop del elemento de scroll sí funciona,
+     y dejamos scrollBy como respaldo para navegadores viejos. */
+  function pageScroll(v){
+    const se=document.scrollingElement||document.documentElement;
+    const b=se.scrollTop;
+    se.scrollTop=b+v;
+    let moved=se.scrollTop-b;
+    if(!moved){ try{ window.scrollBy(0,v); }catch(e){} moved=se.scrollTop-b; }
+    return moved;
+  }
   function edgeScroll(){
     if(!el){ raf=null; return; }
-    const bar=document.getElementById("topbar");
-    const nav=document.querySelector("nav");
-    const top=(bar&&bar.offsetHeight||0)+54;
-    const bot=window.innerHeight-((nav&&nav.offsetHeight||0)+54);
+    const bar=document.getElementById("topbar"), nav=document.querySelector("nav");
+    const barH=(bar&&bar.getBoundingClientRect().height)||0;
+    const navH=(nav&&nav.getBoundingClientRect().height)||0;
+    const topZ=barH+60, botZ=window.innerHeight-(navH+60);
     let v=0;
-    if(lastY<top) v=-Math.min(20,(top-lastY)/2.5);
-    else if(lastY>bot) v=Math.min(20,(lastY-bot)/2.5);
+    if(lastY<topZ) v=-Math.max(5,Math.min(22,(topZ-lastY)/2.2));
+    else if(lastY>botZ) v=Math.max(5,Math.min(22,(lastY-botZ)/2.2));
     if(v){
-      const before=window.scrollY||window.pageYOffset||0;
-      window.scrollBy(0,v);
-      const moved=(window.scrollY||window.pageYOffset||0)-before;
+      const moved=pageScroll(v);
       if(moved){ y0-=moved; shift(lastY); }
     }
     raf=RAF(edgeScroll);
@@ -2262,7 +2446,7 @@ function makeSortable(list,apply){
 }
 
 /* ================= hojas ================= */
-const SHEETS=["#sheet","#trSheet","#mSheet","#allSheet","#bulkSheet"];
+const SHEETS=["#sheet","#trSheet","#mSheet","#allSheet","#bulkSheet","#wSheet","#thSheet"];
 let sheetStack=[];
 function openSheetEl(sel){
   const sh=$(sel);
@@ -2560,7 +2744,7 @@ $("#saveHabit").onclick=()=>{
     toast(changed?"Cambio guardado desde el "+d.getDate()+" de "+MESES[d.getMonth()]:"Actualizado");
   }else{
     const from=todayKey();
-    db.habits.push({id:uid(),name,color:form.color,...spec,since:from,rules:[{from,...spec}]});
+    db.habits.push({id:uid(),name,color:form.color,weight:DEF_WEIGHT,levels:null,...spec,since:from,rules:[{from,...spec}]});
     toast("Agregado "+name);
   }
   _start=null; _chg=null; save(); closeAll(); renderAll();
@@ -2638,6 +2822,86 @@ $("#saveMoment").onclick=()=>{
   const at=parseKey(cursor); at.setHours(hh||0,mm||0,0,0);
   day(cursor).checks.push({id:uid(),tr:t.id,tag:tg.id,tone:tg.tone,note:$("#mNote").value.trim(),at:at.getTime()});
   _start=null; save(); closeAll(); renderAll(); toast("Momento guardado");
+};
+
+
+/* ================= pesos y umbrales ================= */
+function renderWeights(){
+  const host=$("#wBody"); host.innerHTML="";
+  db.habits.forEach(h=>{
+    const s=specAt(h,todayKey()), lv=levelsOf(s);
+    const top=Math.max.apply(null,lv), low=Math.min.apply(null,lv);
+    const r=document.createElement("div"); r.className="wrow";
+    r.innerHTML='<span class="dot"></span><span class="nm"><b></b><small></small></span>'
+      +'<span class="step"><button class="mi" aria-label="Menos">−</button>'
+      +'<input type="number" inputmode="numeric" min="1" max="99" aria-label="Peso">'
+      +'<button class="pl" aria-label="Más">+</button></span>';
+    r.querySelector(".dot").style.background=s.color;
+    r.querySelector("b").textContent=h.name;
+    const inp=r.querySelector("input");
+    const paint=()=>{
+      const w=weightOf(h);
+      inp.value=w;
+      r.querySelector("small").textContent=s.kind==="build"
+        ? "hasta "+fmtPts(w*top)+" al día" : "hasta "+fmtPts(w*low)+" al día";
+    };
+    const setW=n=>{ h.weight=Math.max(1,Math.min(99,n||1)); save(); paint();
+      renderProfileSums(); renderPoints(); };
+    r.querySelector(".mi").onclick=()=>setW(weightOf(h)-1);
+    r.querySelector(".pl").onclick=()=>setW(weightOf(h)+1);
+    inp.onchange=()=>setW(parseInt(inp.value,10));
+    paint(); host.appendChild(r);
+  });
+}
+function renderThresholds(){
+  const manual=Array.isArray(db.thresholds)&&db.thresholds.length===4;
+  document.querySelectorAll("#thMode button").forEach(b=>
+    b.classList.toggle("on",(b.dataset.m==="manual")===manual));
+  const t=thresholds(), host=$("#thBody"); host.innerHTML="";
+  [2,3,4,5].forEach((g,i)=>{
+    const r=document.createElement("div"); r.className="throw";
+    r.innerHTML='<span class="lv c'+g+'">'+SHORT[g]+'</span><span class="txt">desde</span>'
+      +'<input type="number" inputmode="numeric" aria-label="Puntos para '+SHORT[g]+'">';
+    const inp=r.querySelector("input");
+    inp.value=t[i]; inp.disabled=!manual;
+    inp.onchange=()=>{
+      const v=[...thresholds()];
+      v[i]=parseInt(inp.value,10)||0;
+      for(let j=1;j<4;j++) if(v[j]<=v[j-1]) v[j]=v[j-1]+1;
+      db.thresholds=v; save(); renderThresholds(); renderProfileSums(); renderPoints();
+    };
+    host.appendChild(r);
+  });
+  $("#thHint").textContent=manual
+    ? "Tus números. Lo máximo que puedes juntar hoy es "+fmtPts(bestPoints())+"."
+    : "Se calculan como 25, 50, 70 y 90% de tu máximo posible ("+fmtPts(bestPoints())
+      +"), así que se ajustan solos cuando cambias tus hábitos.";
+}
+function renderProfileSums(){
+  const w=$("#wSum"); if(!w) return;
+  const eq=db.habits.every(h=>weightOf(h)===DEF_WEIGHT);
+  w.textContent=db.habits.length
+    ? (eq?"todos valen lo mismo ("+DEF_WEIGHT+")":"personalizados · máximo "+fmtPts(bestPoints())+" al día")
+    : "sin hábitos todavía";
+  $("#thSum").textContent=((Array.isArray(db.thresholds)&&db.thresholds.length===4)?"los pusiste tú · ":"automáticos · ")
+    +thresholds().join(" / ");
+}
+$("#openWeights").onclick=()=>{
+  if(!db.habits.length){ toast("Primero crea un hábito"); return; }
+  if(!confirm("Aquí cambias cuánto pesa cada hábito en el total del día.\n\n"
+    +"Afecta también a tus días ya registrados, porque se vuelven a calcular.\n\n¿Continuar?")) return;
+  renderWeights(); openSheetEl("#wSheet");
+};
+$("#openThr").onclick=()=>{ renderThresholds(); openSheetEl("#thSheet"); };
+$("#wReset").onclick=()=>{
+  if(!confirm("¿Regresar todos los pesos a "+DEF_WEIGHT+"?")) return;
+  db.habits.forEach(h=>{h.weight=DEF_WEIGHT;});
+  save(); renderWeights(); renderProfileSums(); renderAll(); toast("Pesos reiniciados");
+};
+$("#thMode").onclick=e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  db.thresholds=b.dataset.m==="manual"?autoThresholds().slice():null;
+  save(); renderThresholds(); renderProfileSums(); renderAll();
 };
 
 /* ================= respaldo ================= */
