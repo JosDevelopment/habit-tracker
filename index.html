@@ -517,6 +517,7 @@ p.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
 .ptsgrid button.pos.on{background:var(--acc);color:var(--onacc);border-color:transparent}
 .ptsrows{display:flex;justify-content:space-between;color:var(--dim);font-size:10px;margin:7px 2px 0}
 .stcolors{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.stcolors.row2{margin-top:8px;padding-top:9px;box-shadow:inset 0 1px 0 var(--line)}
 .stcolors .sw{width:30px;height:30px;border-radius:50%;border:2px solid transparent;padding:0;position:relative}
 .stcolors .sw.on{border-color:var(--text)}
 .stcolors .sw.auto{background:var(--up);box-shadow:inset 0 0 0 1px var(--line);
@@ -949,6 +950,8 @@ const GRADE=["","Really bad","Bad","Meh","Good","Really good"];
 const SHORT=["","R.bad","Bad","Meh","Good","Great"];
 const PALETTE=["#5AC8FA","#7B7BF5","#E86BB0","#3FC98A","#F5A524","#FF7A5C"];
 const nextColor=n=>PALETTE[n%PALETTE.length];
+/* los cinco tonos con los que la app pinta las calificaciones, en sólido */
+const STATE_COLORS=["#F0554F","#B4635E","#5B6577","#C08A3A","#FFB020"];
 const DEF_WEIGHT=10;
 const weightOf=h=>(h.weight==null?DEF_WEIGHT:h.weight);
 const fmtPts=p=>(p>0?"+":"")+Math.round(p);
@@ -2422,7 +2425,7 @@ function renderManage(){
       const s=specAt(h,todayKey());
       const r=document.createElement("div"); r.className="mrow"; r.dataset.id=h.id;
       r.innerHTML='<span class="dot"></span>'
-        +'<span class="nm"><b></b><small></small></span>'
+        +'<span class="nm"><b></b><small></small></span><span class="go">›</span>'
         +'<button class="grip" aria-label="Mover ' + esc(h.name) + '"></button>';
       r.querySelector(".dot").style.background=s.color;
       r.querySelector("b").textContent=h.name;
@@ -2441,6 +2444,9 @@ function renderManage(){
       const head=db.habits.slice(0,ids.length);
       const sorted=ids.map(id=>head.find(x=>x.id===id)).filter(Boolean);
       if(sorted.length===ids.length) db.habits.splice(0,ids.length,...sorted);
+    },null,row=>{
+      const h=db.habits.find(x=>x.id===row.dataset.id);
+      if(h) openSheet(h);
     });
   }
   const t=$("#manageTr"); t.innerHTML="";
@@ -2454,7 +2460,7 @@ function renderManage(){
     db.trackers.slice(0,7).forEach(tr=>{
       const r=document.createElement("div"); r.className="mrow"; r.dataset.id=tr.id;
       r.innerHTML='<span class="dot n"></span><span class="nm"><b></b><small></small></span>'
-        +'<button class="grip" aria-label="Mover"></button>';
+        +'<span class="go">›</span><button class="grip" aria-label="Mover"></button>';
       r.querySelector("b").textContent=tr.name;
       r.querySelector("small").textContent=(tr.tags||[]).map(x=>x.label).join(" · ")||"sin opciones";
       r.onclick=e=>{ if(!e.target.closest(".grip")) openTr(tr); };
@@ -2471,6 +2477,9 @@ function renderManage(){
       const head=db.trackers.slice(0,ids.length);
       const sorted=ids.map(id=>head.find(x=>x.id===id)).filter(Boolean);
       if(sorted.length===ids.length) db.trackers.splice(0,ids.length,...sorted);
+    },null,row=>{
+      const t=db.trackers.find(x=>x.id===row.dataset.id);
+      if(t) openTr(t);
     });
   }
   document.querySelectorAll("#assumeSeg button").forEach(b=>
@@ -2509,11 +2518,12 @@ function seedTrackers(){
 /* Se puede empezar desde el asa (inmediato) o dejando presionada la fila.
    Al cruzar la mitad de otra fila se intercambian en el DOM y se corrige el
    punto de partida, para que la fila arrastrada no salte bajo el dedo. */
-function makeSortable(list,apply,scroller){
+function makeSortable(list,apply,scroller,onTap){
   let el=null,y0=0,moved=false,timer=null,pending=null,startY=0;
   const buzz=n=>{ try{ navigator.vibrate&&navigator.vibrate(n); }catch(e){} };
 
-  let order0=[], lastY=0, raf=null;
+  let order0=[], lastY=0, raf=null, tapPending=null;
+  list.addEventListener("click",()=>{ tapPending=null; },true);
   const RAF=window.requestAnimationFrame||(f=>setTimeout(f,16));
   const CAF=window.cancelAnimationFrame||clearTimeout;
 
@@ -2591,6 +2601,14 @@ function makeSortable(list,apply,scroller){
   function drop(){
     if(!el) return;
     if(raf){ CAF(raf); raf=null; }
+    /* si levantaste la fila pero no la moviste, era un toque: en algunos
+       teléfonos el clic ya no llega, así que lo disparamos nosotros salvo
+       que el navegador se nos adelante */
+    if(!moved&&onTap){
+      const row=el;
+      tapPending=row;
+      setTimeout(()=>{ if(tapPending===row){ tapPending=null; onTap(row); } },70);
+    }
     el.style.transform=""; el.classList.remove("lift");
     list.classList.remove("sorting");
     const ids=[...list.children].map(n=>n.dataset.id).filter(Boolean);
@@ -2854,12 +2872,11 @@ function renderStates(){
     row.querySelector(".sthead").onclick=()=>{ stOpen=(stOpen===i?-1:i); renderStates(); };
 
     const body=row.querySelector(".stbody");
-    if(!time){
-      const nm=document.createElement("input");
-      nm.className="nmi"; nm.maxLength=32; nm.value=x.label; nm.placeholder="Nombre del estado";
-      nm.oninput=()=>{ x.label=nm.value; row.querySelector(".lb").textContent=nm.value||"(sin nombre)"; drawPreview(); };
-      body.appendChild(nm);
-    }
+    const nm=document.createElement("input");
+    nm.className="nmi"; nm.maxLength=32; nm.value=x.label;
+    nm.placeholder=time?"Cómo le llamas a este tramo":"Nombre del estado";
+    nm.oninput=()=>{ x.label=nm.value; row.querySelector(".lb").textContent=nm.value||"(sin nombre)"; drawPreview(); };
+    body.appendChild(nm);
     const pl=document.createElement("div"); pl.className="stlab"; pl.textContent="Puntos";
     body.appendChild(pl);
     /* arriba el 0 y los negativos, abajo los positivos, cada uno bajo su par */
@@ -2895,7 +2912,8 @@ function renderStates(){
       cols.appendChild(b);
     });
     const lab=document.createElement("label");
-    const custom=x.color&&!PALETTE.includes(x.color);
+    const known=PALETTE.concat(STATE_COLORS);
+    const custom=x.color&&!known.includes(x.color);
     lab.className="sw custom"+(custom?" on":"");
     if(custom) lab.style.background=x.color;
     lab.innerHTML='<input type="color" aria-label="Otro color">';
@@ -2904,6 +2922,15 @@ function renderStates(){
     ci.onchange=()=>{ x.color=ci.value; renderStates(); };
     cols.appendChild(lab);
     body.appendChild(cols);
+    /* segunda fila: los tonos con los que la app pinta las calificaciones */
+    const cols2=document.createElement("div"); cols2.className="stcolors row2";
+    STATE_COLORS.forEach(c=>{
+      const b=document.createElement("button");
+      b.className="sw"+(x.color===c?" on":""); b.style.background=c;
+      b.onclick=()=>{ x.color=c; renderStates(); };
+      cols2.appendChild(b);
+    });
+    body.appendChild(cols2);
 
     if(!time&&form.states.length>MIN_STATES){
       const del=document.createElement("button");
@@ -3274,7 +3301,9 @@ function openOrder(what){
   items.forEach(x=>{
     const r=document.createElement("div"); r.className="mrow"; r.dataset.id=x.id;
     r.innerHTML='<span class="dot"></span><span class="nm"><b></b><small></small></span>'
-      +'<button class="grip" aria-label="Mover"></button>';
+      +'<span class="go">›</span><button class="grip" aria-label="Mover"></button>';
+    r.onclick=e=>{ if(e.target.closest(".grip")) return;
+      if(what==="habits") openSheet(x); else openTr(x); };
     const s=what==="habits"?specAt(x,todayKey()):null;
     r.querySelector(".dot").style.background=s?s.color:"var(--v3)";
     r.querySelector("b").textContent=x.name;
@@ -3288,7 +3317,11 @@ function openOrder(what){
   makeSortable(list,ids=>{
     const arr=what==="habits"?db.habits:db.trackers;
     arr.sort((a,b)=>ids.indexOf(a.id)-ids.indexOf(b.id));
-  },sc);
+  },sc,row=>{
+    const arr=what==="habits"?db.habits:db.trackers;
+    const x=arr.find(y=>y.id===row.dataset.id);
+    if(x){ if(what==="habits") openSheet(x); else openTr(x); }
+  });
 }
 
 /* ================= respaldo ================= */
