@@ -53,7 +53,7 @@ input:focus-visible,button:focus-visible,textarea:focus-visible{outline:2px soli
 .arw{color:var(--dim);font-size:23px;padding:8px 10px;border-radius:9px;line-height:1;flex:0 0 auto}
 .arw:disabled{opacity:.22}
 .badge{border:1px solid var(--acc);color:var(--acc);border-radius:999px;padding:3px 10px;font-size:11px;font-weight:600}
-.badge.auto{border-style:dashed;border-color:var(--line);color:var(--muted);font-weight:500}
+.badge.auto{border-style:dashed;font-weight:500}
 .jump{color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:11px}
 
 /* ---------- segmentos internos ---------- */
@@ -81,7 +81,7 @@ p.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
 .pick button:nth-child(3) span{height:60%} .pick button:nth-child(4) span{height:80%}
 .pick button:nth-child(5) span{height:100%}
 .pick button.on span{background:var(--acc)} .pick button.on{box-shadow:inset 0 0 0 2px var(--acc)}
-.pick button.auto span{background:var(--muted)} .pick button.auto{box-shadow:inset 0 0 0 1px var(--line)}
+.pick button.auto{box-shadow:inset 0 0 0 1.5px var(--line)}
 .picklbl{display:flex;justify-content:space-between;color:var(--dim);font-size:10px;margin-top:7px}
 
 /* ---------- filas de hábito ---------- */
@@ -490,6 +490,26 @@ p.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
 .throw .txt{flex:1;color:var(--muted);font-size:12px}
 .throw input{width:88px;flex:0 0 auto;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
 
+/* ---------- modal de confirmación propio ---------- */
+.askicon{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:22px;margin-bottom:14px;background:var(--up);color:var(--muted)}
+.askicon.danger{background:rgba(240,85,79,.14);color:var(--alert)}
+.asktext{color:var(--muted);font-size:14px;line-height:1.55;margin:0 0 6px;white-space:pre-line}
+.asktext b{color:var(--text);font-weight:600}
+.btn.hold{position:relative;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+.btn.hold .fillbar{position:absolute;left:0;top:0;bottom:0;width:0;background:rgba(0,0,0,.26);
+  pointer-events:none}
+.btn.hold.dgr{background:var(--alert);color:#fff}
+.btn.hold.dgr .fillbar{background:rgba(0,0,0,.3)}
+.btn.hold .lbl{position:relative;z-index:1}
+.btn.hold.done{transform:scale(.98)}
+.holdhint{text-align:center;color:var(--dim);font-size:11px;margin:8px 0 0}
+
+/* ---------- lista completa para ordenar ---------- */
+.orderlist .mrow{background:var(--card)}
+.orderlist .mrow:first-child{border-radius:13px 13px 0 0}
+.orderlist .mrow:last-child{border-radius:0 0 13px 13px}
+
 /* ---------- perfil ---------- */
 .phead{display:flex;align-items:center;gap:14px;padding:6px 2px 18px}
 .avatar{width:62px;height:62px;border-radius:50%;flex:0 0 auto;background:var(--up);
@@ -737,6 +757,24 @@ nav button svg{display:block;width:23px;height:23px;margin:0 auto 5px;fill:none;
   <button class="btn" id="saveTr">Guardar</button>
   <button class="btn gh" id="cancelTr">Cancelar</button>
   <button class="btn dg" id="delTr">Eliminar registro</button>
+</div>
+
+<div class="sheet" id="askSheet" role="dialog" aria-modal="true">
+  <div class="grab"></div>
+  <div class="askicon" id="askIcon">?</div>
+  <h2 id="askTitle"></h2>
+  <p class="asktext" id="askText"></p>
+  <button class="btn hold" id="askOk"><span class="fillbar"></span><span class="lbl"></span></button>
+  <p class="holdhint">Mantén presionado hasta que se llene</p>
+  <button class="btn gh" id="askNo">Cancelar</button>
+</div>
+
+<div class="sheet" id="orderSheet" role="dialog" aria-modal="true">
+  <div class="grab"></div>
+  <h2 id="orderTitle">Todos los hábitos</h2>
+  <p class="lead">Arrastra desde el asa para cambiar el orden. Al llegar al borde se desplaza sola.</p>
+  <div id="orderBody"></div>
+  <button class="btn gh" data-close="1">Listo</button>
 </div>
 
 <div class="sheet" id="wSheet" role="dialog" aria-modal="true">
@@ -1192,8 +1230,11 @@ function renderBar(){
   const d=parseKey(cursor), isToday=cursor===todayKey();
   $("#dayTitle").textContent=isToday?"Hoy":cursor===shift(todayKey(),-1)?"Ayer":cap(DIAS[d.getDay()]);
   const g=dayGrade(cursor), manual=(rawDay(cursor)||{}).verdict;
+  /* si tú la pusiste va en ámbar; si la calculó la app, del color de su nivel */
+  const col=manual?"var(--acc)":"var(--v"+g+")";
   $("#daySub").innerHTML='<span>'+d.getDate()+" de "+MESES[d.getMonth()]+"</span>"
-    +(g?'<span class="badge'+(manual?"":" auto")+'">'+GRADE[g]+"</span>":"")
+    +(g?'<span class="badge'+(manual?"":" auto")+'" style="border-color:'+col+';color:'+col+'">'
+       +GRADE[g]+"</span>":"")
     +(isToday?"":'<button class="jump" id="jumpToday">Ir a hoy</button>');
   const jt=$("#jumpToday"); if(jt) jt.onclick=()=>setDay(todayKey());
   $("#nextDay").disabled=isToday;
@@ -1207,6 +1248,10 @@ function renderToday(){
     const n=+b.dataset.g;
     b.classList.toggle("on",manual===n);
     b.classList.toggle("auto",!manual&&auto===n);
+    const sp=b.querySelector("span");
+    if(manual===n) sp.style.background="var(--acc)";
+    else if(!manual&&auto===n) sp.style.background="var(--v"+n+")";
+    else sp.style.background="";
   });
   $("#scaleFoot").textContent=manual
     ? "Lo pusiste tú. Toca otra vez para volver al cálculo automático."
@@ -1416,17 +1461,17 @@ function openBulk(kind,hs){
   openSheetEl("#bulkSheet");
 }
 function closeBulk(){ closeSheet("#bulkSheet"); }
-function bulkSet(g,hs,kind){
+async function bulkSet(g,hs,kind){
   let targets=hs.filter(h=>!isOff(cursor,h.id));
   const skipped=g?targets.filter(h=>!hasGrade(specAt(h,cursor),g)).length:0;
   if(g) targets=targets.filter(h=>hasGrade(specAt(h,cursor),g));
   if(!targets.length){ toast("No hay a cuáles aplicarlo"); return; }
   const label=g?GRADE[g]:"sin calificar";
   const done=targets.filter(h=>hasVal(cursor,h.id)).length;
-  const msg="Vas a poner "+targets.length+" hábitos de "+(kind==="build"?"Construyendo":"Evitando")
-    +" en "+label+"."+(done?" "+done+" ya tenían un valor y se van a sobrescribir.":"")
-    +"\n\n¿Seguro?";
-  if(!confirm(msg)) return;
+  if(!await ask({danger:done>0,title:"Todos en "+label,
+    text:targets.length+" hábitos de "+(kind==="build"?"Construyendo":"Evitando")+"."
+      +(done?"\n"+done+" ya tenían un valor y se van a sobrescribir.":""),
+    ok:"Mantén para aplicar"})) return;
   const d=day(cursor);
   targets.forEach(h=>{
     if(g===null) delete d.entries[h.id];
@@ -1524,10 +1569,20 @@ function renderNoteList(host,k){
     const ri=rw.querySelector(".reft");
     ri.value=n.ref?pad(rt.getHours())+":"+pad(rt.getMinutes()):"";
     ri.onchange=()=>{ n.ref=refStamp(k,ri.value); save(); renderNotes(); renderRecord(); };
-    if(n.ref) rw.querySelector(".rx").onclick=()=>{ n.ref=null; save(); renderNotes(); renderRecord(); };
+    if(n.ref) rw.querySelector(".rx").onclick=async()=>{
+      const t=new Date(n.ref);
+      if(!await ask({title:"Quitar la hora",
+        text:"Esta nota dejará de estar marcada a las "+pad(t.getHours())+":"+pad(t.getMinutes())
+          +" y volverá a ordenarse por la hora en que la escribiste.",
+        ok:"Mantén para quitarla"})) return;
+      n.ref=null; save(); renderNotes(); renderRecord();
+    };
     el.querySelector(".bd").appendChild(rw);
     el.querySelector(".rm").onclick=async()=>{
-      if(!confirm("¿Borrar esta nota?")) return;
+      if(!await ask({danger:1,title:"Borrar esta nota",
+        text:n.kind==="audio"?"Se borra el audio y no hay forma de recuperarlo."
+          :"«"+(n.text||"").slice(0,90)+"»\n\nNo se puede recuperar.",
+        ok:"Mantén para borrar"})) return;
       if(n.kind==="audio"){
         if(loadedId===n.id){player.pause();player.removeAttribute("src");loadedId=null;}
         delete pos[n.id]; delete lens[n.id];
@@ -1684,8 +1739,10 @@ function momentList(k){
     el.querySelector(".who").textContent=t?t.name:"—";
     el.querySelector(".lbl").textContent=tg?tg.label:"—";
     if(c.note){const p=document.createElement("p");p.textContent=c.note;el.querySelector(".bd").appendChild(p);}
-    el.querySelector(".rm").onclick=()=>{
-      if(!confirm("¿Borrar este momento?")) return;
+    el.querySelector(".rm").onclick=async()=>{
+      if(!await ask({danger:1,title:"Borrar este momento",
+        text:(tg?tg.label:"")+" a las "+pad(d.getHours())+":"+pad(d.getMinutes())
+          +(c.note?"\n«"+c.note+"»":""), ok:"Mantén para borrar"})) return;
       day(k).checks=day(k).checks.filter(x=>x.id!==c.id);
       _start=null; save(); renderToday(); renderRecord();
     };
@@ -2249,12 +2306,9 @@ function renderManage(){
     const hint=document.createElement("p"); hint.className="hint";
     hint.textContent="Arrastra desde el asa de la derecha para cambiar el orden. Se aplica en toda la app.";
     m.appendChild(hint);
-    const per=7, pages=Math.max(1,Math.ceil(db.habits.length/per));
-    if(setPage>=pages) setPage=0;
-    if(pages>1) m.appendChild(pager(pages,setPage,n=>{setPage=n;renderManage();},per,db.habits.length));
-    const off=setPage*per;
+    const per=7;
     const grp=document.createElement("div"); grp.className="grp sortlist";
-    db.habits.slice(off,off+per).forEach(h=>{
+    db.habits.slice(0,per).forEach(h=>{
       const s=specAt(h,todayKey());
       const r=document.createElement("div"); r.className="mrow"; r.dataset.id=h.id;
       r.innerHTML='<span class="dot"></span>'
@@ -2266,11 +2320,17 @@ function renderManage(){
       r.onclick=e=>{ if(!e.target.closest(".grip")) openSheet(h); };
       grp.appendChild(r);
     });
+    if(db.habits.length>per){
+      const b=document.createElement("button"); b.className="more";
+      b.innerHTML='Ver todos y reordenar <span class="n">'+db.habits.length+"</span>";
+      b.onclick=()=>openOrder("habits");
+      grp.appendChild(b);
+    }
     m.appendChild(grp);
     makeSortable(grp,ids=>{
-      const page=db.habits.slice(off,off+ids.length);
-      const sorted=ids.map(id=>page.find(x=>x.id===id)).filter(Boolean);
-      if(sorted.length===ids.length) db.habits.splice(off,ids.length,...sorted);
+      const head=db.habits.slice(0,ids.length);
+      const sorted=ids.map(id=>head.find(x=>x.id===id)).filter(Boolean);
+      if(sorted.length===ids.length) db.habits.splice(0,ids.length,...sorted);
     });
   }
   const t=$("#manageTr"); t.innerHTML="";
@@ -2281,7 +2341,7 @@ function renderManage(){
     $("#seedTr2").onclick=seedTrackers;
   }else{
     const grp=document.createElement("div"); grp.className="grp sortlist";
-    db.trackers.forEach(tr=>{
+    db.trackers.slice(0,7).forEach(tr=>{
       const r=document.createElement("div"); r.className="mrow"; r.dataset.id=tr.id;
       r.innerHTML='<span class="dot n"></span><span class="nm"><b></b><small></small></span>'
         +'<button class="grip" aria-label="Mover"></button>';
@@ -2290,8 +2350,18 @@ function renderManage(){
       r.onclick=e=>{ if(!e.target.closest(".grip")) openTr(tr); };
       grp.appendChild(r);
     });
+    if(db.trackers.length>7){
+      const b=document.createElement("button"); b.className="more";
+      b.innerHTML='Ver todos y reordenar <span class="n">'+db.trackers.length+"</span>";
+      b.onclick=()=>openOrder("trackers");
+      grp.appendChild(b);
+    }
     t.appendChild(grp);
-    makeSortable(grp,ids=>{ db.trackers.sort((a,b)=>ids.indexOf(a.id)-ids.indexOf(b.id)); });
+    makeSortable(grp,ids=>{
+      const head=db.trackers.slice(0,ids.length);
+      const sorted=ids.map(id=>head.find(x=>x.id===id)).filter(Boolean);
+      if(sorted.length===ids.length) db.trackers.splice(0,ids.length,...sorted);
+    });
   }
   document.querySelectorAll("#assumeSeg button").forEach(b=>
     b.classList.toggle("on",(b.dataset.a==="on")===!!db.assume));
@@ -2327,7 +2397,7 @@ function seedTrackers(){
 /* Se puede empezar desde el asa (inmediato) o dejando presionada la fila.
    Al cruzar la mitad de otra fila se intercambian en el DOM y se corrige el
    punto de partida, para que la fila arrastrada no salte bajo el dedo. */
-function makeSortable(list,apply){
+function makeSortable(list,apply,scroller){
   let el=null,y0=0,moved=false,timer=null,pending=null,startY=0;
   const buzz=n=>{ try{ navigator.vibrate&&navigator.vibrate(n); }catch(e){} };
 
@@ -2341,7 +2411,15 @@ function makeSortable(list,apply){
   /* En iOS, window.scrollBy suele ignorarse mientras hay un dedo abajo con
      preventDefault activo. Mover scrollTop del elemento de scroll sí funciona,
      y dejamos scrollBy como respaldo para navegadores viejos. */
-  function pageScroll(v){
+  /* Si la lista vive en una hoja, desplazamos ESE contenedor: es un overflow
+     nuestro y responde siempre. Solo cuando la lista está en la página usamos
+     el scroll del documento. */
+  function moveScroll(v){
+    if(scroller){
+      const b=scroller.scrollTop;
+      scroller.scrollTop=b+v;
+      return scroller.scrollTop-b;
+    }
     const se=document.scrollingElement||document.documentElement;
     const b=se.scrollTop;
     se.scrollTop=b+v;
@@ -2349,17 +2427,24 @@ function makeSortable(list,apply){
     if(!moved){ try{ window.scrollBy(0,v); }catch(e){} moved=se.scrollTop-b; }
     return moved;
   }
+  function zone(){
+    if(scroller){
+      const r=scroller.getBoundingClientRect();
+      return [r.top+56, r.bottom-56];
+    }
+    const bar=document.getElementById("topbar"), nav=document.querySelector("nav");
+    const barH=(bar&&bar.offsetParent!==null&&bar.getBoundingClientRect().height)||0;
+    const navH=(nav&&nav.getBoundingClientRect().height)||0;
+    return [barH+56, window.innerHeight-(navH+56)];
+  }
   function edgeScroll(){
     if(!el){ raf=null; return; }
-    const bar=document.getElementById("topbar"), nav=document.querySelector("nav");
-    const barH=(bar&&bar.getBoundingClientRect().height)||0;
-    const navH=(nav&&nav.getBoundingClientRect().height)||0;
-    const topZ=barH+60, botZ=window.innerHeight-(navH+60);
+    const z=zone();
     let v=0;
-    if(lastY<topZ) v=-Math.max(5,Math.min(22,(topZ-lastY)/2.2));
-    else if(lastY>botZ) v=Math.max(5,Math.min(22,(lastY-botZ)/2.2));
+    if(lastY<z[0]) v=-Math.max(6,Math.min(24,(z[0]-lastY)/2));
+    else if(lastY>z[1]) v=Math.max(6,Math.min(24,(lastY-z[1])/2));
     if(v){
-      const moved=pageScroll(v);
+      const moved=moveScroll(v);
       if(moved){ y0-=moved; shift(lastY); }
     }
     raf=RAF(edgeScroll);
@@ -2446,7 +2531,7 @@ function makeSortable(list,apply){
 }
 
 /* ================= hojas ================= */
-const SHEETS=["#sheet","#trSheet","#mSheet","#allSheet","#bulkSheet","#wSheet","#thSheet"];
+const SHEETS=["#sheet","#trSheet","#mSheet","#allSheet","#bulkSheet","#wSheet","#thSheet","#orderSheet","#askSheet"];
 let sheetStack=[];
 function openSheetEl(sel){
   const sh=$(sel);
@@ -2459,6 +2544,7 @@ function openSheetEl(sel){
 /* cierra una sola hoja; el fondo se va solo cuando ya no queda ninguna */
 function closeSheet(sel){
   const sh=$(sel); if(!sh) return;
+  if(sel==="#askSheet"&&askResolve){ const r=askResolve; askResolve=null; cancelHold(); r(false); }
   sh.classList.remove("on","dragging"); sh.style.transform="";
   sheetStack=sheetStack.filter(x=>x!==sel);
   if(!sheetStack.length){ $("#scrim").classList.remove("on"); $("#scrim").style.opacity=""; }
@@ -2597,8 +2683,10 @@ function renderRuleHist(h){
       +(i>0?'<button class="x" aria-label="Quitar">&times;</button>':"");
     row.querySelector(".d").textContent=d.getDate()+" "+MES3[d.getMonth()]+" "+String(d.getFullYear()).slice(2);
     row.querySelector(".t").textContent=goalText(r);
-    if(i>0) row.querySelector(".x").onclick=()=>{
-      if(!confirm("¿Quitar este cambio? Esos días vuelven a la meta anterior.")) return;
+    if(i>0) row.querySelector(".x").onclick=async()=>{
+      if(!await ask({danger:1,title:"Quitar este cambio de meta",
+        text:"Los días desde el "+d.getDate()+" "+MES3[d.getMonth()]
+          +" se volverán a calificar con la meta anterior.",ok:"Mantén para quitar"})) return;
       h.rules.splice(i,1);
       const last=h.rules[h.rules.length-1];
       Object.assign(h,{kind:last.kind,mode:last.mode,goal:last.goal,stretch:last.stretch,labels:last.labels});
@@ -2691,22 +2779,23 @@ $("#fGoal").oninput=()=>{
 $("#fStretch").oninput=drawPreview;
 $("#addBtn").onclick=()=>openSheet();
 $("#cancelHabit").onclick=closeTop;
-$("#delHabit").onclick=()=>{
+$("#delHabit").onclick=async()=>{
   const h=db.habits.find(x=>x.id===form.editing); if(!h) return;
   const days=Object.keys(db.days).filter(k=>hasVal(k,h.id)).length;
-  if(!confirm('Vas a eliminar "'+h.name+'".\n\nSe borra el hábito, su historial de metas y '
-    +days+' día'+(days===1?"":"s")+" que registraste.\n\nEsto no se puede deshacer. ¿Seguro?")) return;
-  if(!confirm("Última confirmación: eliminar \""+h.name+"\" para siempre.")) return;
+  if(!await ask({danger:1,title:"Eliminar "+h.name,
+    text:"Se borra el hábito, su historial de metas y "+days+" día"+(days===1?"":"s")
+      +" que registraste.\n\nEsto no se puede deshacer.",ok:"Mantén para eliminar"})) return;
   db.habits=db.habits.filter(x=>x.id!==h.id);
   Object.values(db.days).forEach(d=>{ delete d.entries[h.id]; });
   if(recScope===h.id) recScope=null;
   _start=null; _chg=null; save(); closeAll(); renderAll(); toast("Hábito eliminado");
 };
-$("#delTr").onclick=()=>{
+$("#delTr").onclick=async()=>{
   const t=db.trackers.find(x=>x.id===trForm.editing); if(!t) return;
   let n=0; Object.values(db.days).forEach(d=>{ n+=(d.checks||[]).filter(c=>c.tr===t.id).length; });
-  if(!confirm('Vas a eliminar el registro "'+t.name+'".\n\nSe borran sus opciones y '
-    +n+" momento"+(n===1?"":"s")+" que guardaste.\n\nEsto no se puede deshacer. ¿Seguro?")) return;
+  if(!await ask({danger:1,title:"Eliminar "+t.name,
+    text:"Se borran sus opciones y "+n+" momento"+(n===1?"":"s")+" que guardaste."
+      +"\n\nEsto no se puede deshacer.",ok:"Mantén para eliminar"})) return;
   db.trackers=db.trackers.filter(x=>x.id!==t.id);
   Object.values(db.days).forEach(d=>{ d.checks=(d.checks||[]).filter(c=>c.tr!==t.id); });
   if(trScope===t.id) trScope=null;
@@ -2886,15 +2975,19 @@ function renderProfileSums(){
   $("#thSum").textContent=((Array.isArray(db.thresholds)&&db.thresholds.length===4)?"los pusiste tú · ":"automáticos · ")
     +thresholds().join(" / ");
 }
-$("#openWeights").onclick=()=>{
+$("#openWeights").onclick=async()=>{
   if(!db.habits.length){ toast("Primero crea un hábito"); return; }
-  if(!confirm("Aquí cambias cuánto pesa cada hábito en el total del día.\n\n"
-    +"Afecta también a tus días ya registrados, porque se vuelven a calcular.\n\n¿Continuar?")) return;
+  if(!await ask({title:"Cambiar el peso de tus hábitos",
+    text:"Aquí decides cuánto pesa cada hábito en el total del día.\n\n"
+      +"Afecta también a tus días ya registrados, porque se vuelven a calcular.",
+    ok:"Mantén para entrar"})) return;
   renderWeights(); openSheetEl("#wSheet");
 };
 $("#openThr").onclick=()=>{ renderThresholds(); openSheetEl("#thSheet"); };
-$("#wReset").onclick=()=>{
-  if(!confirm("¿Regresar todos los pesos a "+DEF_WEIGHT+"?")) return;
+$("#wReset").onclick=async()=>{
+  if(!await ask({danger:1,title:"Reiniciar los pesos",
+    text:"Todos los hábitos vuelven a pesar "+DEF_WEIGHT+" y se pierden los que ajustaste.",
+    ok:"Mantén para reiniciar"})) return;
   db.habits.forEach(h=>{h.weight=DEF_WEIGHT;});
   save(); renderWeights(); renderProfileSums(); renderAll(); toast("Pesos reiniciados");
 };
@@ -2903,6 +2996,101 @@ $("#thMode").onclick=e=>{
   db.thresholds=b.dataset.m==="manual"?autoThresholds().slice():null;
   save(); renderThresholds(); renderProfileSums(); renderAll();
 };
+
+
+/* ================= confirmación propia =================
+   Reemplaza al confirm() del sistema. El botón se llena mientras lo mantienes
+   presionado: soltar antes de tiempo cancela. Nada destructivo pasa por un
+   toque accidental. */
+let askResolve=null, holdRAF=null, holdT0=0;
+const HOLD_MS=950;
+function ask(o){
+  o=o||{};
+  return new Promise(res=>{
+    askResolve=res;
+    $("#askTitle").textContent=o.title||"¿Seguro?";
+    $("#askText").textContent=o.text||"";
+    $("#askText").style.display=o.text?"":"none";
+    const ic=$("#askIcon");
+    ic.textContent=o.danger?"!":"?";
+    ic.classList.toggle("danger",!!o.danger);
+    const ok=$("#askOk");
+    ok.classList.toggle("dgr",!!o.danger);
+    ok.querySelector(".lbl").textContent=o.ok||"Mantén para confirmar";
+    ok.querySelector(".fillbar").style.width="0%";
+    ok.classList.remove("done");
+    $("#askNo").textContent=o.cancel||"Cancelar";
+    openSheetEl("#askSheet");
+  });
+}
+function askDone(v){
+  cancelHold();
+  const r=askResolve; askResolve=null;
+  closeSheet("#askSheet");
+  if(r) r(v);
+}
+function cancelHold(){
+  if(holdRAF){ (window.cancelAnimationFrame||clearTimeout)(holdRAF); holdRAF=null; }
+  const f=$("#askOk").querySelector(".fillbar");
+  if(f) f.style.width="0%";
+}
+function startHold(){
+  if(holdRAF) return;
+  holdT0=Date.now();
+  const fill=$("#askOk").querySelector(".fillbar");
+  const RAF=window.requestAnimationFrame||(f=>setTimeout(f,16));
+  const step=()=>{
+    const p=Math.min(1,(Date.now()-holdT0)/HOLD_MS);
+    fill.style.width=(p*100)+"%";
+    if(p>=1){
+      holdRAF=null;
+      $("#askOk").classList.add("done");
+      try{ navigator.vibrate&&navigator.vibrate(18); }catch(e){}
+      askDone(true);
+      return;
+    }
+    holdRAF=RAF(step);
+  };
+  holdRAF=RAF(step);
+}
+(function(){
+  const ok=$("#askOk");
+  ok.addEventListener("touchstart",e=>{ e.preventDefault(); startHold(); },{passive:false});
+  ok.addEventListener("touchend",cancelHold);
+  ok.addEventListener("touchcancel",cancelHold);
+  ok.addEventListener("pointerdown",e=>{ if(e.pointerType==="mouse") startHold(); });
+  ok.addEventListener("pointerup",e=>{ if(e.pointerType==="mouse") cancelHold(); });
+  ok.addEventListener("pointerleave",cancelHold);
+  ok.addEventListener("click",e=>e.preventDefault());
+  $("#askNo").onclick=()=>askDone(false);
+})();
+
+
+/* ================= reordenar la lista completa ================= */
+function openOrder(what){
+  const body=$("#orderBody"), items=(what==="habits"?db.habits:db.trackers);
+  $("#orderTitle").textContent=what==="habits"?"Todos los hábitos":"Todos los registros";
+  body.innerHTML="";
+  const list=document.createElement("div"); list.className="grp sortlist orderlist";
+  items.forEach(x=>{
+    const r=document.createElement("div"); r.className="mrow"; r.dataset.id=x.id;
+    r.innerHTML='<span class="dot"></span><span class="nm"><b></b><small></small></span>'
+      +'<button class="grip" aria-label="Mover"></button>';
+    const s=what==="habits"?specAt(x,todayKey()):null;
+    r.querySelector(".dot").style.background=s?s.color:"var(--v3)";
+    r.querySelector("b").textContent=x.name;
+    r.querySelector("small").textContent=s?goalText(s)
+      :((x.tags||[]).map(t=>t.label).join(" · ")||"sin opciones");
+    list.appendChild(r);
+  });
+  body.appendChild(list);
+  openSheetEl("#orderSheet");
+  const sc=$("#orderSheet").querySelector(".sbody");
+  makeSortable(list,ids=>{
+    const arr=what==="habits"?db.habits:db.trackers;
+    arr.sort((a,b)=>ids.indexOf(a.id)-ids.indexOf(b.id));
+  },sc);
+}
 
 /* ================= respaldo ================= */
 const b64=blob=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result.split(",")[1]);f.readAsDataURL(blob);});
@@ -2933,7 +3121,9 @@ $("#importFile").onchange=e=>{
     try{
       const p=JSON.parse(r.result);
       if(!p||!Array.isArray(p.habits)||typeof p.days!=="object") throw 0;
-      if(!confirm("¿Reemplazar todo lo que hay ahora con el respaldo?")) return;
+      if(!await ask({danger:1,title:"Restaurar el respaldo",
+        text:"Todo lo que tienes ahora se reemplaza por el contenido del archivo.\n\n"
+          +"Lo actual no se puede recuperar después.",ok:"Mantén para restaurar"})) return;
       const audio=p.audio||{}; delete p.audio;
       db=migrate(p); _start=null; save();
       for(const id of Object.keys(audio)){ try{ await putAudio(id,unb64(audio[id])); }catch(err){} }
@@ -2944,7 +3134,10 @@ $("#importFile").onchange=e=>{
   r.readAsText(f); e.target.value="";
 };
 $("#wipeBtn").onclick=async()=>{
-  if(!confirm("¿Borrar todos los hábitos, registros, días y notas de voz? No se puede deshacer.")) return;
+  if(!await ask({danger:1,title:"Borrar absolutamente todo",
+    text:"Hábitos, registros, días, notas de voz y ajustes.\n\nNo hay forma de deshacerlo. "
+      +"Si no tienes un respaldo reciente, sal de aquí y exporta uno primero.",
+    ok:"Mantén para borrar todo"})) return;
   player.pause(); loadedId=null; pos={}; lens={};
   try{ for(const id of await allAudioKeys()) await delAudio(id); }catch(e){}
   db={version:5,habits:[],trackers:[],days:{},assume:true};
