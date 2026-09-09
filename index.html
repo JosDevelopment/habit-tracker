@@ -20,6 +20,7 @@
   --v1:#F0554F; --v2:rgba(240,85,79,.42); --v3:#39414F; --v4:rgba(255,176,32,.45); --v5:#FFB020;
   --v1t:#2B0605; --v2t:#F3F5F8; --v3t:#F3F5F8; --v4t:#F3F5F8; --v5t:#241600;
   --onacc:#241600; --shadow:rgba(0,0,0,.7); --bar:rgba(12,14,19,.94);
+  --alertbg:rgba(240,85,79,.14); --alertln:rgba(240,85,79,.42);
   --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI Variable Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
 }
 html[data-theme=light]{
@@ -29,6 +30,7 @@ html[data-theme=light]{
   --v1:#C6362F; --v2:rgba(198,54,47,.26); --v3:#AEB6C4; --v4:rgba(176,110,0,.28); --v5:#E0A020;
   --v1t:#FFF3F2; --v2t:#12151B; --v3t:#12151B; --v4t:#12151B; --v5t:#2A1B00;
   --onacc:#FFFFFF; --shadow:rgba(24,30,44,.22); --bar:rgba(241,243,247,.94);
+  --alertbg:rgba(198,54,47,.10); --alertln:rgba(198,54,47,.34);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0}
@@ -50,8 +52,9 @@ input:focus-visible,button:focus-visible,textarea:focus-visible{outline:2px soli
 .bar h1{font-size:22px;font-weight:700;letter-spacing:-.03em;margin:0;line-height:1.1}
 .bar .sub{color:var(--muted);font-size:12px;margin-top:3px;display:flex;gap:8px;justify-content:center;
   align-items:center;flex-wrap:wrap}
-.arw{color:var(--dim);font-size:23px;padding:8px 10px;border-radius:9px;line-height:1;flex:0 0 auto}
-.arw:disabled{opacity:.22}
+.arw{color:var(--muted);font-size:21px;width:38px;height:38px;border-radius:50%;line-height:1;
+  flex:0 0 auto;background:var(--card);border:1px solid var(--line)}
+.arw:disabled{opacity:.35}
 .badge{border:1px solid var(--acc);color:var(--acc);border-radius:999px;padding:3px 10px;font-size:11px;font-weight:600}
 .badge.auto{border-style:dashed;font-weight:500}
 .jump{color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:11px}
@@ -144,7 +147,8 @@ p.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
 .qr{display:flex;gap:7px;flex-wrap:wrap;align-items:center;padding-top:12px}
 .qr button{border:1px solid var(--line);border-radius:999px;padding:9px 14px;font-size:14px;background:var(--up)}
 .qr input{width:82px;padding:9px 10px;text-align:center}
-.qr .clr{color:var(--muted);border-color:transparent;background:none;margin-left:auto}
+.qr .clr{margin-left:auto;background:var(--up);color:var(--muted);border:1px solid var(--line);
+  border-radius:999px;padding:8px 14px;font-size:13px;font-weight:600}
 .opts{display:flex;flex-direction:column;gap:6px;padding-top:12px}
 .opts button{display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:10px 13px;
   border:1px solid var(--line);border-radius:10px;background:var(--up)}
@@ -160,7 +164,26 @@ p.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
 .offbtn.on{border-style:solid;border-color:var(--acc);color:var(--acc);background:rgba(255,176,32,.08)}
 
 /* ---------- sueño ---------- */
-.sleepgrid{display:flex;gap:10px}
+.sleepgrid,.tworow{display:flex;gap:10px}
+.tworow .tin{font-size:20px}
+/* hora en que hiciste el hábito */
+.whenrow{display:flex;align-items:center;gap:9px;margin-top:11px;padding-top:11px;
+  box-shadow:inset 0 1px 0 var(--line)}
+.whenrow .lb{font-size:12px;color:var(--muted);flex:1}
+.whenrow input{width:104px;flex:0 0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:999px;padding:7px 12px;text-align:center;font-variant-numeric:tabular-nums;font-size:14px}
+.whenrow .now{border:1px solid var(--line);background:var(--up);border-radius:999px;padding:7px 12px;
+  font-size:12px;font-weight:600;color:var(--muted);flex:0 0 auto}
+.whenrow .x{border:1px solid var(--alertln);background:var(--alertbg);border-radius:999px;
+  padding:7px 12px;font-size:12px;font-weight:600;color:var(--alert);flex:0 0 auto}
+.row .hh,.brow .hh{font-size:11px;color:var(--dim);font-variant-numeric:tabular-nums;flex:0 0 auto}
+/* momentos con duración */
+.tl .track b.span{border-radius:6px;width:auto;height:12px;transform:translateY(-50%);
+  border:none;box-shadow:0 0 0 1.5px var(--card)}
+.stgrip{width:26px;height:30px;position:relative;padding:0;flex:0 0 auto;touch-action:none}
+.stgrip::before,.stgrip::after{content:"";position:absolute;left:6px;right:6px;height:2px;
+  border-radius:1px;background:var(--dim)}
+.stgrip::before{top:11px} .stgrip::after{top:17px}
 .tcell{flex:1;background:var(--up);border:1px solid var(--line);border-radius:13px;padding:10px 13px 12px;
   display:block;position:relative}
 .tcell .tk{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:.04em;
@@ -193,7 +216,8 @@ p.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
 .saved{display:flex;align-items:flex-start;gap:11px;padding:13px 0;box-shadow:inset 0 -1px 0 var(--line);font-size:14px}
 .saved .t{color:var(--dim);font-size:11px;width:42px;flex:0 0 auto;padding-top:3px;font-variant-numeric:tabular-nums}
 .saved .bd{flex:1;min-width:0}
-.saved .rm{color:var(--dim);font-size:11px;padding:4px;flex:0 0 auto}
+.saved .rm{background:var(--alertbg);color:var(--alert);border:1px solid var(--alertln);
+  border-radius:999px;padding:6px 12px;font-size:11px;font-weight:600;flex:0 0 auto;align-self:flex-start}
 .saved .play{width:32px;height:32px;border-radius:50%;background:var(--up);flex:0 0 auto;font-size:11px;
   display:flex;align-items:center;justify-content:center}
 .saved .play.on{background:var(--acc);color:var(--onacc)}
@@ -217,7 +241,8 @@ p.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
   padding:5px 11px;font-size:13px;font-variant-numeric:tabular-nums;color:var(--text);
   -webkit-appearance:none;appearance:none;min-width:88px}
 .reft:focus{border-color:var(--acc);outline:none}
-.refline .rx{font-size:11px;color:var(--dim);padding:5px 8px}
+.refline .rx{background:var(--up);color:var(--muted);border:1px solid var(--line);
+  border-radius:999px;padding:5px 11px;font-size:11px;font-weight:600}
 .saved .bd .refline{margin-top:7px;box-shadow:none;padding-top:0}
 .saved .bd .tx{display:block}
 .saved .t.ref{color:var(--acc);font-weight:700}
@@ -236,7 +261,8 @@ p.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
 .mrec .lbl{font-size:15px;font-weight:600;display:block;margin-top:2px}
 .mrec .lbl.o1{color:var(--alert)} .mrec .lbl.o5{color:var(--acc)}
 .mrec p{margin:4px 0 0;font-size:13px;color:var(--muted);line-height:1.45}
-.mrec .rm{color:var(--dim);font-size:11px;padding:4px;flex:0 0 auto}
+.mrec .rm{background:var(--alertbg);color:var(--alert);border:1px solid var(--alertln);
+  border-radius:999px;padding:6px 12px;font-size:11px;font-weight:600;flex:0 0 auto;align-self:flex-start}
 .tagbtns{display:flex;gap:7px;flex-wrap:wrap}
 .tagbtns button{border:1px solid var(--line);border-radius:999px;padding:9px 15px;font-size:13px;background:var(--up)}
 .tagbtns button.on{border-color:transparent;font-weight:700;color:var(--v5t)}
@@ -374,7 +400,8 @@ p.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
 .btn{display:block;width:100%;padding:14px;border-radius:12px;background:var(--acc);color:var(--onacc);
   font-weight:700;font-size:15px;text-align:center;margin-top:12px}
 .btn.gh{background:none;box-shadow:inset 0 0 0 1px var(--line);color:var(--text);font-weight:500}
-.btn.dg{background:none;box-shadow:inset 0 0 0 1px var(--line);color:var(--alert);font-weight:500}
+.btn.dg{background:var(--alertbg);box-shadow:inset 0 0 0 1px var(--alertln);
+  color:var(--alert);font-weight:700}
 .btnrow{display:flex;gap:10px;margin-top:10px}
 .btnrow .btn{margin:0}
 
@@ -432,7 +459,8 @@ p.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
 .tones button:nth-child(1){background:var(--v1)} .tones button:nth-child(2){background:var(--v2)}
 .tones button:nth-child(3){background:var(--v3)} .tones button:nth-child(4){background:var(--v4)}
 .tones button:nth-child(5){background:var(--v5)}
-.tagedit .x{color:var(--dim);font-size:18px;padding:4px 6px;flex:0 0 auto}
+.tagedit .x{width:34px;height:34px;border-radius:50%;padding:0;font-size:17px;line-height:1;
+  background:var(--alertbg);color:var(--alert);border:1px solid var(--alertln);flex:0 0 auto}
 .preview{background:var(--up);border-radius:11px;padding:13px;margin:4px 0 16px;font-size:12px;color:var(--muted)}
 .preview div{display:flex;justify-content:space-between;gap:10px;padding:4px 0;align-items:center}
 .preview span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -442,7 +470,8 @@ p.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
 .rulerow{display:flex;align-items:center;gap:9px;padding:10px 0;box-shadow:inset 0 -1px 0 var(--line);font-size:13px}
 .rulerow .d{color:var(--acc);width:72px;flex:0 0 auto;font-variant-numeric:tabular-nums;font-weight:600}
 .rulerow .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
-.rulerow .x{color:var(--dim);font-size:17px;padding:4px 7px;flex:0 0 auto}
+.rulerow .x{width:32px;height:32px;border-radius:50%;padding:0;font-size:16px;line-height:1;
+  background:var(--alertbg);color:var(--alert);border:1px solid var(--alertln);flex:0 0 auto}
 
 .pager{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}
 .pager button{border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:12px;
@@ -495,9 +524,19 @@ p.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
 .throw .txt{flex:1;color:var(--muted);font-size:12px}
 .throw input{width:88px;flex:0 0 auto;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
 
+/* ---------- acciones chicas: que se vean botones ---------- */
+.act-s,.act-x{border-radius:999px;padding:7px 13px;font-size:12px;font-weight:600;
+  line-height:1;flex:0 0 auto;white-space:nowrap}
+.act-s{background:var(--up);color:var(--muted);border:1px solid var(--line)}
+.act-x{background:var(--alertbg);color:var(--alert);border:1px solid var(--alertln)}
+.act-s:active,.act-x:active{transform:scale(.96)}
+.icon-x{width:34px;height:34px;border-radius:50%;padding:0;font-size:17px;line-height:1;
+  background:var(--alertbg);color:var(--alert);border:1px solid var(--alertln);flex:0 0 auto}
+
 /* ---------- editor de estados ---------- */
 .strow{border:1px solid var(--line);border-radius:12px;background:var(--up);margin-bottom:8px;overflow:hidden}
-.sthead{display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:12px 13px}
+.sthead{display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:12px 13px;
+  cursor:pointer;-webkit-user-select:none;user-select:none}
 .sthead .sw{width:14px;height:26px;border-radius:4px;flex:0 0 auto}
 .sthead .lb{flex:1;min-width:0;font-size:14px;font-weight:500;overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap}
@@ -530,8 +569,9 @@ p.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
 .stcolors .sw.custom{overflow:hidden;
   background:conic-gradient(#F0554F,#F5A524,#3FC98A,#5AC8FA,#7B7BF5,#E86BB0,#F0554F)}
 .stcolors .sw.custom input{position:absolute;inset:0;opacity:0;width:100%;height:100%;padding:0;border:none}
-.stdel{width:100%;margin-top:11px;padding:10px;border-radius:9px;border:1px dashed var(--line);
-  color:var(--alert);font-size:13px}
+.stdel{width:100%;margin-top:12px;padding:11px;border-radius:10px;
+  background:var(--alertbg);border:1px solid var(--alertln);color:var(--alert);
+  font-size:13px;font-weight:600}
 .opts .pv{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;flex:0 0 auto}
 .opts .pv.pos{color:var(--acc)} .opts .pv.neg{color:var(--alert)} .opts .pv.zero{color:var(--dim)}
 .lvlrow .n{background:var(--up);border-radius:999px;padding:1px 8px;font-size:11px;
@@ -860,7 +900,12 @@ nav button svg{display:block;width:23px;height:23px;margin:0 auto 5px;fill:none;
   <h2>Registrar un momento</h2>
   <div class="fld"><label>¿De qué?</label><div class="chips" id="mTrackers" style="margin:0"></div></div>
   <div class="fld"><label>¿Cómo?</label><div class="tagbtns" id="mTags"></div></div>
-  <div class="fld"><label for="mTime">Hora</label><input id="mTime" type="time"></div>
+  <div class="fld"><label>¿Cuándo?</label>
+    <div class="tworow">
+      <label class="tcell"><span class="tk">Empezó</span><input class="tin" id="mTime" type="time"></label>
+      <label class="tcell"><span class="tk">Terminó · opcional</span><input class="tin" id="mEnd" type="time"></label>
+    </div>
+    <p class="hint" id="mDur" style="margin:8px 0 0"></p></div>
   <div class="fld"><label for="mNote">Nota (opcional)</label>
     <textarea id="mNote" rows="2" maxlength="200" placeholder="Qué comiste, qué pasó, qué pensaste…"></textarea></div>
   <button class="btn" id="saveMoment">Guardar momento</button>
@@ -960,6 +1005,9 @@ const STATE_COLORS=["#F0554F","#B4635E","#5B6577","#C08A3A","#FFB020"];
 const DEF_WEIGHT=10;
 const weightOf=h=>(h.weight==null?DEF_WEIGHT:h.weight);
 const fmtPts=p=>(p>0?"+":"")+Math.round(p);
+const hhmm=t=>{const d=new Date(t);return pad(d.getHours())+":"+pad(d.getMinutes());};
+const mins=t=>{const[a,b]=String(t).split(":").map(Number);return (a||0)*60+(b||0);};
+const habitTime=(k,id)=>((rawDay(k)||{}).times||{})[id]||null;
 
 /* ================= estados =================
    Cada hábito define sus propios estados: nombre, puntos y color, ordenados de
@@ -1066,6 +1114,7 @@ function migrate(p){
     if(!Array.isArray(d.checks)) d.checks=[];
     if(!d.entries) d.entries={};
     if(d.wake===undefined) d.wake=null;
+    if(!d.times||typeof d.times!=="object") d.times={};   // hora en que hiciste cada hábito
     if(d.sleep===undefined) d.sleep=null;
     /* solo una vez: en el modelo viejo el 0 significaba "sin registrar".
        Desde v6 un 0 es un dato real (el "no" de los hábitos de sí o no). */
@@ -1129,8 +1178,11 @@ function save(){ try{localStorage.setItem(KEY,JSON.stringify(db));}
   catch(e){toast("No se pudo guardar: almacenamiento lleno");} }
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 function day(k){
-  if(!db.days[k]) db.days[k]={verdict:null,note:"",entries:{},notes:[],checks:[],wake:null,sleep:null};
-  const d=db.days[k]; if(!d.checks)d.checks=[]; if(!d.notes)d.notes=[]; return d;
+  if(!db.days[k]) db.days[k]={verdict:null,note:"",entries:{},notes:[],checks:[],
+    wake:null,sleep:null,times:{}};
+  const d=db.days[k];
+  if(!d.checks)d.checks=[]; if(!d.notes)d.notes=[]; if(!d.times)d.times={};
+  return d;
 }
 const rawDay=k=>db.days[k]||null;
 const entryOf=(k,id)=>((rawDay(k)||{}).entries||{})[id];
@@ -1141,6 +1193,7 @@ const val=(k,id)=>{const v=entryOf(k,id);return typeof v==="number"?v:0;};
 function logged(k){
   const d=rawDay(k); if(!d) return false;
   if(d.verdict||d.wake||d.sleep) return true;
+  if(d.times&&Object.keys(d.times).length) return true;
   if((d.notes&&d.notes.length)||(d.checks&&d.checks.length)) return true;
   return Object.keys(d.entries||{}).length>0;
 }
@@ -1472,7 +1525,9 @@ function habitRow(h,ctx){
   const asum=isAssumed(h,cursor), stt=stateOf(h,cursor);
   const row=document.createElement("button"); row.className="row";
   row.style.setProperty("--hc",s.color);
+  const ht=habitTime(cursor,h.id);
   row.innerHTML='<span class="nm"><b></b><small></small></span>'
+    +(ht?'<span class="hh">'+ht+"</span>":"")
     +(()=>{const sv=shownVal(s,has,v);return sv?'<span class="v'+(has?"":" na")+'">'+sv+"</span>":"";})()
     +(off?'<span class="bars"><i></i><i></i><i></i><i></i></span>':meter(h,cursor,asum))
     +ptsTag(h,off)+gtag(h,cursor,off,asum);
@@ -1525,6 +1580,22 @@ function padFor(h,s,off,has,v,ctx){
     q.appendChild(c);
     p.appendChild(q);
   }
+  /* a qué hora lo hiciste: un solo momento, no un rango */
+  const wr=document.createElement("div"); wr.className="whenrow";
+  const tv=habitTime(cursor,h.id);
+  wr.innerHTML='<span class="lb">¿A qué hora?</span>'
+    +'<input type="time" aria-label="Hora de '+esc(h.name)+'">'
+    +'<button class="now">Ahora</button>'+(tv?'<button class="x">Quitar</button>':"");
+  const ti=wr.querySelector("input"); ti.value=tv||"";
+  ti.onclick=e=>e.stopPropagation();
+  ti.onchange=e=>{ e.stopPropagation(); setTime(h.id,ti.value||null); };
+  wr.querySelector(".now").onclick=e=>{
+    e.stopPropagation();
+    const n=new Date(); setTime(h.id,pad(n.getHours())+":"+pad(n.getMinutes()));
+  };
+  if(tv) wr.querySelector(".x").onclick=e=>{ e.stopPropagation(); setTime(h.id,null); };
+  p.appendChild(wr);
+
   const ob=document.createElement("button");
   ob.className="offbtn"+(off?" on":"");
   ob.textContent=off?"Volver a contarlo este día":"No contar este día";
@@ -1544,6 +1615,12 @@ function idxFor(s,which){
 }
 function storeFor(s,i){
   return s.mode==="time"?minutesForIdx(s,i):statesOf(s)[i].id;
+}
+function setTime(id,v){
+  const d=day(cursor);
+  if(v) d.times[id]=v; else delete d.times[id];
+  _start=null; save(); renderBar(); renderToday(); renderRecord();
+  if($("#allSheet").classList.contains("on")) renderAllSheet();
 }
 function setVal(id,n){
   const d=day(cursor);
@@ -1854,12 +1931,20 @@ function momentTimeline(k){
     row.querySelector(".nm").textContent=t.name;
     const track=row.querySelector(".track");
     mine.forEach(c=>{
-      const d=new Date(c.at);
+      const d=new Date(c.at), m0=d.getHours()*60+d.getMinutes();
       const b=document.createElement("b");
-      b.style.left=((d.getHours()*60+d.getMinutes())/1440*100)+"%";
       b.style.background="var(--v"+(c.tone||3)+")";
       const tg=tagOf(t,c.tag);
-      b.title=(tg?tg.label:"")+" "+pad(d.getHours())+":"+pad(d.getMinutes());
+      if(c.end){
+        const m1=new Date(c.end).getHours()*60+new Date(c.end).getMinutes();
+        b.className="span";
+        b.style.left=(m0/1440*100)+"%";
+        b.style.width=Math.max(1.2,(m1-m0)/1440*100)+"%";
+        b.title=(tg?tg.label:"")+" "+hhmm(c.at)+" a "+hhmm(c.end);
+      }else{
+        b.style.left=(m0/1440*100)+"%";
+        b.title=(tg?tg.label:"")+" "+hhmm(c.at);
+      }
       track.appendChild(b);
     });
     wrap.appendChild(row);
@@ -1877,11 +1962,13 @@ function momentList(k){
   momPage=paged(wrap,arr,8,momPage,n=>{momPage=n;renderToday();renderRecord();},c=>{
     const t=trOf(c.tr), tg=tagOf(t,c.tag), d=new Date(c.at);
     const el=document.createElement("div"); el.className="mrec";
-    el.innerHTML='<span class="hh">'+pad(d.getHours())+":"+pad(d.getMinutes())+"</span>"
+    const when=c.end?hhmm(c.at)+"–"+hhmm(c.end):hhmm(c.at);
+    el.innerHTML='<span class="hh">'+when+"</span>"
       +'<span class="bd"><span class="who"></span><span class="lbl o'+(c.tone||3)+'"></span></span>'
       +'<button class="rm">Borrar</button>';
     el.querySelector(".who").textContent=t?t.name:"—";
-    el.querySelector(".lbl").textContent=tg?tg.label:"—";
+    el.querySelector(".lbl").textContent=(tg?tg.label:"—")
+      +(c.end?"  ·  "+fmtMin((c.end-c.at)/60000):"");
     if(c.note){const p=document.createElement("p");p.textContent=c.note;el.querySelector(".bd").appendChild(p);}
     el.querySelector(".rm").onclick=async()=>{
       if(!await ask({danger:1,title:"Borrar este momento",
@@ -2410,7 +2497,9 @@ function renderRecord(){
     ptsPage=paged(c,db.habits,8,ptsPage,n=>{ptsPage=n;renderRecord();},hh=>{
       const p=pointsOf(hh,cursor), off=isOff(cursor,hh.id);
       const r=document.createElement("div"); r.className="ptsrow";
+      const ht2=habitTime(cursor,hh.id);
       r.innerHTML='<span class="hdot"></span><span class="nm"></span>'
+        +(ht2?'<span class="hh" style="margin-right:8px">'+ht2+"</span>":"")
         +'<span class="p '+(off?"zero":p>0?"pos":p<0?"neg":"zero")+'">'+(off?"libre":fmtPts(p))+"</span>";
       r.querySelector(".hdot").style.background=specAt(hh,cursor).color;
       r.querySelector(".nm").textContent=hh.name;
@@ -2954,18 +3043,29 @@ function renderStates(){
     : "De peor a mejor. Toca uno para cambiar sus puntos, su color o borrarlo.";
   $("#addState").style.display=(!time&&form.states.length<MAX_STATES)?"":"none";
   host.innerHTML="";
+  /* contenedor nuevo en cada render: si reusáramos el mismo, makeSortable
+     iría apilando escuchas una encima de otra */
+  const list=document.createElement("div");
+  list.className=time?"":"sortlist";
+  host.appendChild(list);
   const fake={kind:form.kind,mode:form.mode,states:form.states};
   form.states.forEach((x,i)=>{
     const row=document.createElement("div");
     row.className="strow"+(stOpen===i?" open":"");
-    row.innerHTML='<button class="sthead"><span class="sw"></span><span class="lb"></span>'
-      +'<span class="pv"></span><span class="car">›</span></button>'
+    row.dataset.id=x.id;
+    row.innerHTML='<div class="sthead" role="button" tabindex="0"><span class="sw"></span>'
+      +'<span class="lb"></span><span class="pv"></span>'
+      +(time?"":'<button class="grip stgrip" aria-label="Mover"></button>')
+      +'<span class="car">›</span></div>'
       +'<div class="stbody"></div>';
     row.querySelector(".sw").style.background=stateColor(fake,i);
     row.querySelector(".lb").textContent=x.label||"(sin nombre)";
     const pv=row.querySelector(".pv");
     pv.textContent=fmtPts(x.pts); pv.className="pv "+(x.pts>0?"pos":x.pts<0?"neg":"zero");
-    row.querySelector(".sthead").onclick=()=>{ stOpen=(stOpen===i?-1:i); renderStates(); };
+    row.querySelector(".sthead").onclick=e=>{
+      if(e.target.closest(".stgrip")) return;
+      stOpen=(stOpen===i?-1:i); renderStates();
+    };
 
     const body=row.querySelector(".stbody");
     const nm=document.createElement("input");
@@ -3039,8 +3139,15 @@ function renderStates(){
       };
       body.appendChild(del);
     }
-    host.appendChild(row);
+    list.appendChild(row);
   });
+  if(!time&&form.states.length>1){
+    makeSortable(list,ids=>{
+      form.states=ids.map(id=>form.states.find(x=>x.id===id)).filter(Boolean);
+      stOpen=-1;
+      setTimeout(renderStates,0);
+    },$("#sheet").querySelector(".sbody"));
+  }
   drawPreview();
 }
 $("#addState").onclick=()=>{
@@ -3108,7 +3215,7 @@ $("#delHabit").onclick=async()=>{
     text:"Se borra el hábito, su historial de metas y "+days+" día"+(days===1?"":"s")
       +" que registraste.\n\nEsto no se puede deshacer.",ok:"Mantén para eliminar"})) return;
   db.habits=db.habits.filter(x=>x.id!==h.id);
-  Object.values(db.days).forEach(d=>{ delete d.entries[h.id]; });
+  Object.values(db.days).forEach(d=>{ delete d.entries[h.id]; if(d.times) delete d.times[h.id]; });
   if(recScope===h.id) recScope=null;
   _start=null; _chg=null; save(); closeAll(); renderAll(); toast("Hábito eliminado");
 };
@@ -3206,7 +3313,7 @@ function openMoment(){
   mForm={tr:db.trackers[0].id,tag:null};
   const now=cursor===todayKey()?new Date():(()=>{const d=parseKey(cursor);d.setHours(12,0,0,0);return d;})();
   $("#mTime").value=pad(now.getHours())+":"+pad(now.getMinutes());
-  $("#mNote").value="";
+  $("#mEnd").value=""; $("#mNote").value=""; momDur();
   syncMoment(); openSheetEl("#mSheet");
 }
 function syncMoment(){
@@ -3225,6 +3332,13 @@ function syncMoment(){
     host.appendChild(b);
   });
 }
+function momDur(){
+  const a=$("#mTime").value, b=$("#mEnd").value;
+  if(!a||!b){ $("#mDur").textContent="Déjalo vacío si fue un instante."; return; }
+  const d=mins(b)-mins(a);
+  $("#mDur").textContent=d>0?"Duró "+fmtMin(d)+".":"La hora de fin tiene que ser después.";
+}
+$("#mTime").oninput=momDur; $("#mEnd").oninput=momDur;
 $("#addMoment").onclick=openMoment;
 $("#cancelMoment").onclick=closeTop;
 $("#saveMoment").onclick=()=>{
@@ -3232,7 +3346,15 @@ $("#saveMoment").onclick=()=>{
   if(!tg){ toast("Elige una opción"); return; }
   const[hh,mm]=($("#mTime").value||"12:00").split(":").map(Number);
   const at=parseKey(cursor); at.setHours(hh||0,mm||0,0,0);
-  day(cursor).checks.push({id:uid(),tr:t.id,tag:tg.id,tone:tg.tone,note:$("#mNote").value.trim(),at:at.getTime()});
+  let end=null;
+  if($("#mEnd").value){
+    const d=mins($("#mEnd").value)-mins($("#mTime").value);
+    if(d<=0){ toast("La hora de fin tiene que ser después"); return; }
+    const e=parseKey(cursor); const[eh,em]=$("#mEnd").value.split(":").map(Number);
+    e.setHours(eh||0,em||0,0,0); end=e.getTime();
+  }
+  day(cursor).checks.push({id:uid(),tr:t.id,tag:tg.id,tone:tg.tone,
+    note:$("#mNote").value.trim(),at:at.getTime(),end});
   _start=null; save(); closeAll(); renderAll(); toast("Momento guardado");
 };
 
