@@ -316,6 +316,11 @@ p.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
 .blab span{flex:1;overflow:hidden}
 .big{font-size:27px;font-weight:700;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
 .cap{font-size:12px;color:var(--muted)}
+.trendbox{position:relative;margin:6px 0 2px}
+.tlabel{position:absolute;left:0;transform:translateY(-50%);font-size:10px;color:var(--dim);
+  background:var(--card);padding:0 4px;font-variant-numeric:tabular-nums;pointer-events:none}
+.tlabel.zero{color:var(--muted);font-weight:700}
+.tlabel.bot{transform:translateY(-100%)}
 .ins{border-left:2px solid var(--acc);padding:2px 0 2px 12px;margin:14px 0 0;font-size:13px;line-height:1.5}
 .ins small{display:block;color:var(--muted);font-size:11px;margin-top:3px}
 .dist{display:flex;align-items:center;gap:10px;padding:7px 0}
@@ -2062,43 +2067,114 @@ function viewWeek(){
   }
   return w;
 }
+function scopePoints(k){
+  if(!recScope) return dayPoints(k);
+  const h=db.habits.find(x=>x.id===recScope);
+  return h?pointsOf(h,k):0;
+}
 function viewTrend(){
   const w=document.createElement("div");
   const days=[]; for(let i=89;i>=0;i--) days.push(shift(todayKey(),-i));
-  const roll=days.map((k,i)=>{ let s=0,n=0;
-    for(let j=Math.max(0,i-6);j<=i;j++){const g=scopeGrade(days[j]); if(g!=null){s+=g;n++;}}
-    return n?s/n:null; });
-  const pts=roll.map((v,i)=>v==null?null:[(i/89)*300,100-((v-1)/4)*100]).filter(Boolean);
+  /* promedio móvil de 7 días, ahora en puntos: puede ser negativo */
+  const roll=days.map((k,i)=>{
+    let s=0,n=0;
+    for(let j=Math.max(0,i-6);j<=i;j++){
+      if(!inRange(days[j])) continue;
+      s+=scopePoints(days[j]); n++;
+    }
+    return n?s/n:null;
+  });
+  const vals=roll.filter(v=>v!=null);
+  if(vals.length<2){
+    const p=document.createElement("p"); p.className="hint";
+    p.textContent="Necesitas unas semanas de registro para que la tendencia diga algo.";
+    w.appendChild(p); return w;
+  }
+  const cap=recScope?(()=>{const h=db.habits.find(x=>x.id===recScope);
+      const st=statesOf(specAt(h,todayKey())).map(x=>x.pts*weightOf(h));
+      return [Math.max.apply(null,st),Math.min.apply(null,st)];})()
+    :[bestPoints(),worstPoints()];
+  let hi=Math.max(cap[0],...vals,1), lo=Math.min(cap[1],...vals,0);
+  const pad=(hi-lo)*.08; hi+=pad; lo-=pad;
+  const span=(hi-lo)||1;
+  const X=i=>(i/89)*300, Y=v=>((hi-v)/span)*100;
+  const zeroY=Y(0);
+
   const NS="http://www.w3.org/2000/svg";
   const svg=document.createElementNS(NS,"svg");
   svg.setAttribute("viewBox","0 0 300 100"); svg.setAttribute("preserveAspectRatio","none");
-  svg.style.cssText="width:100%;height:130px;display:block;margin:6px 0";
-  [0,25,50,75,100].forEach(y=>{
-    const l=document.createElementNS(NS,"line");
-    l.setAttribute("x1",0);l.setAttribute("x2",300);l.setAttribute("y1",y);l.setAttribute("y2",y);
-    l.style.stroke="var(--line)";l.setAttribute("stroke-width",".6"); svg.appendChild(l);
+  svg.style.cssText="width:100%;height:150px;display:block";
+  const uid2="t"+Math.random().toString(36).slice(2,7);
+  const defs=document.createElementNS(NS,"defs");
+  [["pos",0,zeroY],["neg",zeroY,100-zeroY]].forEach(([n,y,h2])=>{
+    const cp=document.createElementNS(NS,"clipPath"); cp.setAttribute("id",uid2+n);
+    const r=document.createElementNS(NS,"rect");
+    r.setAttribute("x",0); r.setAttribute("y",y);
+    r.setAttribute("width",300); r.setAttribute("height",Math.max(0,h2));
+    cp.appendChild(r); defs.appendChild(cp);
   });
-  if(pts.length>1){
-    const pl=document.createElementNS(NS,"polyline");
-    pl.setAttribute("points",pts.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" "));
-    pl.setAttribute("fill","none"); pl.style.stroke="var(--acc)";
-    pl.setAttribute("stroke-width","2"); pl.setAttribute("stroke-linejoin","round");
-    pl.setAttribute("vector-effect","non-scaling-stroke"); svg.appendChild(pl);
-  }
-  w.appendChild(svg);
+  svg.appendChild(defs);
+
+  /* umbrales de fondo, para saber dónde empieza cada calificación */
+  thresholds().forEach(t=>{
+    if(t>hi||t<lo) return;
+    const l=document.createElementNS(NS,"line");
+    l.setAttribute("x1",0); l.setAttribute("x2",300);
+    l.setAttribute("y1",Y(t)); l.setAttribute("y2",Y(t));
+    l.style.stroke="var(--line)"; l.setAttribute("stroke-width",".6");
+    svg.appendChild(l);
+  });
+
+  const pts=[];
+  roll.forEach((v,i)=>{ if(v!=null) pts.push([X(i),Y(v)]); });
+  const line=pts.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ");
+  const area=line+" "+pts[pts.length-1][0].toFixed(1)+","+zeroY.toFixed(1)
+    +" "+pts[0][0].toFixed(1)+","+zeroY.toFixed(1);
+  [["pos","var(--acc)"],["neg","var(--alert)"]].forEach(([n,c])=>{
+    const pg=document.createElementNS(NS,"polygon");
+    pg.setAttribute("points",area); pg.style.fill=c; pg.setAttribute("opacity",".2");
+    pg.setAttribute("clip-path","url(#"+uid2+n+")");
+    svg.appendChild(pg);
+  });
+
+  /* la línea del cero: arriba ganas puntos, abajo los pierdes */
+  const z=document.createElementNS(NS,"line");
+  z.setAttribute("x1",0); z.setAttribute("x2",300);
+  z.setAttribute("y1",zeroY); z.setAttribute("y2",zeroY);
+  z.style.stroke="var(--muted)"; z.setAttribute("stroke-width","1");
+  z.setAttribute("stroke-dasharray","4 3"); z.setAttribute("vector-effect","non-scaling-stroke");
+  svg.appendChild(z);
+
+  const pl=document.createElementNS(NS,"polyline");
+  pl.setAttribute("points",line); pl.setAttribute("fill","none");
+  pl.style.stroke="var(--acc)"; pl.setAttribute("stroke-width","2");
+  pl.setAttribute("stroke-linejoin","round"); pl.setAttribute("vector-effect","non-scaling-stroke");
+  svg.appendChild(pl);
+
+  const box=document.createElement("div"); box.className="trendbox";
+  box.appendChild(svg);
+  const mk=(txt,top,cls)=>{
+    const s=document.createElement("span"); s.className="tlabel "+(cls||"");
+    s.style.top=top+"%"; s.textContent=txt; box.appendChild(s);
+  };
+  mk(fmtPts(Math.round(hi)),0);
+  mk("0",zeroY,"zero");
+  mk(fmtPts(Math.round(lo)),100,"bot");
+  w.appendChild(box);
+
   const ax=document.createElement("div"); ax.className="axis";
   ax.innerHTML="<span>hace 90 días</span><span>hoy</span>"; w.appendChild(ax);
+
   const a0=roll.slice(0,30).filter(v=>v!=null), a1=roll.slice(-30).filter(v=>v!=null);
   if(a0.length>=5&&a1.length>=5){
-    const a=a0.reduce((x,y)=>x+y,0)/a0.length, b=a1.reduce((x,y)=>x+y,0)/a1.length, d=b-a;
+    const A=a0.reduce((x,y)=>x+y,0)/a0.length, B=a1.reduce((x,y)=>x+y,0)/a1.length, dd=B-A;
     const ins=document.createElement("div"); ins.className="ins";
-    ins.innerHTML="<b>"+(Math.abs(d)<.2?"Vas parejo":d>0?"Vas mejorando":"Vas bajando")+"</b>: "
-      +a.toFixed(1)+" hace tres meses, "+b.toFixed(1)+" ahora."
-      +"<small>Promedio móvil de 7 días en "+scopeName()+".</small>";
+    ins.style.borderLeftColor=B<0?"var(--alert)":"var(--acc)";
+    ins.innerHTML="<b>"+(Math.abs(dd)<Math.max(1,Math.abs(A)*.05)?"Vas parejo":dd>0?"Vas subiendo":"Vas bajando")
+      +"</b>: "+fmtPts(A)+" puntos al día hace tres meses, "+fmtPts(B)+" ahora."
+      +"<small>Promedio móvil de 7 días en "+scopeName()
+      +". Debajo de la línea punteada, el día te resta más de lo que suma.</small>";
     w.appendChild(ins);
-  }else{
-    const p=document.createElement("p"); p.className="hint";
-    p.textContent="Necesitas unas semanas de registro para que la tendencia diga algo."; w.appendChild(p);
   }
   return w;
 }
@@ -2539,7 +2615,8 @@ function makeSortable(list,apply,scroller,onTap){
   function moveScroll(v){
     if(scroller){
       const b=scroller.scrollTop;
-      scroller.scrollTop=b+v;
+      const max=Math.max(0,scroller.scrollHeight-scroller.clientHeight);
+      scroller.scrollTop=Math.max(0,Math.min(max,b+v));
       return scroller.scrollTop-b;
     }
     const se=document.scrollingElement||document.documentElement;
@@ -2565,9 +2642,13 @@ function makeSortable(list,apply,scroller,onTap){
     let v=0;
     if(lastY<z[0]) v=-Math.max(6,Math.min(24,(z[0]-lastY)/2));
     else if(lastY>z[1]) v=Math.max(6,Math.min(24,(lastY-z[1])/2));
+    /* si la fila ya es la primera o la última, no hay nada que ganar
+       desplazando: seguir haría que el contenido se fuera de la pantalla */
+    if(v<0&&el===list.firstElementChild) v=0;
+    if(v>0&&el===list.lastElementChild) v=0;
     if(v){
-      const moved=moveScroll(v);
-      if(moved){ y0-=moved; shift(lastY); }
+      const d=moveScroll(v);
+      if(d){ y0-=d; shift(lastY); }
     }
     raf=RAF(edgeScroll);
   }
@@ -2575,6 +2656,7 @@ function makeSortable(list,apply,scroller,onTap){
   function pick(row,clientY){
     order0=[...list.children].map(n=>n.dataset.id).filter(Boolean);
     el=row; y0=clientY; lastY=clientY; moved=false;
+    sortingActive=true;
     list.classList.add("sorting"); el.classList.add("lift");
     buzz(12);
     if(!raf) raf=RAF(edgeScroll);
@@ -2609,6 +2691,7 @@ function makeSortable(list,apply,scroller,onTap){
       tapPending=row;
       setTimeout(()=>{ if(tapPending===row){ tapPending=null; onTap(row); } },70);
     }
+    sortingActive=false;
     el.style.transform=""; el.classList.remove("lift");
     list.classList.remove("sorting");
     const ids=[...list.children].map(n=>n.dataset.id).filter(Boolean);
@@ -2670,6 +2753,15 @@ function openSheetEl(sel){
   $("#scrim").style.opacity=""; $("#scrim").classList.add("on");
   sh.classList.add("on");
   sheetStack=sheetStack.filter(x=>x!==sel); sheetStack.push(sel);
+  stackZ();
+}
+/* cada hoja abierta va encima de la anterior, y el fondo oscuro se mete
+   justo debajo de la de arriba para que se note cuál está activa */
+function stackZ(){
+  SHEETS.forEach(s=>{ const e=$(s); if(e) e.style.zIndex=""; });
+  sheetStack.forEach((s,i)=>{ const e=$(s); if(e) e.style.zIndex=String(50+i*2); });
+  const n=sheetStack.length;
+  $("#scrim").style.zIndex=n?String(50+(n-1)*2-1):"";
 }
 /* cierra una sola hoja; el fondo se va solo cuando ya no queda ninguna */
 function closeSheet(sel){
@@ -2677,14 +2769,16 @@ function closeSheet(sel){
   if(sel==="#askSheet"&&askResolve){ const r=askResolve; askResolve=null; cancelHold(); r(false); }
   sh.classList.remove("on","dragging"); sh.style.transform="";
   sheetStack=sheetStack.filter(x=>x!==sel);
-  if(!sheetStack.length){ $("#scrim").classList.remove("on"); $("#scrim").style.opacity=""; }
+  sh.style.zIndex="";
+  if(!sheetStack.length){ $("#scrim").classList.remove("on"); $("#scrim").style.opacity=""; $("#scrim").style.zIndex=""; }
+  else stackZ();
 }
 function closeTop(){ if(sheetStack.length) closeSheet(sheetStack[sheetStack.length-1]); }
 function closeAll(){
   sheetStack=[];
-  $("#scrim").classList.remove("on"); $("#scrim").style.opacity="";
+  $("#scrim").classList.remove("on"); $("#scrim").style.opacity=""; $("#scrim").style.zIndex="";
   SHEETS.forEach(s=>{ const sh=$(s); if(!sh) return;
-    sh.classList.remove("on","dragging"); sh.style.transform=""; });
+    sh.classList.remove("on","dragging"); sh.style.transform=""; sh.style.zIndex=""; });
 }
 $("#scrim").onclick=closeTop;
 document.addEventListener("click",e=>{ if(e.target.closest("[data-close]")) closeTop(); });
@@ -2705,12 +2799,14 @@ function wrapSheet(sheet){
   sheet.appendChild(body);
   return body;
 }
+let sortingActive=false;
 function makeDraggable(sheet,sel){
   const scrim=$("#scrim");
   const body=wrapSheet(sheet);
   let y0=0, dy=0, decided=false, dragging=false, t0=0, top0=0, handle=false, tid=null;
 
-  const skip=t=>!!(t.closest&&t.closest("input,textarea,select,.seek,.tones"));
+  /* si el toque nace en una lista reordenable, la hoja no lo toca */
+  const skip=t=>!!(t.closest&&t.closest("input,textarea,select,.seek,.tones,.sortlist,.grip"));
 
   function begin(clientY,target){
     y0=clientY; dy=0; t0=Date.now();
@@ -2753,13 +2849,13 @@ function makeDraggable(sheet,sel){
 
   /* ---- táctil ---- */
   sheet.addEventListener("touchstart",e=>{
-    if(e.touches.length!==1||skip(e.target)){ tid=null; return; }
+    if(sortingActive||e.touches.length!==1||skip(e.target)){ tid=null; return; }
     tid=e.touches[0].identifier;
     begin(e.touches[0].clientY,e.target);
   },{passive:true});
 
   sheet.addEventListener("touchmove",e=>{
-    if(tid===null) return;
+    if(sortingActive||tid===null) return;
     const t=[...e.touches].find(x=>x.identifier===tid); if(!t) return;
     if(move(t.clientY)&&e.cancelable) e.preventDefault();
   },{passive:false});
