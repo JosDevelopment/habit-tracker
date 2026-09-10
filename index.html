@@ -524,6 +524,32 @@ p.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
 .throw .txt{flex:1;color:var(--muted);font-size:12px}
 .throw input{width:88px;flex:0 0 auto;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
 
+/* ---------- etiquetas y horas ---------- */
+.chiprow{display:flex;gap:7px;flex-wrap:wrap}
+.tagchip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 12px;
+  font-size:12px;font-weight:600;border:1px solid var(--line);background:var(--up);color:var(--muted)}
+.tagchip .dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+.tagchip.on{color:var(--text);border-color:transparent}
+.tagchip .x{width:20px;height:20px;border-radius:50%;padding:0;font-size:13px;line-height:1;
+  background:var(--alertbg);color:var(--alert);border:1px solid var(--alertln);margin-left:3px}
+.tagchip.hab{border-style:dashed}
+.addrow{display:flex;gap:8px;align-items:center;margin-top:9px}
+.addrow input{flex:1;min-width:0}
+.saved .tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.saved .tags .tagchip{padding:3px 9px;font-size:11px}
+.saved .edit{background:var(--up);color:var(--muted);border:1px solid var(--line);
+  border-radius:999px;padding:6px 12px;font-size:11px;font-weight:600;flex:0 0 auto;align-self:flex-start}
+.saved .hrs{color:var(--acc);font-weight:700}
+.cmt{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:var(--up);
+  border:1px solid var(--line);border-radius:11px;margin-top:7px;width:100%;text-align:left}
+.cmt .hh{font-size:11px;color:var(--dim);flex:0 0 auto;padding-top:2px;font-variant-numeric:tabular-nums}
+.cmt .tx{flex:1;min-width:0;font-size:13px;line-height:1.45}
+.timechip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 12px;
+  font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;
+  border:1px solid var(--line);background:var(--up)}
+.timechip .x{width:22px;height:22px;border-radius:50%;padding:0;font-size:14px;line-height:1;
+  background:var(--alertbg);color:var(--alert);border:1px solid var(--alertln);margin-left:2px}
+
 /* ---------- acciones chicas: que se vean botones ---------- */
 .act-s,.act-x{border-radius:999px;padding:7px 13px;font-size:12px;font-weight:600;
   line-height:1;flex:0 0 auto;white-space:nowrap}
@@ -683,10 +709,10 @@ nav button svg{display:block;width:23px;height:23px;margin:0 auto 5px;fill:none;
         <label for="noteIn">Escribe lo que pasó</label>
         <textarea id="noteIn" maxlength="500" placeholder="Lo que quieras recordar de hoy…"></textarea>
         <div class="refline">
-          <span class="rl">¿A qué hora pasó?</span>
+          <span class="rl">¿A qué hora?</span>
           <input class="reft" id="refIn" type="time" aria-label="Hora a la que pasó">
-          <button class="rx" id="refClr">Sin hora</button>
         </div>
+        <div class="refline" id="cmpTags"></div>
       </div>
       <div class="frow">
         <button class="mini" id="saveNote">Guardar nota</button>
@@ -750,6 +776,7 @@ nav button svg{display:block;width:23px;height:23px;margin:0 auto 5px;fill:none;
   <div class="seg" data-g="set">
     <button class="on" data-p="set-h">Hábitos</button>
     <button data-p="set-r">Registros</button>
+    <button data-p="set-g">Etiquetas</button>
     <button data-p="set-d">Datos</button>
   </div>
 
@@ -762,6 +789,12 @@ nav button svg{display:block;width:23px;height:23px;margin:0 auto 5px;fill:none;
     <p class="hint">Categorías para tus momentos. Tú defines las opciones y qué tan bien o mal significa cada una.</p>
     <div id="manageTr"></div>
     <button class="btn gh" id="addTr">Agregar registro</button>
+  </div>
+
+  <div class="pane" id="p-set-g">
+    <p class="hint">Para marcar tus comentarios. Tus hábitos ya funcionan como etiqueta sin que los crees.</p>
+    <div id="manageTag"></div>
+    <button class="btn gh" id="addTag2">Agregar etiqueta</button>
   </div>
 
   <div class="pane" id="p-set-d">
@@ -844,6 +877,37 @@ nav button svg{display:block;width:23px;height:23px;margin:0 auto 5px;fill:none;
   <button class="btn" id="saveTr">Guardar</button>
   <button class="btn gh" id="cancelTr">Cancelar</button>
   <button class="btn dg" id="delTr">Eliminar registro</button>
+</div>
+
+<div class="sheet" id="tagSheet" role="dialog" aria-modal="true">
+  <div class="grab"></div>
+  <h2 id="tgTitle">Nueva etiqueta</h2>
+  <div class="fld"><label for="tgName">Nombre</label>
+    <input id="tgName" maxlength="24" placeholder="Trabajo, familia, viaje…"></div>
+  <div class="fld"><label>Color</label><div class="swatches" id="tgColors"></div></div>
+  <button class="btn" id="tgSave">Guardar</button>
+  <button class="btn gh" data-close="1">Cancelar</button>
+  <button class="btn dg" id="tgDel">Eliminar etiqueta</button>
+</div>
+
+<div class="sheet" id="noteSheet" role="dialog" aria-modal="true">
+  <div class="grab"></div>
+  <h2 id="nsTitle">Comentario</h2>
+  <p class="lead" id="nsWhen"></p>
+  <div class="fld" id="nsTextWrap"><label for="nsText">Texto</label>
+    <textarea id="nsText" rows="4" maxlength="500"></textarea></div>
+  <div id="nsAudio"></div>
+  <div class="fld"><label>Horas</label>
+    <div class="chiprow" id="nsTimes"></div>
+    <div class="addrow"><input id="nsNewTime" type="time" aria-label="Nueva hora">
+      <button class="act-s" id="nsAddTime">Agregar hora</button></div></div>
+  <div class="fld"><label>Etiquetas</label>
+    <div class="chiprow" id="nsTags"></div>
+    <div class="addrow"><input id="nsNewTag" maxlength="24" placeholder="Nueva etiqueta">
+      <button class="act-s" id="nsAddTag">Crear</button></div></div>
+  <button class="btn" id="nsSave">Guardar</button>
+  <button class="btn gh" data-close="1">Cancelar</button>
+  <button class="btn dg" id="nsDel">Eliminar comentario</button>
 </div>
 
 <div class="sheet" id="askSheet" role="dialog" aria-modal="true">
@@ -1007,7 +1071,22 @@ const weightOf=h=>(h.weight==null?DEF_WEIGHT:h.weight);
 const fmtPts=p=>(p>0?"+":"")+Math.round(p);
 const hhmm=t=>{const d=new Date(t);return pad(d.getHours())+":"+pad(d.getMinutes());};
 const mins=t=>{const[a,b]=String(t).split(":").map(Number);return (a||0)*60+(b||0);};
-const habitTime=(k,id)=>((rawDay(k)||{}).times||{})[id]||null;
+/* horas en que hiciste un hábito ese día */
+function habitTimes(k,id){
+  const t=((rawDay(k)||{}).times||{})[id];
+  return Array.isArray(t)?t.slice().sort((a,b)=>mins(a)-mins(b)):[];
+}
+/* una etiqueta puede ser propia o un hábito; los hábitos no se crean como etiqueta */
+const customTag=id=>db.tags.find(t=>t.id===id)||null;
+const habitTag=id=>db.habits.find(h=>h.id===id)||null;
+const tagExists=id=>!!(customTag(id)||habitTag(id));
+function tagName(id){ const h=habitTag(id); if(h) return h.name;
+  const t=customTag(id); return t?t.name:"?"; }
+function tagColor(id){ const h=habitTag(id); if(h) return specAt(h,todayKey()).color;
+  const t=customTag(id); return t&&t.color?t.color:"var(--v3)"; }
+/* orden del día: manda la primera hora que le pusiste, si no, cuándo la escribiste */
+const noteKey=n=>(n.times&&n.times.length)?mins(n.times[0]):new Date(n.at).getHours()*60+new Date(n.at).getMinutes();
+const notesForHabit=(k,id)=>(((rawDay(k)||{}).notes)||[]).filter(n=>(n.tags||[]).includes(id));
 
 /* ================= estados =================
    Cada hábito define sus propios estados: nombre, puntos y color, ordenados de
@@ -1094,7 +1173,7 @@ function goalText(h){
 }
 
 /* ================= datos ================= */
-let db={version:5,habits:[],trackers:[],days:{},assume:true};
+let db={version:8,habits:[],trackers:[],tags:[],days:{},assume:true,thresholds:null};
 try{
   const raw=localStorage.getItem(KEY)||localStorage.getItem("habitledger.v4")||localStorage.getItem("habitledger.v3")
     ||localStorage.getItem("habitledger.v2")||localStorage.getItem("habitledger.v1");
@@ -1104,6 +1183,7 @@ function migrate(p){
   const wasVer=p.version||1;
   p.habits=p.habits||[]; p.days=p.days||{};
   if(!Array.isArray(p.trackers)) p.trackers=[];
+  if(!Array.isArray(p.tags)) p.tags=[];
   if(typeof p.assume!=="boolean") p.assume=true;
   if(!Array.isArray(p.thresholds)) p.thresholds=null;
   const vmap={good:4,mixed:3,bad:2};
@@ -1114,7 +1194,18 @@ function migrate(p){
     if(!Array.isArray(d.checks)) d.checks=[];
     if(!d.entries) d.entries={};
     if(d.wake===undefined) d.wake=null;
-    if(!d.times||typeof d.times!=="object") d.times={};   // hora en que hiciste cada hábito
+    if(!d.times||typeof d.times!=="object") d.times={};
+    /* v8: un hábito puede tener varias horas, no una */
+    Object.keys(d.times).forEach(id=>{
+      if(typeof d.times[id]==="string") d.times[id]=[d.times[id]];
+      if(!Array.isArray(d.times[id])||!d.times[id].length) delete d.times[id];
+    });
+    /* v8: los comentarios llevan horas y etiquetas */
+    (d.notes||[]).forEach(n=>{
+      if(!Array.isArray(n.times)) n.times=[];
+      if(n.ref){ const r=new Date(n.ref); n.times=[pad(r.getHours())+":"+pad(r.getMinutes())]; delete n.ref; }
+      if(!Array.isArray(n.tags)) n.tags=[];
+    });
     if(d.sleep===undefined) d.sleep=null;
     /* solo una vez: en el modelo viejo el 0 significaba "sin registrar".
        Desde v6 un 0 es un dato real (el "no" de los hábitos de sí o no). */
@@ -1171,7 +1262,7 @@ function migrate(p){
     const last=h.rules[h.rules.length-1];
     h.kind=last.kind; h.mode=last.mode; h.goal=last.goal; h.stretch=last.stretch;
   });
-  p.version=7;
+  p.version=8;
   return p;
 }
 function save(){ try{localStorage.setItem(KEY,JSON.stringify(db));}
@@ -1525,9 +1616,9 @@ function habitRow(h,ctx){
   const asum=isAssumed(h,cursor), stt=stateOf(h,cursor);
   const row=document.createElement("button"); row.className="row";
   row.style.setProperty("--hc",s.color);
-  const ht=habitTime(cursor,h.id);
+  const ht=habitTimes(cursor,h.id);
   row.innerHTML='<span class="nm"><b></b><small></small></span>'
-    +(ht?'<span class="hh">'+ht+"</span>":"")
+    +(ht.length?'<span class="hh">'+ht[0]+(ht.length>1?" +"+(ht.length-1):"")+"</span>":"")
     +(()=>{const sv=shownVal(s,has,v);return sv?'<span class="v'+(has?"":" na")+'">'+sv+"</span>":"";})()
     +(off?'<span class="bars"><i></i><i></i><i></i><i></i></span>':meter(h,cursor,asum))
     +ptsTag(h,off)+gtag(h,cursor,off,asum);
@@ -1580,21 +1671,55 @@ function padFor(h,s,off,has,v,ctx){
     q.appendChild(c);
     p.appendChild(q);
   }
-  /* a qué hora lo hiciste: un solo momento, no un rango */
+  /* varias horas: puedes hacer el mismo hábito más de una vez al día */
   const wr=document.createElement("div"); wr.className="whenrow";
-  const tv=habitTime(cursor,h.id);
-  wr.innerHTML='<span class="lb">¿A qué hora?</span>'
+  wr.innerHTML='<span class="lb">¿A qué horas?</span>'
     +'<input type="time" aria-label="Hora de '+esc(h.name)+'">'
-    +'<button class="now">Ahora</button>'+(tv?'<button class="x">Quitar</button>':"");
-  const ti=wr.querySelector("input"); ti.value=tv||"";
+    +'<button class="now">Agregar</button>';
+  const ti=wr.querySelector("input");
   ti.onclick=e=>e.stopPropagation();
-  ti.onchange=e=>{ e.stopPropagation(); setTime(h.id,ti.value||null); };
+  const addT=v=>{
+    if(!v) return;
+    const cur=habitTimes(cursor,h.id);
+    if(cur.includes(v)){ toast("Esa hora ya está"); return; }
+    setTimes(h.id,cur.concat(v));
+  };
+  ti.onchange=e=>{ e.stopPropagation(); addT(ti.value); };
   wr.querySelector(".now").onclick=e=>{
     e.stopPropagation();
-    const n=new Date(); setTime(h.id,pad(n.getHours())+":"+pad(n.getMinutes()));
+    addT(ti.value||(()=>{const n=new Date();return pad(n.getHours())+":"+pad(n.getMinutes());})());
   };
-  if(tv) wr.querySelector(".x").onclick=e=>{ e.stopPropagation(); setTime(h.id,null); };
   p.appendChild(wr);
+  const hts=habitTimes(cursor,h.id);
+  if(hts.length){
+    const cr=document.createElement("div"); cr.className="chiprow"; cr.style.marginTop="9px";
+    hts.forEach(t=>{
+      const c=document.createElement("span"); c.className="timechip";
+      c.innerHTML="<span></span><button class='x' aria-label='Quitar'>&times;</button>";
+      c.querySelector("span").textContent=t;
+      c.querySelector(".x").onclick=e=>{ e.stopPropagation();
+        setTimes(h.id,hts.filter(x=>x!==t)); };
+      cr.appendChild(c);
+    });
+    p.appendChild(cr);
+  }
+
+  /* comentarios de este hábito en este día */
+  const cmts=notesForHabit(cursor,h.id);
+  const cb=document.createElement("button");
+  cb.className="offbtn"; cb.style.marginTop="11px";
+  cb.textContent=cmts.length?"Agregar otro comentario":"Agregar un comentario";
+  cb.onclick=e=>{ e.stopPropagation();
+    openNote(cursor,null,{tags:[h.id],times:habitTimes(cursor,h.id)}); };
+  p.appendChild(cb);
+  cmts.slice().sort((x,y)=>noteKey(x)-noteKey(y)).forEach(n=>{
+    const el=document.createElement("button"); el.className="cmt";
+    const when=(n.times&&n.times.length)?n.times[0]:hhmm(n.at);
+    el.innerHTML='<span class="hh">'+when+'</span><span class="tx"></span>';
+    el.querySelector(".tx").textContent=n.kind==="audio"?"Nota de voz · "+clock(noteLen(n)):n.text;
+    el.onclick=e=>{ e.stopPropagation(); openNote(cursor,n.id); };
+    p.appendChild(el);
+  });
 
   const ob=document.createElement("button");
   ob.className="offbtn"+(off?" on":"");
@@ -1616,9 +1741,10 @@ function idxFor(s,which){
 function storeFor(s,i){
   return s.mode==="time"?minutesForIdx(s,i):statesOf(s)[i].id;
 }
-function setTime(id,v){
+function setTimes(id,arr){
   const d=day(cursor);
-  if(v) d.times[id]=v; else delete d.times[id];
+  const v=(arr||[]).filter(Boolean).sort((a,b)=>mins(a)-mins(b));
+  if(v.length) d.times[id]=v; else delete d.times[id];
   _start=null; save(); renderBar(); renderToday(); renderRecord();
   if($("#allSheet").classList.contains("on")) renderAllSheet();
 }
@@ -1729,6 +1855,7 @@ function nightsAvg(){
 /* ================= notas ================= */
 function renderNotes(){
   $("#noteCnt").textContent=($("#noteIn").value.length)+" / 500";
+  renderCmpTags();
   renderNoteList($("#noteList"),cursor);
 }
 $("#noteIn").oninput=()=>{ $("#noteCnt").textContent=$("#noteIn").value.length+" / 500"; };
@@ -1740,19 +1867,40 @@ function refStamp(k,hhmm){
   const d=parseKey(k); d.setHours(h||0,m||0,0,0);
   return d.getTime();
 }
+let cmpTags=[];
 $("#saveNote").onclick=()=>{
   const t=$("#noteIn").value.trim();
   if(!t){ toast("Escribe algo primero"); return; }
-  const ref=refStamp(cursor,$("#refIn").value);
-  day(cursor).notes.push({id:uid(),kind:"text",at:Date.now(),ref,text:t});
-  $("#noteIn").value=""; $("#refIn").value="";
-  _start=null; save(); renderNotes(); renderRecord();
-  toast(ref?"Nota guardada con hora":"Nota guardada");
+  const times=$("#refIn").value?[$("#refIn").value]:[];
+  day(cursor).notes.push({id:uid(),kind:"text",at:Date.now(),text:t,times,tags:cmpTags.slice()});
+  $("#noteIn").value=""; $("#refIn").value=""; cmpTags=[];
+  _start=null; save(); renderNotes(); renderRecord(); renderToday();
+  toast("Comentario guardado");
 };
-$("#refClr").onclick=()=>{ $("#refIn").value=""; };
+/* selector rápido de etiquetas junto al compositor */
+function renderCmpTags(){
+  const host=$("#cmpTags"); if(!host) return;
+  host.innerHTML="";
+  const all=db.tags.map(t=>t.id).concat(db.habits.map(h=>h.id));
+  if(!all.length){ host.innerHTML='<span class="rl">Crea etiquetas en Ajustes</span>'; return; }
+  const lb=document.createElement("span"); lb.className="rl"; lb.textContent="Etiquetas";
+  host.appendChild(lb);
+  all.forEach(id=>{
+    const on=cmpTags.includes(id);
+    const b=document.createElement("button");
+    b.className="tagchip"+(on?" on":"")+(habitTag(id)?" hab":"");
+    b.innerHTML='<span class="dot"></span><span></span>';
+    b.querySelector(".dot").style.background=tagColor(id);
+    b.querySelector("span:last-child").textContent=tagName(id);
+    if(on) b.style.background=tagColor(id).replace(")",", .18)").replace("var(--","rgba(var(--");
+    if(on) b.style.boxShadow="inset 0 0 0 1.5px "+tagColor(id);
+    b.onclick=()=>{ cmpTags=on?cmpTags.filter(x=>x!==id):cmpTags.concat(id); renderCmpTags(); };
+    host.appendChild(b);
+  });
+}
 function renderNoteList(host,k){
   host.innerHTML="";
-  const arr=(((rawDay(k)||{}).notes)||[]).slice().sort((a,b)=>(a.ref||a.at)-(b.ref||b.at));
+  const arr=(((rawDay(k)||{}).notes)||[]).slice().sort((a,b)=>noteKey(a)-noteKey(b));
   if(!arr.length) return;
   const kk=document.createElement("div"); kk.className="shk"; kk.textContent="Guardado este día";
   host.appendChild(kk);
@@ -1760,10 +1908,11 @@ function renderNoteList(host,k){
     const t=new Date(n.at);
     const el=document.createElement("div"); el.className="saved";
     el.dataset.vn=n.id;
-    const shown=n.ref?new Date(n.ref):t;
-    const hh='<span class="t'+(n.ref?" ref":"")+'">'+pad(shown.getHours())+":"+pad(shown.getMinutes())+"</span>";
+    const hrs=(n.times&&n.times.length)?n.times.slice().sort((x,y)=>mins(x)-mins(y)):null;
+    const hh='<span class="t'+(hrs?" ref":"")+'">'+(hrs?hrs[0]:pad(t.getHours())+":"+pad(t.getMinutes()))+"</span>";
     if(n.kind==="text"){
-      el.innerHTML=hh+'<span class="bd"><span class="tx"></span></span><button class="rm">Borrar</button>';
+      el.innerHTML=hh+'<span class="bd"><span class="tx"></span></span>'
+        +'<button class="edit">Editar</button>';
       el.querySelector(".tx").textContent=n.text;
     }else{
       el.innerHTML=hh
@@ -1771,7 +1920,7 @@ function renderNoteList(host,k){
         +'<input class="seek" type="range" min="0" step="0.1" aria-label="Posición del audio">'
         +'<span class="skips"><button class="bk">&#8630; 10</button><button class="fw">10 &#8631;</button>'
         +'<span class="tt"><span class="cur">0:00</span> / '+clock(noteLen(n))+'</span></span></span>'
-        +'<button class="rm">Borrar</button>';
+        +'<button class="edit">Editar</button>';
       const r=el.querySelector(".seek"); r.max=noteLen(n); r.value=pos[n.id]||0; paint(r);
       const sd=()=>{r.dataset.drag="1";}, ed=()=>{r.dataset.drag="0";seekTo(n,+r.value);};
       r.addEventListener("pointerdown",sd); r.addEventListener("touchstart",sd,{passive:true});
@@ -1781,36 +1930,26 @@ function renderNoteList(host,k){
       el.querySelector(".bk").onclick=()=>nudge(n,-10);
       el.querySelector(".fw").onclick=()=>nudge(n,10);
     }
-    const rw=document.createElement("div"); rw.className="refline";
-    const rt=new Date(n.ref||0);
-    rw.innerHTML='<span class="rl">'+(n.ref?"Pasó a las":"Marcar hora de lo que cuenta")+'</span>'
-      +'<input class="reft" type="time" aria-label="Hora a la que pasó">'
-      +(n.ref?'<button class="rx">Quitar</button>':"");
-    const ri=rw.querySelector(".reft");
-    ri.value=n.ref?pad(rt.getHours())+":"+pad(rt.getMinutes()):"";
-    ri.onchange=()=>{ n.ref=refStamp(k,ri.value); save(); renderNotes(); renderRecord(); };
-    if(n.ref) rw.querySelector(".rx").onclick=async()=>{
-      const t=new Date(n.ref);
-      if(!await ask({title:"Quitar la hora",
-        text:"Esta nota dejará de estar marcada a las "+pad(t.getHours())+":"+pad(t.getMinutes())
-          +" y volverá a ordenarse por la hora en que la escribiste.",
-        ok:"Mantén para quitarla"})) return;
-      n.ref=null; save(); renderNotes(); renderRecord();
-    };
-    el.querySelector(".bd").appendChild(rw);
-    el.querySelector(".rm").onclick=async()=>{
-      if(!await ask({danger:1,title:"Borrar esta nota",
-        text:n.kind==="audio"?"Se borra el audio y no hay forma de recuperarlo."
-          :"«"+(n.text||"").slice(0,90)+"»\n\nNo se puede recuperar.",
-        ok:"Mantén para borrar"})) return;
-      if(n.kind==="audio"){
-        if(loadedId===n.id){player.pause();player.removeAttribute("src");loadedId=null;}
-        delete pos[n.id]; delete lens[n.id];
-        try{ await delAudio(n.id); }catch(e){}
-      }
-      day(k).notes=day(k).notes.filter(x=>x.id!==n.id);
-      _start=null; save(); renderNotes(); renderRecord(); toast("Nota borrada");
-    };
+    const bd=el.querySelector(".bd");
+    if(hrs&&hrs.length>1){
+      const e=document.createElement("div"); e.className="hrs";
+      e.style.cssText="font-size:11px;margin-top:4px";
+      e.textContent="También a las "+hrs.slice(1).join(", ");
+      bd.appendChild(e);
+    }
+    if((n.tags||[]).length){
+      const tg=document.createElement("div"); tg.className="tags";
+      n.tags.filter(tagExists).forEach(id=>{
+        const c=document.createElement("span");
+        c.className="tagchip"+(habitTag(id)?" hab":"");
+        c.innerHTML='<span class="dot"></span><span></span>';
+        c.querySelector(".dot").style.background=tagColor(id);
+        c.querySelector("span:last-child").textContent=tagName(id);
+        tg.appendChild(c);
+      });
+      bd.appendChild(tg);
+    }
+    el.querySelector(".edit").onclick=()=>openNote(k,n.id);
     host.appendChild(el);
   });
   refreshPlayers();
@@ -2497,9 +2636,9 @@ function renderRecord(){
     ptsPage=paged(c,db.habits,8,ptsPage,n=>{ptsPage=n;renderRecord();},hh=>{
       const p=pointsOf(hh,cursor), off=isOff(cursor,hh.id);
       const r=document.createElement("div"); r.className="ptsrow";
-      const ht2=habitTime(cursor,hh.id);
+      const ht2=habitTimes(cursor,hh.id);
       r.innerHTML='<span class="hdot"></span><span class="nm"></span>'
-        +(ht2?'<span class="hh" style="margin-right:8px">'+ht2+"</span>":"")
+        +(ht2.length?'<span class="hh" style="margin-right:8px">'+ht2.join(" ")+"</span>":"")
         +'<span class="p '+(off?"zero":p>0?"pos":p<0?"neg":"zero")+'">'+(off?"libre":fmtPts(p))+"</span>";
       r.querySelector(".hdot").style.background=specAt(hh,cursor).color;
       r.querySelector(".nm").textContent=hh.name;
@@ -2652,7 +2791,7 @@ function renderManage(){
   $("#assumeHint").textContent=db.assume
     ? "Un día pasado sin registrar cuenta Really bad en los buenos y Meh en los que evitas. Se ven tenues."
     : "Los días que no registraste se quedan en blanco y no cuentan.";
-  renderStorage(); renderProfileSums();
+  renderTags(); renderStorage(); renderProfileSums();
 }
 $("#assumeSeg").onclick=e=>{
   const b=e.target.closest("button"); if(!b) return;
@@ -2833,7 +2972,7 @@ function makeSortable(list,apply,scroller,onTap){
 }
 
 /* ================= hojas ================= */
-const SHEETS=["#sheet","#trSheet","#mSheet","#allSheet","#bulkSheet","#wSheet","#thSheet","#orderSheet","#askSheet"];
+const SHEETS=["#sheet","#trSheet","#mSheet","#allSheet","#bulkSheet","#wSheet","#thSheet","#orderSheet","#noteSheet","#tagSheet","#askSheet"];
 let sheetStack=[];
 function openSheetEl(sel){
   const sh=$(sel);
@@ -3542,6 +3681,171 @@ function openOrder(what){
   });
 }
 
+
+/* ================= comentarios: editar, etiquetar, varias horas ================= */
+let nsKey=null, nsId=null, nsTimes=[], nsTags=[];
+function openNote(k,id,seed){
+  nsKey=k;
+  const n=id?((rawDay(k)||{}).notes||[]).find(x=>x.id===id):null;
+  nsId=id||null;
+  nsTimes=n?(n.times||[]).slice():((seed&&seed.times)||[]).slice();
+  nsTags=n?(n.tags||[]).filter(tagExists):((seed&&seed.tags)||[]).slice();
+  const audio=n&&n.kind==="audio";
+  $("#nsTitle").textContent=n?(audio?"Nota de voz":"Editar comentario"):"Nuevo comentario";
+  const d=parseKey(k);
+  $("#nsWhen").textContent=cap(DIAS[d.getDay()])+" "+d.getDate()+" de "+MESES[d.getMonth()]
+    +(n?" · escrito a las "+hhmm(n.at):"");
+  $("#nsTextWrap").style.display=audio?"none":"";
+  $("#nsText").value=n&&!audio?n.text:"";
+  $("#nsAudio").innerHTML=audio?'<p class="hint">El audio no se puede cambiar, pero sí sus horas y etiquetas.</p>':"";
+  $("#nsDel").style.display=n?"":"none";
+  $("#nsNewTime").value=""; $("#nsNewTag").value="";
+  renderNsTimes(); renderNsTags();
+  openSheetEl("#noteSheet");
+}
+function renderNsTimes(){
+  const host=$("#nsTimes"); host.innerHTML="";
+  if(!nsTimes.length){ host.innerHTML='<span class="rl">Sin hora. Se ordena por cuándo lo escribiste.</span>'; return; }
+  nsTimes.slice().sort((a,b)=>mins(a)-mins(b)).forEach(t=>{
+    const c=document.createElement("span"); c.className="timechip";
+    c.innerHTML="<span></span><button class='x' aria-label='Quitar'>&times;</button>";
+    c.querySelector("span").textContent=t;
+    c.querySelector(".x").onclick=async()=>{
+      if(!await ask({title:"Quitar las "+t,
+        text:"Este comentario dejará de estar marcado a esa hora.",
+        ok:"Mantén para quitarla"})) return;
+      nsTimes=nsTimes.filter(x=>x!==t); renderNsTimes();
+    };
+    host.appendChild(c);
+  });
+}
+function renderNsTags(){
+  const host=$("#nsTags"); host.innerHTML="";
+  const all=db.tags.map(t=>t.id).concat(db.habits.map(h=>h.id));
+  if(!all.length){ host.innerHTML='<span class="rl">Todavía no hay etiquetas ni hábitos.</span>'; return; }
+  all.forEach(id=>{
+    const on=nsTags.includes(id);
+    const b=document.createElement("button");
+    b.className="tagchip"+(on?" on":"")+(habitTag(id)?" hab":"");
+    b.innerHTML='<span class="dot"></span><span></span>';
+    b.querySelector(".dot").style.background=tagColor(id);
+    b.querySelector("span:last-child").textContent=tagName(id);
+    if(on) b.style.boxShadow="inset 0 0 0 1.5px "+tagColor(id);
+    b.onclick=()=>{ nsTags=on?nsTags.filter(x=>x!==id):nsTags.concat(id); renderNsTags(); };
+    host.appendChild(b);
+  });
+}
+$("#nsAddTime").onclick=()=>{
+  const v=$("#nsNewTime").value;
+  if(!v){ toast("Elige una hora"); return; }
+  if(nsTimes.includes(v)){ toast("Esa hora ya está"); return; }
+  nsTimes.push(v); $("#nsNewTime").value=""; renderNsTimes();
+};
+$("#nsAddTag").onclick=()=>{
+  const v=$("#nsNewTag").value.trim();
+  if(!v){ $("#nsNewTag").focus(); return; }
+  const t={id:uid(),name:v,color:nextColor(db.tags.length)};
+  db.tags.push(t); nsTags.push(t.id);
+  save(); $("#nsNewTag").value=""; renderNsTags(); renderManage(); toast("Etiqueta creada");
+};
+$("#nsSave").onclick=()=>{
+  const txt=$("#nsText").value.trim();
+  const d=day(nsKey);
+  let n=nsId?d.notes.find(x=>x.id===nsId):null;
+  if(!n){
+    if(!txt){ toast("Escribe algo primero"); return; }
+    n={id:uid(),kind:"text",at:Date.now(),text:txt,times:[],tags:[]};
+    d.notes.push(n);
+  }else if(n.kind!=="audio"){
+    if(!txt){ toast("El comentario no puede quedar vacío"); return; }
+    n.text=txt;
+  }
+  n.times=nsTimes.slice(); n.tags=nsTags.slice();
+  _start=null; save(); closeTop(); renderToday(); renderRecord(); toast("Comentario guardado");
+};
+$("#nsDel").onclick=async()=>{
+  const d=day(nsKey), n=d.notes.find(x=>x.id===nsId); if(!n) return;
+  if(!await ask({danger:1,title:"Borrar este comentario",
+    text:n.kind==="audio"?"Se borra el audio y no hay forma de recuperarlo."
+      :"«"+(n.text||"").slice(0,90)+"»\n\nNo se puede recuperar.",
+    ok:"Mantén para borrar"})) return;
+  if(n.kind==="audio"){
+    if(loadedId===n.id){ player.pause(); player.removeAttribute("src"); loadedId=null; }
+    delete pos[n.id]; delete lens[n.id];
+    try{ await delAudio(n.id); }catch(e){}
+  }
+  d.notes=d.notes.filter(x=>x.id!==nsId);
+  _start=null; save(); closeAll(); renderToday(); renderRecord(); toast("Comentario borrado");
+};
+
+/* ================= etiquetas en Ajustes ================= */
+function renderTags(){
+  const host=$("#manageTag"); if(!host) return;
+  host.innerHTML="";
+  if(!db.tags.length){
+    host.innerHTML='<div class="empty"><h2>Sin etiquetas propias</h2>'
+      +'<p>Tus hábitos ya sirven como etiqueta. Crea otras para lo que no es un hábito: gente, lugares, ánimo.</p></div>';
+    return;
+  }
+  const grp=document.createElement("div"); grp.className="grp sortlist";
+  db.tags.forEach(t=>{
+    const r=document.createElement("div"); r.className="mrow"; r.dataset.id=t.id;
+    let n=0; Object.values(db.days).forEach(d=>(d.notes||[]).forEach(x=>{ if((x.tags||[]).includes(t.id)) n++; }));
+    r.innerHTML='<span class="dot"></span><span class="nm"><b></b><small></small></span>'
+      +'<span class="go">›</span><button class="grip" aria-label="Mover"></button>';
+    r.querySelector(".dot").style.background=t.color||"var(--v3)";
+    r.querySelector("b").textContent=t.name;
+    r.querySelector("small").textContent=n+" comentario"+(n===1?"":"s");
+    r.onclick=e=>{ if(!e.target.closest(".grip")) openTagSheet(t); };
+    grp.appendChild(r);
+  });
+  host.appendChild(grp);
+  makeSortable(grp,ids=>{ db.tags.sort((a,b)=>ids.indexOf(a.id)-ids.indexOf(b.id)); },null,
+    row=>{ const t=db.tags.find(x=>x.id===row.dataset.id); if(t) openTagSheet(t); });
+}
+let tagEdit=null;
+function openTagEditor(t){
+  tagEdit=t?t.id:null;
+  $("#tgTitle").textContent=t?"Editar etiqueta":"Nueva etiqueta";
+  $("#tgName").value=t?t.name:"";
+  tagColorPick=t&&t.color?t.color:nextColor(db.tags.length);
+  $("#tgDel").style.display=t?"":"none";
+  renderTagColors();
+  openSheetEl("#tagSheet");
+  if(!t) setTimeout(()=>$("#tgName").focus(),240);
+}
+const openTagSheet=openTagEditor;
+let tagColorPick=PALETTE[0];
+function renderTagColors(){
+  const host=$("#tgColors"); host.innerHTML="";
+  PALETTE.concat(STATE_COLORS).forEach(c=>{
+    const b=document.createElement("button");
+    b.className="sw"+(tagColorPick===c?" on":""); b.style.background=c;
+    b.onclick=()=>{ tagColorPick=c; renderTagColors(); };
+    host.appendChild(b);
+  });
+}
+$("#addTag2").onclick=()=>openTagEditor(null);
+$("#tgSave").onclick=()=>{
+  const n=$("#tgName").value.trim();
+  if(!n){ $("#tgName").focus(); toast("Ponle nombre"); return; }
+  if(tagEdit) Object.assign(db.tags.find(x=>x.id===tagEdit),{name:n,color:tagColorPick});
+  else db.tags.push({id:uid(),name:n,color:tagColorPick});
+  save(); closeTop(); renderAll(); toast("Etiqueta guardada");
+};
+$("#tgDel").onclick=async()=>{
+  const t=db.tags.find(x=>x.id===tagEdit); if(!t) return;
+  let n=0; Object.values(db.days).forEach(d=>(d.notes||[]).forEach(x=>{ if((x.tags||[]).includes(t.id)) n++; }));
+  if(!await ask({danger:1,title:"Eliminar "+t.name,
+    text:"Se quita de "+n+" comentario"+(n===1?"":"s")+". Los comentarios no se borran.",
+    ok:"Mantén para eliminar"})) return;
+  db.tags=db.tags.filter(x=>x.id!==t.id);
+  Object.values(db.days).forEach(d=>(d.notes||[]).forEach(x=>{
+    if(x.tags) x.tags=x.tags.filter(id=>id!==t.id);
+  }));
+  save(); closeAll(); renderAll(); toast("Etiqueta eliminada");
+};
+
 /* ================= respaldo ================= */
 const b64=blob=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result.split(",")[1]);f.readAsDataURL(blob);});
 function unb64(s,type){
@@ -3590,7 +3894,7 @@ $("#wipeBtn").onclick=async()=>{
     ok:"Mantén para borrar todo"})) return;
   player.pause(); loadedId=null; pos={}; lens={};
   try{ for(const id of await allAudioKeys()) await delAudio(id); }catch(e){}
-  db={version:5,habits:[],trackers:[],days:{},assume:true};
+  db={version:8,habits:[],trackers:[],tags:[],days:{},assume:true,thresholds:null};
   recScope=null; trScope=null; _start=null; _chg=null;
   save(); renderAll(); toast("Todo borrado");
 };
