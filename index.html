@@ -17,8 +17,8 @@
   --bg:#0C0E13; --card:#161A22; --up:#1F2530; --line:#2A3140;
   --text:#F3F5F8; --muted:#8B93A3; --dim:#5C6474;
   --acc:#FFB020; --alert:#F0554F;
-  --v1:#F0554F; --v2:rgba(240,85,79,.42); --v3:#39414F; --v4:rgba(255,176,32,.45); --v5:#FFB020;
-  --v1t:#2B0605; --v2t:#F3F5F8; --v3t:#F3F5F8; --v4t:#F3F5F8; --v5t:#241600;
+  --v1:#F0554F; --v2:rgba(240,85,79,.42); --v3:#CCCCCC; --v4:rgba(255,176,32,.45); --v5:#FFB020;
+  --v1t:#2B0605; --v2t:#F3F5F8; --v3t:#1A1E27; --v4t:#F3F5F8; --v5t:#241600;
   --onacc:#241600; --shadow:rgba(0,0,0,.7); --bar:rgba(12,14,19,.94);
   --alertbg:rgba(240,85,79,.14); --alertln:rgba(240,85,79,.42);
   --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI Variable Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
@@ -27,7 +27,7 @@ html[data-theme=light]{
   --bg:#F1F3F7; --card:#FFFFFF; --up:#EDEFF4; --line:#DEE3EB;
   --text:#12151B; --muted:#5A6170; --dim:#8A93A3;
   --acc:#B06E00; --alert:#C6362F;
-  --v1:#C6362F; --v2:rgba(198,54,47,.26); --v3:#AEB6C4; --v4:rgba(176,110,0,.28); --v5:#E0A020;
+  --v1:#C6362F; --v2:rgba(198,54,47,.26); --v3:#CCCCCC; --v4:rgba(176,110,0,.28); --v5:#E0A020;
   --v1t:#FFF3F2; --v2t:#12151B; --v3t:#12151B; --v4t:#12151B; --v5t:#2A1B00;
   --onacc:#FFFFFF; --shadow:rgba(24,30,44,.22); --bar:rgba(241,243,247,.94);
   --alertbg:rgba(198,54,47,.10); --alertln:rgba(198,54,47,.34);
@@ -83,7 +83,7 @@ p.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
 .pick button:nth-child(1) span{height:20%} .pick button:nth-child(2) span{height:40%}
 .pick button:nth-child(3) span{height:60%} .pick button:nth-child(4) span{height:80%}
 .pick button:nth-child(5) span{height:100%}
-.pick button.on span{background:var(--acc)} .pick button.on{box-shadow:inset 0 0 0 2px var(--acc)}
+.pick button.on span{background:var(--daypick)} .pick button.on{box-shadow:inset 0 0 0 2px var(--daypick)}
 .pick button.auto{box-shadow:inset 0 0 0 1.5px var(--line)}
 .picklbl{display:flex;justify-content:space-between;color:var(--dim);font-size:10px;margin-top:7px}
 
@@ -333,7 +333,7 @@ p.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
 .t .foot .n{font-size:17px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
 .t .foot .c{font-size:10px;color:var(--dim)}
 .bars2{display:flex;gap:6px;align-items:flex-end;height:110px;margin:6px 0}
-.bars2 .c{flex:1;display:flex;flex-direction:column;justify-content:flex-end}
+.bars2 .c{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end}
 .bars2 i{width:100%;border-radius:4px 4px 0 0;background:var(--up);min-height:3px}
 .bars2 i.v1{background:var(--v1)} .bars2 i.v2{background:var(--v2)} .bars2 i.v3{background:var(--v3)}
 .bars2 i.v4{background:var(--v4)} .bars2 i.v5{background:var(--v5)}
@@ -648,6 +648,151 @@ nav button svg{display:block;width:23px;height:23px;margin:0 auto 5px;fill:none;
   opacity:0;pointer-events:none;transition:opacity .2s;font-weight:600;max-width:88vw;text-align:center}
 .toast.on{opacity:1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ===== escala de unidades dentro del día ===== */
+.scale{display:flex;gap:5px;margin-top:11px}
+.scale .scl{flex:1;min-width:0;background:var(--up);border:1px solid var(--line);
+  border-radius:10px;padding:7px 4px 6px;display:flex;flex-direction:column;align-items:center;gap:3px}
+.scale .scl i{display:block;width:100%;height:3px;border-radius:2px;background:var(--sc);opacity:.5}
+.scale .scl b{font-size:13px;font-variant-numeric:tabular-nums}
+.scale .scl span{font-size:9px;line-height:1.15;color:var(--dim);text-align:center;
+  overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.scale .scl.on{border-color:var(--sc);background:var(--bg)}
+.scale .scl.on i{opacity:1;height:4px}
+.scale .scl.on b{color:var(--sc)}
+/* ===== día de semana ===== */
+.bars2.rel{position:relative}
+.bars2 i.none{background:var(--line)}
+.bars2 i.thin{opacity:.55}
+.bars2 i.grow{transform-origin:50% 100%;animation:barup .5s var(--gr,0s) cubic-bezier(.2,.8,.3,1) both}
+@keyframes barup{from{transform:scaleY(.04);opacity:.3}to{transform:scaleY(1);opacity:1}}
+.avgline{position:absolute;left:0;right:0;height:0;border-top:1px dashed var(--muted);
+  pointer-events:none;display:flex;justify-content:flex-end}
+.avgline b{font-size:9px;color:var(--muted);background:var(--card);padding:0 4px;
+  transform:translateY(-50%);letter-spacing:.02em}
+.blab b{color:var(--text);font-size:12px;font-variant-numeric:tabular-nums}
+.blab i{font-style:normal;font-size:10px}
+.blab i.up{color:var(--v5)} .blab i.dn{color:var(--v1)} .blab i.eq{color:var(--dim)}
+.blab i.na{color:var(--line)}
+/* ===== tendencia ===== */
+.trendbox .revrect{transform-origin:0 0;animation:trrev 1.05s cubic-bezier(.35,0,.15,1) both}
+@keyframes trrev{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.trendbox .tdot{animation:trdot .4s .85s ease-out both}
+@keyframes trdot{from{opacity:0}to{opacity:1}}
+.tnow{position:absolute;right:0;transform:translateY(-50%);font-size:10px;font-weight:700;
+  color:var(--acc);background:var(--card);padding:1px 5px;border-radius:6px;
+  animation:trdot .4s .9s ease-out both}
+@media (prefers-reduced-motion:reduce){
+  .trendbox .revrect,.trendbox .tdot,.tnow,.bars2 i.grow{animation:none}
+}
+
+/* ===== eventos ===== */
+.cell.ev{box-shadow:inset 0 0 0 2px var(--ec,var(--acc))}
+.cell.ev::before{content:"";position:absolute;left:50%;bottom:3px;transform:translateX(-50%);
+  width:12px;height:2px;border-radius:2px;background:var(--ec,var(--acc))}
+.ycol i.ev{box-shadow:inset 0 0 0 2px var(--ec,var(--acc))}
+.evbig,.evrow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+  background:var(--up);border:1px solid var(--line);border-left:3px solid var(--ec,var(--acc));
+  border-radius:12px;padding:13px 14px;margin-top:8px}
+.evbig .mk,.evrow .mk{width:9px;height:9px;border-radius:50%;background:var(--ec,var(--acc));flex:0 0 auto}
+.evbig .tx,.evrow .tx{flex:1;min-width:0}
+.evbig small,.evrow small{display:block;font-size:11px;color:var(--dim);letter-spacing:.02em}
+.evbig b,.evrow b{display:block;font-size:15.5px;font-weight:600;margin-top:2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.evbig .ar,.evrow .ar{color:var(--dim);font-size:18px;flex:0 0 auto}
+.dayev small{color:var(--muted)}
+.bacmp{display:flex;align-items:center;gap:10px;margin:4px 0 2px}
+.bacmp div{flex:1;background:var(--up);border-radius:12px;padding:12px 13px}
+.bacmp small{display:block;font-size:11px;color:var(--dim)}
+.bacmp b{display:block;font-size:22px;font-weight:600;margin:3px 0 1px;font-variant-numeric:tabular-nums}
+.bacmp i{font-style:normal;font-size:11px;color:var(--muted)}
+.bacmp .sep{color:var(--dim);font-size:15px}
+
+/* ===== cambios de meta en el calendario del mes ===== */
+.cell{--cr:15px}
+.cell .cdot{position:absolute;left:50%;top:50%;width:5px;height:5px;margin:-2.5px 0 0 -2.5px;
+  border-radius:50%;box-shadow:0 0 0 1.5px var(--card);pointer-events:none}
+@media (max-width:359px){ .cell{--cr:13px} .cell .cdot{width:4.5px;height:4.5px} }
+.hbadges{display:flex;flex-wrap:wrap;gap:7px;margin-top:2px}
+.hbadge{display:inline-flex;align-items:center;gap:7px;background:var(--up);border:1px solid var(--line);
+  border-radius:999px;padding:7px 13px 7px 10px;font-size:13px;color:var(--text)}
+.hbadge .hdot{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+.hbadge .n{color:var(--dim);font-size:11px}
+.hbadge::after{content:"›";color:var(--dim);font-size:15px;line-height:1;margin-left:1px}
+.hbadge:active{background:var(--line)}
+
+/* ===== lo que no calificaste: mismo color, con una diagonal encima ===== */
+:root{--daypick:#8FC6F2}
+html[data-theme=light]{--daypick:#5AA0DC}
+.cell.dim{opacity:1;background-image:linear-gradient(135deg,transparent calc(50% - 1.6px),
+  var(--slash) calc(50% - 1.6px),var(--slash) calc(50% + 1.6px),transparent calc(50% + 1.6px))}
+.strip .cs i.dim{opacity:1;background-image:linear-gradient(135deg,transparent calc(50% - 1.5px),
+  var(--slash) calc(50% - 1.5px),var(--slash) calc(50% + 1.5px),transparent calc(50% + 1.5px))}
+.ycol i.dim{opacity:1;background-image:linear-gradient(135deg,transparent calc(50% - 1px),
+  var(--slash) calc(50% - 1px),var(--slash) calc(50% + 1px),transparent calc(50% + 1px))}
+.bars.asum{opacity:1;position:relative}
+.bars.asum::after{content:"";position:absolute;left:0;right:0;top:50%;height:3px;
+  transform:translateY(-50%);pointer-events:none;background:var(--sbar);opacity:.85;border-radius:2px}
+/* ===== animación corta cuando solo te mueves de día ===== */
+#viewBody.fast .revrect,#viewBody.fast .tdot,#viewBody.fast .tnow,#viewBody.fast .bars2 i.grow{
+  animation-duration:.05s;animation-delay:0s}
+/* ===== noches: a qué hora dormiste ===== */
+/* --hl columna de días, --hg separación, --hp respiro para las horas escritas */
+.hyp{--hl:42px; --hg:8px; --hp:36px; margin-top:4px;position:relative}
+@media (max-width:379px){ .hyp{--hl:38px; --hp:31px} }
+.hypax{display:flex;gap:var(--hg);margin-bottom:5px}
+.hypax .d{width:var(--hl);flex:0 0 auto}
+.hypax .tk{flex:1;position:relative;height:14px}
+.hypax .in{position:absolute;left:var(--hp);right:var(--hp);top:0;bottom:0}
+.hypax .in span{position:absolute;transform:translateX(-50%);font-size:9.5px;color:var(--dim);
+  font-variant-numeric:tabular-nums}
+.hypax .in span.mid{color:var(--text);font-weight:700}
+.hypplot{position:relative}
+.hypmid{position:absolute;top:1px;bottom:1px;width:2px;margin-left:-1px;border-radius:2px;
+  background:var(--text);opacity:.45;pointer-events:none}
+.hyprow{display:flex;align-items:center;gap:var(--hg);height:21px;margin-bottom:4px;width:100%;
+  background:none;border:0;padding:0;cursor:pointer;position:relative}
+.hyprow .d{width:var(--hl);flex:0 0 auto;font-size:10.5px;color:var(--dim);text-align:right;
+  white-space:nowrap;font-variant-numeric:tabular-nums}
+.hyprow.sel .d{color:var(--text);font-weight:700}
+.hyprow .tk{flex:1;position:relative;height:100%}
+.hyprow .tk::before{content:"";position:absolute;left:var(--hp);right:var(--hp);top:50%;
+  height:1px;background:var(--line)}
+.hyprow .in{position:absolute;left:var(--hp);right:var(--hp);top:0;bottom:0}
+.hyprow .bar{position:absolute;top:4px;bottom:4px;border-radius:7px;background:var(--acc)}
+.hyprow.sel .bar{box-shadow:0 0 0 1.5px var(--text)}
+.hyprow .tm{position:absolute;top:50%;transform:translateY(-50%);font-size:9.5px;color:var(--muted);
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+.hyprow .tm.a{transform:translate(-100%,-50%);padding-right:6px}
+.hyprow .tm.b{padding-left:6px}
+.hyprow.sel .tm{color:var(--text)}
+.hyprow .nd{position:absolute;left:0;top:50%;transform:translateY(-50%);font-size:9.5px;color:var(--dim)}
+
+/* ===== lo no registrado: una franja gris clara, no una diagonal ===== */
+
+:root{--sbar:#7B8291; --forced:#4ECDA4}
+html[data-theme=light]{--sbar:#767E8C; --forced:#0E9E76}
+.cell .n{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;position:relative;z-index:1}
+/* Sin calificar: la franja no cruza el número, se parte y le deja el centro.
+   Al no haber choque, el número no necesita fondo de ningún tipo. */
+.cell.dim{opacity:1;
+  background-image:linear-gradient(var(--sbar),var(--sbar)),linear-gradient(var(--sbar),var(--sbar));
+  background-repeat:no-repeat,no-repeat;
+  background-position:left center,right center;
+  background-size:28% 9px,28% 9px}
+.cell.dim .n{font-weight:800}
+/* Lo que fijaste tú se marca en el contorno, en un tono que no existe
+   en la escala de calificaciones. */
+.cell.forced{box-shadow:inset 0 0 0 2px var(--forced)}
+.strip .cs i.dim{opacity:1;background-image:linear-gradient(var(--sbar),var(--sbar));
+  background-repeat:no-repeat;background-position:center;background-size:100% 5px}
+.ycol i.dim{opacity:1;background-image:none}
+/* ===== promedio del día de semana ===== */
+.wkhead{display:flex;justify-content:flex-end;margin-bottom:5px}
+.wkbadge{font-size:10.5px;color:var(--muted);background:var(--up);border:1px solid var(--line);
+  border-radius:999px;padding:3px 10px;letter-spacing:.02em}
+.bars2 .c{position:relative;z-index:1}
+.avgline{z-index:3}
 </style>
 </head>
 <body>
@@ -697,6 +842,13 @@ nav button svg{display:block;width:23px;height:23px;margin:0 auto 5px;fill:none;
       <div class="sleepsum" id="sleepSum"></div>
     </div>
 
+    <h3 class="sec">Eventos</h3>
+    <div class="card">
+      <p class="hint" style="margin:0 0 10px">Algo que parte tu historia en dos: una mudanza, un trabajo nuevo, una operación. Queda marcado en el calendario.</p>
+      <div id="evToday"></div>
+      <button class="btn gh" id="addEvent">Marcar un evento</button>
+    </div>
+
     <h3 class="sec">Momentos</h3>
     <div class="card">
       <div id="momToday"></div>
@@ -709,9 +861,11 @@ nav button svg{display:block;width:23px;height:23px;margin:0 auto 5px;fill:none;
         <label for="noteIn">Escribe lo que pasó</label>
         <textarea id="noteIn" maxlength="500" placeholder="Lo que quieras recordar de hoy…"></textarea>
         <div class="refline">
-          <span class="rl">¿A qué hora?</span>
+          <span class="rl">¿A qué horas?</span>
           <input class="reft" id="refIn" type="time" aria-label="Hora a la que pasó">
+          <button class="act-s" id="cmpAddTime">Agregar hora</button>
         </div>
+        <div class="chiprow" id="cmpTimes" style="margin-top:9px"></div>
         <div class="refline" id="cmpTags"></div>
       </div>
       <div class="frow">
@@ -745,8 +899,8 @@ nav button svg{display:block;width:23px;height:23px;margin:0 auto 5px;fill:none;
   <div class="pane" id="p-rec-p">
     <div class="chips scope" id="scopePicker"></div>
     <div class="chips" id="viewPicker">
-      <button data-v="year" class="on">Año</button>
-      <button data-v="month">Mes</button>
+      <button data-v="month" class="on">Mes</button>
+      <button data-v="year">Año</button>
       <button data-v="week">Día de semana</button>
       <button data-v="trend">Tendencia</button>
       <button data-v="patterns">Patrones</button>
@@ -766,8 +920,6 @@ nav button svg{display:block;width:23px;height:23px;margin:0 auto 5px;fill:none;
   <div class="pane" id="p-rec-m">
     <div class="chips scope" id="trPicker"></div>
     <div class="card" id="hourBody"></div>
-    <h3 class="sec">Cambios de metas</h3>
-    <div class="card" id="changes"></div>
   </div>
 </div></section>
 
@@ -841,15 +993,19 @@ nav button svg{display:block;width:23px;height:23px;margin:0 auto 5px;fill:none;
     <div class="seg two" id="fKind"><button data-k="build">Más</button><button data-k="avoid">Menos</button></div></div>
   <div class="fld"><label>Color</label><div class="swatches" id="fColors"></div></div>
   <div class="fld"><label>¿Cómo lo mides?</label>
-    <div class="seg two" id="fMode"><button data-m="time">Minutos</button>
+    <div class="seg two" id="fMode"><button data-m="time">Unidades</button>
       <button data-m="rate">Yo califico</button></div></div>
   <div id="timeFields">
-    <div class="fld"><label for="fGoal" id="goalLabel">Meta diaria</label>
-      <div class="goalwrap"><input id="fGoal" type="number" inputmode="numeric" min="0" step="5" value="60">
-        <span id="goalWord">minutos, mínimo</span></div></div>
-    <div class="fld"><label for="fStretch" id="stretchLabel">Umbral de excelente</label>
-      <div class="goalwrap"><input id="fStretch" type="number" inputmode="numeric" min="0" step="5" value="90">
-        <span id="stretchWord">desde aquí, excelente</span></div></div>
+    <div class="fld"><label for="fUnit">¿En qué lo mides?</label>
+      <input id="fUnit" maxlength="12" placeholder="minutos, km, páginas, vasos…">
+      <p class="hint" style="margin:7px 0 0">Solo es el nombre de la unidad. Puede ser cualquier cosa que cuentes.</p></div>
+    <div class="fld"><label for="fGoal" id="goalLabel">Lo mínimo</label>
+      <div class="goalwrap"><input id="fGoal" type="number" value="0" disabled>
+        <span id="goalWord">unidades, «No lo hice»</span></div></div>
+    <div class="fld"><label for="fStretch" id="stretchLabel">El tope</label>
+      <div class="goalwrap"><input id="fStretch" type="number" inputmode="numeric" min="1" step="1" value="60">
+        <span id="stretchWord">desde aquí, «Excelente»</span></div>
+      <p class="hint" style="margin:7px 0 0">Los tres tramos de en medio se reparten solos. Abajo puedes moverlos uno por uno.</p></div>
   </div>
   <div class="fld"><label id="stLabel">Estados posibles</label>
     <p class="hint" id="stHint" style="margin:-2px 0 9px"></p>
@@ -908,6 +1064,57 @@ nav button svg{display:block;width:23px;height:23px;margin:0 auto 5px;fill:none;
   <button class="btn" id="nsSave">Guardar</button>
   <button class="btn gh" data-close="1">Cancelar</button>
   <button class="btn dg" id="nsDel">Eliminar comentario</button>
+</div>
+
+<div class="sheet" id="chgHab" role="dialog" aria-modal="true">
+  <div class="grab"></div>
+  <h2 id="chgHabTitle">Cambios</h2>
+  <p class="lead" id="chgHabLead"></p>
+  <div id="chgHabBody"></div>
+  <button class="btn gh" data-close="1">Cerrar</button>
+</div>
+
+<div class="sheet" id="evSheet" role="dialog" aria-modal="true">
+  <div class="grab"></div>
+  <h2 id="evTitle">Marcar un evento</h2>
+  <p class="lead">Queda una marca en el calendario a partir de ese día.</p>
+  <div class="fld"><label for="evName">¿Qué pasó?</label>
+    <input id="evName" maxlength="40" placeholder="Mudanza, trabajo nuevo, cirugía…"></div>
+  <div class="fld"><label for="evDate">¿Qué día?</label><input id="evDate" type="date"></div>
+  <div class="fld"><label>Color de la marca</label><div class="swatches" id="evColors"></div></div>
+  <div class="fld"><label for="evNote">Nota (opcional)</label>
+    <textarea id="evNote" rows="3" maxlength="300" placeholder="Qué esperas que cambie a partir de aquí…"></textarea></div>
+  <button class="btn" id="evSave">Guardar evento</button>
+  <button class="btn gh" data-close="1">Cancelar</button>
+  <button class="btn dg" id="evDel">Eliminar evento</button>
+</div>
+
+<div class="sheet" id="evView" role="dialog" aria-modal="true">
+  <div class="grab"></div>
+  <h2 id="evvTitle">Evento</h2>
+  <p class="lead" id="evvWhen"></p>
+  <div id="evvBody"></div>
+  <button class="btn" id="evvNote">Agregar un comentario de ese día</button>
+  <button class="btn gh" id="evvDay">Ver ese día completo</button>
+  <button class="btn gh" id="evvEdit">Editar el evento</button>
+  <button class="btn gh" data-close="1">Cerrar</button>
+</div>
+
+<div class="sheet" id="histSheet" role="dialog" aria-modal="true">
+  <div class="grab"></div>
+  <h2>Todos tus comentarios</h2>
+  <p class="lead" id="histLead"></p>
+  <div class="chips" id="histFilter" style="margin-bottom:4px"></div>
+  <div id="histBody"></div>
+  <button class="btn gh" data-close="1">Cerrar</button>
+</div>
+
+<div class="sheet" id="chgSheet" role="dialog" aria-modal="true">
+  <div class="grab"></div>
+  <h2>Cambios de metas</h2>
+  <p class="lead">Cada vez que cambiaste una meta y desde qué día empezó a contar.</p>
+  <div id="changes"></div>
+  <button class="btn gh" data-close="1">Cerrar</button>
 </div>
 
 <div class="sheet" id="askSheet" role="dialog" aria-modal="true">
@@ -1013,6 +1220,14 @@ nav button svg{display:block;width:23px;height:23px;margin:0 auto 5px;fill:none;
     </div>
   </div>
 
+  <h3 class="sec">Historial</h3>
+  <div class="grp">
+    <button class="mrow" id="openHist"><span class="dot"></span>
+      <span class="nm"><b>Todos tus comentarios</b><small id="histSum"></small></span><span class="go">›</span></button>
+    <button class="mrow" id="openChg"><span class="dot n"></span>
+      <span class="nm"><b>Cambios de metas</b><small id="chgSum"></small></span><span class="go">›</span></button>
+  </div>
+
   <h3 class="sec">Cuenta</h3>
   <div class="grp">
     <button class="mrow acc-soon"><span class="dot n"></span>
@@ -1065,7 +1280,7 @@ const SHORT=["","R.bad","Bad","Meh","Good","Great"];
 const PALETTE=["#5AC8FA","#7B7BF5","#E86BB0","#3FC98A","#F5A524","#FF7A5C"];
 const nextColor=n=>PALETTE[n%PALETTE.length];
 /* los cinco tonos con los que la app pinta las calificaciones, en sólido */
-const STATE_COLORS=["#F0554F","#B4635E","#5B6577","#C08A3A","#FFB020"];
+const STATE_COLORS=["#F0554F","#B4635E","#CCCCCC","#C08A3A","#FFB020"];
 const DEF_WEIGHT=10;
 const weightOf=h=>(h.weight==null?DEF_WEIGHT:h.weight);
 const fmtPts=p=>(p>0?"+":"")+Math.round(p);
@@ -1087,6 +1302,24 @@ function tagColor(id){ const h=habitTag(id); if(h) return specAt(h,todayKey()).c
 /* orden del día: manda la primera hora que le pusiste, si no, cuándo la escribiste */
 const noteKey=n=>(n.times&&n.times.length)?mins(n.times[0]):new Date(n.at).getHours()*60+new Date(n.at).getMinutes();
 const notesForHabit=(k,id)=>(((rawDay(k)||{}).notes)||[]).filter(n=>(n.tags||[]).includes(id));
+
+/* ================= eventos =================
+   Un evento parte la línea del tiempo: "a partir de aquí, algo cambió".
+   No califica nada, solo marca el día para poder mirar antes y después. */
+const evAll=()=>db.events.slice().sort((a,b)=>a.at<b.at?1:-1);
+const evOn=k=>db.events.filter(e=>e.at===k);
+const evOf=id=>db.events.find(e=>e.id===id)||null;
+const evColor=e=>(e&&e.color)||"var(--acc)";
+/* promedio de puntos en los días antes y desde el evento */
+function evSplit(k,win){
+  win=win||30;
+  const one=(from,to)=>{
+    let s=0,n=0,c=from;
+    while(c<=to){ if(inRange(c)&&db.habits.some(h=>hGrade(h,c)!=null)){ s+=dayPoints(c); n++; } c=shift(c,1); }
+    return n?{avg:s/n,n}:null;
+  };
+  return {before:one(shift(k,-win),shift(k,-1)),after:one(k,shift(k,win-1))};
+}
 
 /* ================= estados =================
    Cada hábito define sus propios estados: nombre, puntos y color, ordenados de
@@ -1134,46 +1367,93 @@ function normGrade(s,i){
 }
 function stateColor(s,i){
   const x=statesOf(s)[i];
-  return (x&&x.color)?x.color:"var(--v"+normGrade(s,i)+")";
+  /* el color de fábrica es exactamente el mismo que el de la fila de tonos,
+     para que tocar el que ya se ve puesto no cambie nada */
+  return (x&&x.color)?x.color:STATE_COLORS[Math.max(0,Math.min(4,normGrade(s,i)-1))];
 }
 function defStretch(h){
   if(h.mode!=="time") return 0;
   const g=h.goal||0;
   return h.kind==="build"?(g>0?Math.round(g*1.5):30):(g>0?g*2:30);
 }
-/* en los de minutos, los minutos deciden el estado */
+/* ================= unidades =================
+   Un hábito medido en unidades tiene cinco estados y cada uno empieza en una
+   cantidad: los "cortes". La lista siempre sube y siempre arranca en 0.
+   En "más" el primer estado es el de 0 unidades; en "menos" se lee al revés,
+   porque ahí 0 unidades es lo mejor que te puede pasar. */
+const NST=5;
+const unitOf=s=>((s&&s.unit)||"");
+function fmtU(s,v){
+  const u=unitOf(s); v=Math.round(v||0);
+  if(!u) return String(v);                       /* sin unidad, puro número */
+  if(u==="min"||u==="minutos") return fmtMin(v);
+  return v+" "+u;
+}
+/* estado -> tramo. El tramo 0 es siempre el de cero unidades. */
+const bandOf=(s,i)=>(s.kind==="build"?i:(statesOf(s).length-1-i));
+const stateForBand=(s,b)=>(s.kind==="build"?b:(statesOf(s).length-1-b));
+/* reparte 0..top en n tramos. Si no da exacto, lo que sobra se lo queda
+   primero el tramo más alto y va bajando. */
+function spread(top,n){
+  n=Math.max(2,n); const g=n-1;
+  top=Math.max(g,Math.round(top)||0);
+  const base=Math.floor(top/g), extra=top-base*g, c=[0];
+  for(let i=1;i<n;i++) c.push(c[i-1]+base+(i>g-extra?1:0));
+  return c;
+}
+function normCuts(c){
+  c=c.slice(); c[0]=0;
+  for(let i=1;i<c.length;i++){ c[i]=Math.max(0,Math.round(c[i]||0));
+    if(c[i]<=c[i-1]) c[i]=c[i-1]+1; }
+  return c;
+}
+/* hábitos viejos: se traducen sus minutos de meta y de excelente a cortes */
+function legacyCuts(s,n){
+  const g=Math.max(0,Math.round(s.goal||0)), st=Math.max(0,Math.round(s.stretch||0));
+  if(n!==NST||(!g&&!st)) return spread(st||g||60,n);
+  const top=s.kind==="build"?Math.max(st,g+1):Math.max(st+1,g+1);
+  return normCuts([0,1,g,g+1,top]);
+}
+function cutsOf(s){
+  const n=statesOf(s).length;
+  if(Array.isArray(s.cuts)&&s.cuts.length===n) return normCuts(s.cuts);
+  return legacyCuts(s,n);
+}
+const topCut=s=>{const c=cutsOf(s);return c[c.length-1];};
+/* en los de unidades, la cantidad decide el estado */
 function timeIdx(s,v){
-  const goal=s.goal||0, st=(s.stretch!=null?s.stretch:defStretch(s));
-  if(s.kind==="build"){
-    if(v<=0) return 0;
-    if(goal<=0) return v>=st?4:3;
-    if(v<goal) return 1;
-    if(v===goal) return 2;
-    return v>=st?4:3;
-  }
-  if(v<=0) return 4;
-  if(goal<=0) return v>st?0:1;
-  if(v<goal) return 3;
-  if(v===goal) return 2;
-  return v>st?0:1;
+  const c=cutsOf(s), n=c.length;
+  v=Math.max(0,v||0);
+  let b=0; for(let i=0;i<n;i++){ if(v>=c[i]) b=i; }
+  return stateForBand(s,b);
 }
 function minutesForIdx(s,i){
-  const g=s.goal||0, st=(s.stretch!=null?s.stretch:defStretch(s));
-  const arr=s.kind==="build"
-    ? [0,Math.max(1,g-1),g,g+1,Math.max(st,g+1)]
-    : [st+1,g+1,g,Math.max(0,g-1),0];
-  return arr[Math.max(0,Math.min(4,i))];
+  const c=cutsOf(s);
+  return c[Math.max(0,Math.min(c.length-1,bandOf(s,i)))];
+}
+/* mueve un corte y acomoda los demás para que la lista siga subiendo.
+   Tocar el tope reparte todo parejo; tocar uno de en medio solo empuja
+   a sus vecinos lo mínimo necesario. */
+function setCut(cuts,band,v){
+  const n=cuts.length;
+  if(band<=0) return cuts.slice();
+  v=Math.max(band,Math.round(v)||0);
+  if(band===n-1) return spread(v,n);
+  const c=cuts.slice(); c[band]=v;
+  for(let i=band-1;i>=1;i--) if(c[i]>=c[i+1]) c[i]=c[i+1]-1;
+  for(let i=band+1;i<n;i++) if(c[i]<=c[i-1]) c[i]=c[i-1]+1;
+  return normCuts(c);
 }
 function goalText(h){
-  if(h.mode==="time")
-    return h.kind==="build"
-      ? "meta "+fmtMin(h.goal)+" · excelente desde "+fmtMin(h.stretch)
-      : "límite "+fmtMin(h.goal)+" · muy mal pasando "+fmtMin(h.stretch);
+  if(h.mode==="time"){
+    const st=statesOf(h), tope=st[stateForBand(h,st.length-1)];
+    return "desde "+fmtU(h,topCut(h))+" es «"+((tope&&tope.label)||"lo máximo")+"»";
+  }
   return statesOf(h).map(x=>x.label).join(" · ");
 }
 
 /* ================= datos ================= */
-let db={version:8,habits:[],trackers:[],tags:[],days:{},assume:true,thresholds:null};
+let db={version:8,habits:[],trackers:[],tags:[],events:[],days:{},assume:true,thresholds:null};
 try{
   const raw=localStorage.getItem(KEY)||localStorage.getItem("habitledger.v4")||localStorage.getItem("habitledger.v3")
     ||localStorage.getItem("habitledger.v2")||localStorage.getItem("habitledger.v1");
@@ -1184,6 +1464,7 @@ function migrate(p){
   p.habits=p.habits||[]; p.days=p.days||{};
   if(!Array.isArray(p.trackers)) p.trackers=[];
   if(!Array.isArray(p.tags)) p.tags=[];
+  if(!Array.isArray(p.events)) p.events=[];
   if(typeof p.assume!=="boolean") p.assume=true;
   if(!Array.isArray(p.thresholds)) p.thresholds=null;
   const vmap={good:4,mixed:3,bad:2};
@@ -1281,6 +1562,14 @@ const hasVal=(k,id)=>entryOf(k,id)!==undefined;
 const isOff=(k,id)=>entryOf(k,id)==="off";
 const val=(k,id)=>{const v=entryOf(k,id);return typeof v==="number"?v:0;};
 
+/* "calificado" es que ese día haya un valor puesto para los hábitos, no que
+   hayas escrito un comentario o fijado la nota del día: la franja gris avisa
+   que la calificación es supuesta, aunque tú hayas forzado el día. */
+function ratedOn(k){
+  const d=rawDay(k); if(!d) return false;
+  if(recScope) return (d.entries||{})[recScope]!==undefined;
+  return Object.keys(d.entries||{}).length>0;
+}
 function logged(k){
   const d=rawDay(k); if(!d) return false;
   if(d.verdict||d.wake||d.sleep) return true;
@@ -1304,9 +1593,10 @@ function specAt(h,k){
   let r=null;
   for(let i=0;i<rs.length;i++){ if(rs[i].from<=k) r=rs[i]; else break; }
   r=r||rs[0];
-  const base={id:h.id,name:h.name,color:h.color||PALETTE[0],states:h.states||null,weight:weightOf(h)};
-  return r?{...base,kind:r.kind,mode:r.mode,goal:r.goal,stretch:r.stretch,labels:r.labels}
-          :{...base,kind:h.kind,mode:h.mode,goal:h.goal,stretch:h.stretch,labels:h.labels};
+  const base={id:h.id,name:h.name,color:h.color||PALETTE[0],states:h.states||null,
+    weight:weightOf(h),unit:h.unit||""};
+  return r?{...base,kind:r.kind,mode:r.mode,goal:r.goal,stretch:r.stretch,cuts:r.cuts,labels:r.labels}
+          :{...base,kind:h.kind,mode:h.mode,goal:h.goal,stretch:h.stretch,cuts:h.cuts,labels:h.labels};
 }
 const labelsFor=s=>statesOf(s).map(x=>x.label);
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -1330,20 +1620,32 @@ function chgOn(k){
 function diffText(prev,next){
   const out=[];
   if(prev.kind!==next.kind) out.push(next.kind==="build"?"ahora es para hacer más":"ahora es para evitar");
-  if(prev.mode!==next.mode) out.push(next.mode==="time"?"ahora se mide en minutos"
+  if(prev.mode!==next.mode) out.push(next.mode==="time"?"ahora se mide en unidades"
     :next.mode==="bin"?"ahora es sí o no":"ahora lo calificas tú");
   if(prev.mode==="time"&&next.mode==="time"){
-    if(prev.goal!==next.goal){
-      const w=next.kind==="build"?"mínimo":"límite";
-      const up=next.goal>prev.goal;
-      const tag=next.kind==="build"?(up?"subió":"bajó"):(up?"más holgado":"más estricto");
-      out.push(w+" de "+fmtMin(prev.goal)+" a "+fmtMin(next.goal)+" ("+tag+")");
-    }
-    if(prev.stretch!==next.stretch)
-      out.push((next.kind==="build"?"excelente":"muy mal")+" de "+fmtMin(prev.stretch)+" a "+fmtMin(next.stretch));
+    const a=cutsOf({...next,cuts:prev.cuts,goal:prev.goal,stretch:prev.stretch}), b=cutsOf(next);
+    const at=a[a.length-1], bt=b[b.length-1];
+    if(at!==bt){
+      const up=bt>at;
+      const tag=next.kind==="build"?(up?"más exigente":"más suave"):(up?"más holgado":"más estricto");
+      out.push("el tope pasó de "+fmtU(next,at)+" a "+fmtU(next,bt)+" ("+tag+")");
+    }else if(a.join()!==b.join()) out.push("se movieron los tramos");
   }
   if(next.mode==="rate"&&JSON.stringify(prev.labels||null)!==JSON.stringify(next.labels||null))
     out.push("cambiaron las etiquetas");
+  /* lo que no cambia la calificación pero sí vale la pena recordar */
+  const a=prev.snap, b=next.snap;
+  if(a&&b){
+    if(a.name!==b.name) out.push("antes se llamaba «"+a.name+"»");
+    const al=(a.states||[]).length, bl=(b.states||[]).length;
+    if(al&&bl&&al!==bl) out.push("pasó de "+al+" a "+bl+" estados");
+    else if(JSON.stringify((a.states||[]).map(x=>x.label))!==JSON.stringify((b.states||[]).map(x=>x.label)))
+      out.push("cambiaron los nombres de los estados");
+    if(al===bl&&JSON.stringify((a.states||[]).map(x=>x.pts))!==JSON.stringify((b.states||[]).map(x=>x.pts)))
+      out.push("cambiaron los puntos de los estados");
+    if((a.unit||"")!==(b.unit||"")) out.push(b.unit?"ahora se mide en "+b.unit:"ya no lleva unidad");
+    if(a.color!==b.color) out.push("cambió de color");
+  }
   return out.length?out.join(" · "):"ajuste";
 }
 
@@ -1412,7 +1714,7 @@ function autoGrade(k){
 }
 function dayGrade(k){ const d=rawDay(k); return (d&&d.verdict)||autoGrade(k); }
 function shownVal(s,has,v){
-  if(s.mode==="time") return has?fmtMin(v):"—";
+  if(s.mode==="time") return has?fmtU(s,v):"—";
   return null;
 }
 function meter(h,k,asum){
@@ -1472,7 +1774,7 @@ const allAudioKeys=()=>tx("readonly",s=>s.getAllKeys());
 /* ================= estado ================= */
 let cursor=todayKey(), openPad=null;
 let mCur=(()=>{const d=new Date();return{y:d.getFullYear(),m:d.getMonth()};})();
-let recView="year", recScope=null, trScope=null;
+let recView="month", recScope=null, trScope=null, trendMode="roll";
 let form={kind:"build",mode:"time",editing:null};
 let trForm={editing:null,tags:[]};
 let mForm={tr:null,tag:null};
@@ -1532,9 +1834,11 @@ function renderToday(){
     b.classList.toggle("on",manual===n);
     b.classList.toggle("auto",!manual&&auto===n);
     const sp=b.querySelector("span");
-    if(manual===n) sp.style.background="var(--acc)";
-    else if(!manual&&auto===n) sp.style.background="var(--v"+n+")";
-    else sp.style.background="";
+    /* el cálculo automático conserva los colores de siempre; el azul claro
+       es la marca de que lo pusiste tú */
+    if(manual===n){ sp.style.background="var(--daypick)"; sp.style.opacity=""; }
+    else if(!manual&&auto===n){ sp.style.background="var(--v"+n+")"; sp.style.opacity=".55"; }
+    else { sp.style.background=""; sp.style.opacity=""; }
   });
   $("#scaleFoot").textContent=manual
     ? "Lo pusiste tú. Toca otra vez para volver al cálculo automático."
@@ -1571,7 +1875,7 @@ function renderToday(){
       host.appendChild(b);
     }
   }
-  $("#dayChgT").innerHTML=dayChgHTML(cursor);
+  $("#dayChgT").innerHTML=dayEvHTML(cursor)+dayChgHTML(cursor);
   renderPoints(); renderSleep(); renderMomToday(); renderNotes();
 }
 
@@ -1655,14 +1959,18 @@ function padFor(h,s,off,has,v,ctx){
     });
     p.appendChild(box);
   }else{
+    const cuts=cutsOf(s), tope=cuts[cuts.length-1];
+    /* los saltos rápidos salen del propio tope, no de minutos fijos */
+    const nice=n=>n<10?Math.max(1,Math.round(n)):n<50?Math.round(n/5)*5:Math.round(n/10)*10;
+    const steps=[...new Set([1,nice(tope/4),nice(tope/2),tope])].filter(n=>n>0).sort((a,b)=>a-b).slice(0,4);
     const q=document.createElement("div"); q.className="qr";
-    [5,15,30,60].forEach(n=>{
-      const b2=document.createElement("button"); b2.textContent="+"+(n<60?n+"m":"1h");
-      b2.onclick=e=>{e.stopPropagation();setVal(h.id,v+n);}; q.appendChild(b2);
+    steps.forEach(n=>{
+      const b2=document.createElement("button"); b2.textContent="+"+n;
+      b2.onclick=e=>{e.stopPropagation();setVal(h.id,(has?v:0)+n);}; q.appendChild(b2);
     });
     const inp=document.createElement("input");
-    inp.type="number";inp.inputMode="numeric";inp.min="0";inp.value=has?v:"";inp.placeholder="min";
-    inp.setAttribute("aria-label","Minutos de "+h.name);
+    inp.type="number";inp.inputMode="numeric";inp.min="0";inp.value=has?v:"";inp.placeholder=unitOf(s)||"cantidad";
+    inp.setAttribute("aria-label","Cuántas unidades de "+h.name);
     inp.onclick=e=>e.stopPropagation();
     inp.onchange=()=>{const t=inp.value.trim();setVal(h.id,t===""?null:Math.max(0,parseInt(t,10)||0));};
     q.appendChild(inp);
@@ -1670,6 +1978,21 @@ function padFor(h,s,off,has,v,ctx){
     c.onclick=e=>{e.stopPropagation();setVal(h.id,null);};
     q.appendChild(c);
     p.appendChild(q);
+    /* la escala, para ver de un golpe dónde cae lo que llevas */
+    const sc=document.createElement("div"); sc.className="scale";
+    const cur=has?timeIdx(s,v):null;
+    cuts.forEach((cv,b)=>{
+      const i=stateForBand(s,b);
+      const b2=document.createElement("button");
+      b2.className="scl"+(cur===i?" on":"");
+      b2.style.setProperty("--sc",stateColor(s,i));
+      b2.innerHTML='<i></i><b></b><span></span>';
+      b2.querySelector("b").textContent=fmtU(s,cv);
+      b2.querySelector("span").textContent=statesOf(s)[i].label;
+      b2.onclick=e=>{e.stopPropagation();setVal(h.id,cv);};
+      sc.appendChild(b2);
+    });
+    p.appendChild(sc);
   }
   /* varias horas: puedes hacer el mismo hábito más de una vez al día */
   const wr=document.createElement("div"); wr.className="whenrow";
@@ -1854,8 +2177,9 @@ function nightsAvg(){
 
 /* ================= notas ================= */
 function renderNotes(){
+  renderEvToday();
   $("#noteCnt").textContent=($("#noteIn").value.length)+" / 500";
-  renderCmpTags();
+  renderCmpTimes(); renderCmpTags();
   renderNoteList($("#noteList"),cursor);
 }
 $("#noteIn").oninput=()=>{ $("#noteCnt").textContent=$("#noteIn").value.length+" / 500"; };
@@ -1867,13 +2191,39 @@ function refStamp(k,hhmm){
   const d=parseKey(k); d.setHours(h||0,m||0,0,0);
   return d.getTime();
 }
-let cmpTags=[];
+let cmpTags=[], cmpTimes=[];
+/* un comentario puede referirse a varias horas desde que lo escribes,
+   sin tener que guardarlo primero y luego editarlo */
+function renderCmpTimes(){
+  const host=$("#cmpTimes"); if(!host) return;
+  host.innerHTML="";
+  cmpTimes.slice().sort((a,b)=>mins(a)-mins(b)).forEach(t=>{
+    const c=document.createElement("span"); c.className="timechip";
+    c.innerHTML="<span></span><button class='x' aria-label='Quitar'>&times;</button>";
+    c.querySelector("span").textContent=t;
+    c.querySelector(".x").onclick=()=>{ cmpTimes=cmpTimes.filter(x=>x!==t); renderCmpTimes(); };
+    host.appendChild(c);
+  });
+}
+function addCmpTime(v){
+  if(!v){ toast("Elige una hora"); return; }
+  if(cmpTimes.includes(v)){ toast("Esa hora ya está"); return; }
+  cmpTimes.push(v); $("#refIn").value=""; renderCmpTimes();
+}
+$("#cmpAddTime").onclick=()=>addCmpTime($("#refIn").value
+  ||(()=>{const n=new Date();return pad(n.getHours())+":"+pad(n.getMinutes());})());
+$("#refIn").onchange=()=>{ if($("#refIn").value) addCmpTime($("#refIn").value); };
+const takeCmpTimes=()=>{
+  const t=cmpTimes.slice(); if(!t.length&&$("#refIn").value) t.push($("#refIn").value);
+  cmpTimes=[]; $("#refIn").value=""; renderCmpTimes();
+  return t.sort((a,b)=>mins(a)-mins(b));
+};
 $("#saveNote").onclick=()=>{
   const t=$("#noteIn").value.trim();
   if(!t){ toast("Escribe algo primero"); return; }
-  const times=$("#refIn").value?[$("#refIn").value]:[];
-  day(cursor).notes.push({id:uid(),kind:"text",at:Date.now(),text:t,times,tags:cmpTags.slice()});
-  $("#noteIn").value=""; $("#refIn").value=""; cmpTags=[];
+  day(cursor).notes.push({id:uid(),kind:"text",at:Date.now(),text:t,
+    times:takeCmpTimes(),tags:cmpTags.slice()});
+  $("#noteIn").value=""; cmpTags=[];
   _start=null; save(); renderNotes(); renderRecord(); renderToday();
   toast("Comentario guardado");
 };
@@ -1905,6 +2255,12 @@ function renderNoteList(host,k){
   const kk=document.createElement("div"); kk.className="shk"; kk.textContent="Guardado este día";
   host.appendChild(kk);
   notePage=paged(host,arr,8,notePage,n=>{notePage=n;renderNotes();renderRecord();},n=>{
+    host.appendChild(noteEl(k,n));
+  });
+  refreshPlayers();
+}
+/* una nota dibujada: sirve igual en el día y en el historial completo */
+function noteEl(k,n){
     const t=new Date(n.at);
     const el=document.createElement("div"); el.className="saved";
     el.dataset.vn=n.id;
@@ -1950,10 +2306,171 @@ function renderNoteList(host,k){
       bd.appendChild(tg);
     }
     el.querySelector(".edit").onclick=()=>openNote(k,n.id);
-    host.appendChild(el);
+    return el;
+}
+
+/* ================= eventos ================= */
+let evForm=null;
+function evRow(e,big){
+  const b=document.createElement("button");
+  b.className=big?"evbig":"evrow";
+  b.style.setProperty("--ec",evColor(e));
+  const d=parseKey(e.at);
+  b.innerHTML='<span class="mk"></span><span class="tx"><small></small><b></b></span><span class="ar">›</span>';
+  b.querySelector("small").textContent="a partir del "+d.getDate()+" "+MES3[d.getMonth()]
+    +" "+String(d.getFullYear()).slice(2);
+  b.querySelector("b").textContent=e.name;
+  b.onclick=()=>openEvView(e.id);
+  return b;
+}
+function renderEvToday(){
+  const host=$("#evToday"); if(!host) return;
+  host.innerHTML="";
+  const list=evOn(cursor);
+  if(!list.length){
+    const p=document.createElement("p"); p.className="hint"; p.style.margin="0 0 10px";
+    p.textContent="Este día no tiene ningún evento marcado.";
+    host.appendChild(p); return;
+  }
+  list.forEach(e=>host.appendChild(evRow(e,true)));
+}
+function openEv(e){
+  evForm={editing:e?e.id:null,color:e?evColor(e):PALETTE[0]};
+  $("#evTitle").textContent=e?"Editar evento":"Marcar un evento";
+  $("#evName").value=e?e.name:"";
+  $("#evDate").max=todayKey();
+  $("#evDate").value=e?e.at:cursor;
+  $("#evNote").value=e?(e.note||""):"";
+  $("#evDel").style.display=e?"":"none";
+  renderEvColors();
+  openSheetEl("#evSheet");
+  if(!e) setTimeout(()=>$("#evName").focus(),240);
+}
+function renderEvColors(){
+  const host=$("#evColors"); host.innerHTML="";
+  PALETTE.forEach(c=>{
+    const b=document.createElement("button");
+    b.className="sw"+(evForm.color===c?" on":"");
+    b.style.background=c; b.setAttribute("aria-label","Color "+c);
+    b.onclick=()=>{ evForm.color=c; renderEvColors(); };
+    host.appendChild(b);
+  });
+}
+$("#addEvent").onclick=()=>openEv(null);
+$("#evSave").onclick=()=>{
+  const name=$("#evName").value.trim();
+  if(!name){ $("#evName").focus(); toast("Ponle nombre"); return; }
+  let at=$("#evDate").value||cursor;
+  if(at>todayKey()) at=todayKey();
+  const note=$("#evNote").value.trim();
+  if(evForm.editing){
+    const e=evOf(evForm.editing);
+    Object.assign(e,{name,at,note,color:evForm.color});
+  }else{
+    db.events.push({id:uid(),name,at,note,color:evForm.color});
+  }
+  save(); closeAll(); renderAll(); toast("Evento guardado");
+};
+$("#evDel").onclick=async()=>{
+  const e=evOf(evForm.editing); if(!e) return;
+  if(!await ask({danger:1,title:"Eliminar «"+e.name+"»",
+    text:"Se quita la marca del calendario. Tus días y comentarios no se tocan.",
+    ok:"Mantén para eliminar"})) return;
+  db.events=db.events.filter(x=>x.id!==e.id);
+  save(); closeAll(); renderAll(); toast("Evento eliminado");
+};
+let evViewId=null;
+function openEvView(id){ evViewId=id; renderEvView(); openSheetEl("#evView"); }
+function renderEvView(){
+  const e=evOf(evViewId); if(!e) return;
+  const d=parseKey(e.at);
+  $("#evvTitle").textContent=e.name;
+  $("#evvWhen").textContent="A partir del "+DIAS[d.getDay()]+" "+d.getDate()+" de "+MESES[d.getMonth()]
+    +" de "+d.getFullYear()+".";
+  const host=$("#evvBody"); host.innerHTML="";
+  if(e.note){
+    const n=document.createElement("p"); n.className="daychg"; n.style.margin="0 0 4px";
+    n.style.borderLeftColor=evColor(e); n.textContent=e.note;
+    host.appendChild(n);
+  }
+  /* antes y después: lo único que un evento sí puede decirte */
+  const sp=evSplit(e.at,30);
+  const box=document.createElement("div"); box.className="shk"; box.textContent="Antes y después";
+  host.appendChild(box);
+  const ba=document.createElement("div"); ba.className="bacmp";
+  const cell=(t,v,n)=>'<div><small>'+t+"</small><b>"+(v==null?"—":fmtPts(Math.round(v.avg)))+"</b>"
+    +"<i>"+(v==null?"sin datos":v.n+" día"+(v.n===1?"":"s"))+"</i></div>";
+  ba.innerHTML=cell("30 días antes",sp.before)+'<span class="sep">→</span>'+cell("30 días después",sp.after);
+  host.appendChild(ba);
+  if(sp.before&&sp.after){
+    const dd=sp.after.avg-sp.before.avg;
+    const ins=document.createElement("div"); ins.className="ins";
+    ins.style.borderLeftColor=dd>0?"var(--acc)":dd<0?"var(--alert)":"var(--line)";
+    ins.innerHTML="<b>"+(Math.abs(dd)<2?"Casi igual":dd>0?"Mejor después":"Peor después")+"</b>: "
+      +fmtPts(Math.round(sp.before.avg))+" al día antes, "+fmtPts(Math.round(sp.after.avg))+" después."
+      +"<small>Promedio de puntos por día. No prueba que el evento lo haya causado, solo que coincidió.</small>";
+    host.appendChild(ins);
+  }
+  const k=e.at;
+  const notes=(((rawDay(k)||{}).notes)||[]).slice().sort((a,b)=>noteKey(a)-noteKey(b));
+  const t2=document.createElement("div"); t2.className="shk";
+  t2.textContent=notes.length?"Comentarios de ese día":"Ese día no tiene comentarios";
+  host.appendChild(t2);
+  notes.forEach(n=>host.appendChild(noteEl(k,n)));
+  refreshPlayers();
+}
+$("#evvNote").onclick=()=>{ const e=evOf(evViewId); if(e) openNote(e.at,null,{times:[]}); };
+$("#evvDay").onclick=()=>{ const e=evOf(evViewId); if(!e) return;
+  setDay(e.at); closeAll(); go("today"); };
+$("#evvEdit").onclick=()=>{ const e=evOf(evViewId); if(e){ closeTop(); openEv(e); } };
+
+/* ================= historial completo de comentarios ================= */
+let histPage=0, histKind="all";
+const allNotes=()=>{
+  const out=[];
+  Object.keys(db.days).forEach(k=>((db.days[k].notes)||[]).forEach(n=>out.push([k,n])));
+  return out;
+};
+function renderHistFilter(){
+  const host=$("#histFilter"); if(!host) return;
+  host.innerHTML="";
+  [["all","Todos"],["text","Escritos"],["audio","De voz"]].forEach(([v,lb])=>{
+    const b=document.createElement("button");
+    b.textContent=lb; b.className=histKind===v?"on":"";
+    b.onclick=()=>{ histKind=v; histPage=0; renderHist(); };
+    host.appendChild(b);
+  });
+}
+function renderHist(){
+  const host=$("#histBody"); if(!host) return;
+  renderHistFilter();
+  host.innerHTML="";
+  const all=allNotes().filter(([,n])=>histKind==="all"
+    ||(histKind==="audio"?n.kind==="audio":n.kind!=="audio"));
+  const byDay={};
+  all.forEach(([k,n])=>{ (byDay[k]=byDay[k]||[]).push(n); });
+  const keys=Object.keys(byDay).sort().reverse();
+  $("#histLead").textContent=all.length
+    ? all.length+" comentario"+(all.length===1?"":"s")+" en "+keys.length+" día"+(keys.length===1?"":"s")
+      +". Toca «Editar» para cambiar horas o etiquetas."
+    : "Todavía no has guardado ningún comentario.";
+  if(!keys.length) return;
+  histPage=paged(host,keys,5,histPage,n=>{histPage=n;renderHist();},k=>{
+    const d=parseKey(k);
+    const hd=document.createElement("div"); hd.className="shk sticky";
+    const lb=document.createElement("span");
+    lb.textContent=(k===todayKey()?"Hoy":k===shift(todayKey(),-1)?"Ayer"
+      :cap(DIAS[d.getDay()]))+" "+d.getDate()+" "+MES3[d.getMonth()]+" "+String(d.getFullYear()).slice(2);
+    const go=document.createElement("button"); go.className="act-s"; go.textContent="Ver ese día";
+    go.onclick=()=>{ setDay(k); closeAll(); go("today"); };
+    hd.appendChild(lb); hd.appendChild(go);
+    host.appendChild(hd);
+    byDay[k].slice().sort((a,b)=>noteKey(a)-noteKey(b)).forEach(n=>host.appendChild(noteEl(k,n)));
   });
   refreshPlayers();
 }
+$("#openHist").onclick=()=>{ histPage=0; renderHist(); openSheetEl("#histSheet"); };
+$("#openChg").onclick=()=>{ chgPage=0; renderChanges(); openSheetEl("#chgSheet"); };
 
 /* ================= grabación ================= */
 let mediaRec=null,chunks=[],recStart=0,recTimer=null;
@@ -1977,9 +2494,11 @@ async function startRec(){
       const id=uid();
       try{
         await putAudio(id,blob);
-        const ref=refStamp(cursor,$("#refIn").value);
-        day(cursor).notes.push({id,kind:"audio",at:Date.now(),ref,dur,mime:blob.type,size:blob.size});
-        $("#refIn").value="";
+        const times=takeCmpTimes();
+        const ref=refStamp(cursor,times[0]||"");
+        day(cursor).notes.push({id,kind:"audio",at:Date.now(),ref,dur,mime:blob.type,
+          size:blob.size,times,tags:cmpTags.slice()});
+        cmpTags=[];
         _start=null; save(); renderNotes(); renderRecord(); toast("Nota de voz guardada");
       }catch(e){ toast("No se pudo guardar el audio"); }
       mediaRec=null; stopTimer();
@@ -2190,8 +2709,8 @@ function viewYear(){
       else{
         const g=scopeGrade(k);
         if(g!=null) i.className="v"+g;
-        if(g!=null&&!logged(k)) i.classList.add("dim");
-        if(chgOn(k)) i.classList.add("chg");
+        const ev=evOn(k);
+        if(ev.length){ i.classList.add("ev"); i.style.setProperty("--ec",evColor(ev[0])); }
         if(k===cursor) i.classList.add("sel");
         i.title=k+(g?" — "+GRADE[g]:"");
         i.onclick=()=>setDay(k);
@@ -2216,7 +2735,7 @@ function viewYear(){
   yearEnd(wrap);
   w.appendChild(legendEl());
   const p=document.createElement("p"); p.className="hint"; p.style.margin="12px 0 0";
-  p.textContent="365 días de "+scopeName()+". Los tenues no los registraste; los del borde claro cambiaron de meta.";
+  p.textContent="365 días de "+scopeName()+". Los marcados llevan un evento.";
   w.appendChild(p);
   return w;
 }
@@ -2252,13 +2771,66 @@ function viewMonth(){
   const counts=[0,0,0,0,0,0];
   for(let n=1;n<=len;n++){
     const k=mCur.y+"-"+pad(mCur.m+1)+"-"+pad(n), g=scopeGrade(k);
+    const evs=evOn(k);
+    const chs=(chgMap()[k]||[]).filter(x=>!recScope||x.h.id===recScope);
     const c=document.createElement("button");
-    c.className="cell"+(g?" v"+g:"")+(g&&!logged(k)?" dim":"")+(chgOn(k)?" chg":"")+(k===cursor?" sel":"");
-    c.textContent=n; c.title=k; if(g) counts[g]++;
-    c.onclick=()=>setDay(k);
+    c.className="cell"+(g?" v"+g:"")+(g&&!ratedOn(k)?" dim":"")
+      +(evs.length?" ev":"")+(k===cursor?" sel":"");
+    const nm=document.createElement("span"); nm.className="n"; nm.textContent=n;
+    c.appendChild(nm); if(g) counts[g]++;
+    /* se distingue lo que calculó la app de lo que fijaste tú */
+    if((rawDay(k)||{}).verdict!=null&&!recScope) c.classList.add("forced");
+    c.title=k+(evs.length?" — "+evs.map(e=>e.name).join(", "):"")
+      +(chs.length?" — cambió: "+chs.map(x=>x.h.name).join(", "):"");
+    if(evs.length) c.style.setProperty("--ec",evColor(evs[0]));
+    /* un punto por hábito que cambió de meta ese día, rodeando el número */
+    chs.slice(0,8).forEach((x,i)=>{
+      const d=document.createElement("span"); d.className="cdot";
+      const ang=-90+(360/Math.min(chs.length,8))*i;
+      d.style.transform="rotate("+ang+"deg) translate(var(--cr)) rotate("+(-ang)+"deg)";
+      d.style.background=specAt(x.h,k).color;
+      c.appendChild(d);
+    });
+    c.onclick=()=>{ setDay(k); if(evs.length) openEvView(evs[0].id); };
     grid.appendChild(c);
   }
   w.appendChild(grid);
+  /* las metas que se movieron este mes, como etiquetas que se pueden tocar */
+  const byH={}, m0=chgMap();
+  Object.keys(m0).forEach(k=>{
+    const d=parseKey(k);
+    if(d.getFullYear()!==mCur.y||d.getMonth()!==mCur.m) return;
+    m0[k].forEach(x=>{
+      if(recScope&&x.h.id!==recScope) return;
+      (byH[x.h.id]=byH[x.h.id]||[]).push([k,x]);
+    });
+  });
+  const hids=Object.keys(byH);
+  if(hids.length){
+    const t=document.createElement("div"); t.className="shk";
+    t.textContent="Metas que cambiaron este mes";
+    w.appendChild(t);
+    const row=document.createElement("div"); row.className="hbadges";
+    hids.forEach(id=>{
+      const h=db.habits.find(x=>x.id===id); if(!h) return;
+      const b=document.createElement("button"); b.className="hbadge";
+      b.innerHTML='<span class="hdot"></span><span class="nm"></span><span class="n"></span>';
+      b.querySelector(".hdot").style.background=specAt(h,todayKey()).color;
+      b.querySelector(".nm").textContent=h.name;
+      b.querySelector(".n").textContent=byH[id].length>1?byH[id].length:"";
+      b.onclick=()=>openChgHab(id);
+      row.appendChild(b);
+    });
+    w.appendChild(row);
+  }
+  /* los eventos del mes, en grande: son hitos, no un dato más */
+  const evm=db.events.filter(e=>{const d=parseKey(e.at);return d.getFullYear()===mCur.y&&d.getMonth()===mCur.m;})
+    .sort((a,b)=>a.at<b.at?-1:1);
+  if(evm.length){
+    const t=document.createElement("div"); t.className="shk"; t.textContent="Eventos de este mes";
+    w.appendChild(t);
+    evm.forEach(e=>w.appendChild(evRow(e,true)));
+  }
   const lg=document.createElement("div"); lg.className="legend";
   lg.innerHTML=[1,2,3,4,5].map(g=>'<span><i style="background:var(--v'+g+')"></i>'+SHORT[g]+" "+counts[g]+"</span>").join("");
   w.appendChild(lg);
@@ -2269,28 +2841,68 @@ function viewWeek(){
   const sums=[0,0,0,0,0,0,0], ns=[0,0,0,0,0,0,0];
   allKeys().forEach(k=>{ const g=scopeGrade(k); if(g==null) return;
     const i=(parseKey(k).getDay()+6)%7; sums[i]+=g; ns[i]++; });
-  const avgs=sums.map((s,i)=>ns[i]?s/ns[i]:0);
-  const bars=document.createElement("div"); bars.className="bars2";
-  avgs.forEach(a=>{
-    const c=document.createElement("div"); c.className="c";
-    const i=document.createElement("i");
-    i.style.height=a?((a/5)*100)+"%":"3px";
-    if(a) i.className="v"+Math.max(1,Math.min(5,Math.round(a)));
-    c.appendChild(i); bars.appendChild(c);
-  });
-  w.appendChild(bars);
-  const lb=document.createElement("div"); lb.className="blab";
-  lb.innerHTML=DOW3.map((d,i)=>"<span>"+d+(ns[i]?"<br>"+avgs[i].toFixed(1):"")+"</span>").join("");
-  w.appendChild(lb);
-  if(ns.some(n=>n>=2)){
-    const best=avgs.indexOf(Math.max(...avgs));
-    const wv=avgs.map((a,i)=>ns[i]?a:9);
-    const worst=wv.indexOf(Math.min(...wv));
-    const ins=document.createElement("div"); ins.className="ins";
-    ins.innerHTML="<b>Tu mejor día es el "+DOW3[best]+"</b> y el más flojo el "+DOW3[worst]+"."
-      +"<small>Promedio por día de la semana en "+scopeName()+".</small>";
-    w.appendChild(ins);
+  const avgs=sums.map((s,i)=>ns[i]?s/ns[i]:null);
+  const have=avgs.filter(a=>a!=null);
+  if(have.length<2){
+    const p=document.createElement("p"); p.className="hint";
+    p.textContent="Registra unos días más y aquí se ve en qué día de la semana te va mejor.";
+    w.appendChild(p); return w;
   }
+  const gAvg=have.reduce((a,b)=>a+b,0)/have.length;
+  const lo=Math.min.apply(null,have), hi=Math.max.apply(null,have);
+  /* Zoom: la escala se pega a lo que pasó. Si todos tus días se parecen se
+     acerca hasta que la diferencia se note; si hay altibajos, se abre sola. */
+  const span=Math.max(hi-lo,.35)*1.7;
+  const mid=(hi+lo)/2;
+  let base=Math.max(.5,mid-span/2), top=Math.min(5.3,mid+span/2);
+  if(top-base<.5){ top=Math.min(5.3,base+.5); base=Math.max(.5,top-.5); }
+  const H=v=>Math.max(5,Math.min(100,((v-base)/(top-base))*100));
+
+  const hd=document.createElement("div"); hd.className="wkhead";
+  hd.innerHTML='<span class="wkbadge">promedio '+gAvg.toFixed(1)+"</span>";
+  w.appendChild(hd);
+  const box=document.createElement("div"); box.className="bars2 rel";
+  avgs.forEach((a,i)=>{
+    const c=document.createElement("div"); c.className="c";
+    const bar=document.createElement("i");
+    if(a==null){ bar.style.height="4px"; bar.classList.add("none"); }
+    else{
+      bar.style.height=H(a)+"%";
+      bar.className="v"+Math.max(1,Math.min(5,Math.round(a)))+(ns[i]<2?" thin":"");
+      bar.style.setProperty("--gr",(i*.06)+"s");
+      bar.classList.add("grow");
+    }
+    c.appendChild(bar); box.appendChild(c);
+  });
+  const al=document.createElement("span"); al.className="avgline";
+  al.style.bottom=H(gAvg)+"%";
+  box.appendChild(al);
+  w.appendChild(box);
+
+  const lb=document.createElement("div"); lb.className="blab";
+  lb.innerHTML=DOW3.map((d,i)=>{
+    if(avgs[i]==null) return "<span>"+d+"<br><i class='na'>—</i></span>";
+    const df=avgs[i]-gAvg;
+    const cls=Math.abs(df)<.12?"eq":df>0?"up":"dn";
+    return "<span>"+d+"<br><b>"+avgs[i].toFixed(1)+"</b><br><i class='"+cls+"'>"
+      +(df>0?"+":"")+df.toFixed(1)+"</i></span>";
+  }).join("");
+  w.appendChild(lb);
+
+  const known=avgs.map((a,i)=>[a,i]).filter(x=>x[0]!=null);
+  const best=known.reduce((a,b)=>b[0]>a[0]?b:a);
+  const worst=known.reduce((a,b)=>b[0]<a[0]?b:a);
+  const gap=best[0]-worst[0];
+  const ins=document.createElement("div"); ins.className="ins";
+  ins.style.borderLeftColor=gap>=.5?"var(--acc)":"var(--line)";
+  ins.innerHTML=gap<.25
+    ? "<b>Tus días se parecen mucho</b>: entre el mejor y el peor hay "+gap.toFixed(1)+" de diferencia."
+      +"<small>Aquí el día de la semana no te está cambiando nada. "+scopeName()+".</small>"
+    : "<b>"+cap(DOW3[best[1]])+" es tu mejor día</b> ("+best[0].toFixed(1)+") y "+DOW3[worst[1]]
+      +" el más flojo ("+worst[0].toFixed(1)+")."
+      +"<small>"+(gap>=.8?"La diferencia es grande, ahí hay algo que mirar.":"Diferencia moderada.")
+      +" Promedio de cada día en "+scopeName()+". La escala está acercada para que se note.</small>";
+  w.appendChild(ins);
   return w;
 }
 function scopePoints(k){
@@ -2300,9 +2912,19 @@ function scopePoints(k){
 }
 function viewTrend(){
   const w=document.createElement("div");
+  const pick=document.createElement("div"); pick.className="chips";
+  [["roll","Suavizado 7 días"],["raw","Día a día"]].forEach(([v,lb])=>{
+    const b=document.createElement("button"); b.textContent=lb;
+    b.className=trendMode===v?"on":"";
+    b.onclick=()=>{ trendMode=v; lastAnimView=null; renderViews(); };
+    pick.appendChild(b);
+  });
+  w.appendChild(pick);
   const days=[]; for(let i=89;i>=0;i--) days.push(shift(todayKey(),-i));
-  /* promedio móvil de 7 días, ahora en puntos: puede ser negativo */
+  /* dos maneras de leer lo mismo: el puntaje crudo de cada día, o el promedio
+     de los últimos siete, que aguanta los altibajos sueltos */
   const roll=days.map((k,i)=>{
+    if(trendMode==="raw") return inRange(k)?scopePoints(k):null;
     let s=0,n=0;
     for(let j=Math.max(0,i-6);j<=i;j++){
       if(!inRange(days[j])) continue;
@@ -2320,11 +2942,21 @@ function viewTrend(){
       const st=statesOf(specAt(h,todayKey())).map(x=>x.pts*weightOf(h));
       return [Math.max.apply(null,st),Math.min.apply(null,st)];})()
     :[bestPoints(),worstPoints()];
-  let hi=Math.max(cap[0],...vals,1), lo=Math.min(cap[1],...vals,0);
-  const pad=(hi-lo)*.08; hi+=pad; lo-=pad;
+  const capSpan=Math.max(1,cap[0]-cap[1]);
+  const mn=Math.min.apply(null,vals), mx=Math.max.apply(null,vals);
+  /* Zoom automático: la escala se pega a lo que de verdad pasó, no al máximo
+     teórico. Si tus semanas se parecen, se acerca y los cambios chicos se
+     notan; conforme aparecen altibajos grandes, se va abriendo sola. */
+  let sp=Math.max((mx-mn)*1.45, capSpan*.1, 2);
+  const mid=(mx+mn)/2;
+  let hi=mid+sp/2, lo=mid-sp/2;
+  /* si el cero anda cerca, se mete en cuadro para no perder la referencia */
+  if(lo>0&&lo<sp*.3) lo=-sp*.05;
+  if(hi<0&&hi>-sp*.3) hi=sp*.05;
   const span=(hi-lo)||1;
   const X=i=>(i/89)*300, Y=v=>((hi-v)/span)*100;
-  const zeroY=Y(0);
+  const zeroIn=(0<=hi&&0>=lo);
+  const zeroY=Math.max(0,Math.min(100,Y(0)));
 
   const NS="http://www.w3.org/2000/svg";
   const svg=document.createElementNS(NS,"svg");
@@ -2340,6 +2972,15 @@ function viewTrend(){
     cp.appendChild(r); defs.appendChild(cp);
   });
   svg.appendChild(defs);
+
+  /* todo lo que se dibuja va dentro de este grupo, que se destapa de
+     izquierda a derecha al entrar */
+  const cp=document.createElementNS(NS,"clipPath"); cp.setAttribute("id",uid2+"rev");
+  const rr=document.createElementNS(NS,"rect");
+  rr.setAttribute("x",0); rr.setAttribute("y",-10);
+  rr.setAttribute("width",300); rr.setAttribute("height",120);
+  rr.setAttribute("class","revrect");
+  cp.appendChild(rr); defs.appendChild(cp);
 
   /* umbrales de fondo, para saber dónde empieza cada calificación */
   thresholds().forEach(t=>{
@@ -2364,18 +3005,36 @@ function viewTrend(){
   });
 
   /* la línea del cero: arriba ganas puntos, abajo los pierdes */
-  const z=document.createElementNS(NS,"line");
-  z.setAttribute("x1",0); z.setAttribute("x2",300);
-  z.setAttribute("y1",zeroY); z.setAttribute("y2",zeroY);
-  z.style.stroke="var(--muted)"; z.setAttribute("stroke-width","1");
-  z.setAttribute("stroke-dasharray","4 3"); z.setAttribute("vector-effect","non-scaling-stroke");
-  svg.appendChild(z);
+  if(zeroIn){
+    const z=document.createElementNS(NS,"line");
+    z.setAttribute("x1",0); z.setAttribute("x2",300);
+    z.setAttribute("y1",zeroY); z.setAttribute("y2",zeroY);
+    z.style.stroke="var(--muted)"; z.setAttribute("stroke-width","1");
+    z.setAttribute("stroke-dasharray","4 3"); z.setAttribute("vector-effect","non-scaling-stroke");
+    svg.appendChild(z);
+  }
 
   const pl=document.createElementNS(NS,"polyline");
   pl.setAttribute("points",line); pl.setAttribute("fill","none");
-  pl.style.stroke="var(--acc)"; pl.setAttribute("stroke-width","2");
-  pl.setAttribute("stroke-linejoin","round"); pl.setAttribute("vector-effect","non-scaling-stroke");
+  pl.style.stroke="var(--acc)"; pl.setAttribute("stroke-width","2.4");
+  pl.setAttribute("stroke-linejoin","round"); pl.setAttribute("stroke-linecap","round");
+  pl.setAttribute("vector-effect","non-scaling-stroke");
   svg.appendChild(pl);
+
+  /* el punto de hoy, para saber dónde vas parado */
+  const last=pts[pts.length-1];
+  const dot=document.createElementNS(NS,"circle");
+  dot.setAttribute("cx",last[0]); dot.setAttribute("cy",last[1]); dot.setAttribute("r","3");
+  dot.setAttribute("class","tdot");
+  dot.style.fill=(vals[vals.length-1]<0?"var(--alert)":"var(--acc)");
+  dot.setAttribute("vector-effect","non-scaling-stroke");
+  svg.appendChild(dot);
+
+  /* todo lo dibujado se destapa de izquierda a derecha */
+  const g=document.createElementNS(NS,"g");
+  g.setAttribute("clip-path","url(#"+uid2+"rev)");
+  while(svg.childNodes.length>1) g.appendChild(svg.childNodes[1]);
+  svg.appendChild(g);
 
   const box=document.createElement("div"); box.className="trendbox";
   box.appendChild(svg);
@@ -2384,8 +3043,12 @@ function viewTrend(){
     s.style.top=top+"%"; s.textContent=txt; box.appendChild(s);
   };
   mk(fmtPts(Math.round(hi)),0);
-  mk("0",zeroY,"zero");
+  if(zeroIn) mk("0",zeroY,"zero");
   mk(fmtPts(Math.round(lo)),100,"bot");
+  const now=document.createElement("span");
+  now.className="tnow"; now.style.top=last[1]+"%";
+  now.textContent=fmtPts(Math.round(vals[vals.length-1]));
+  box.appendChild(now);
   w.appendChild(box);
 
   const ax=document.createElement("div"); ax.className="axis";
@@ -2397,9 +3060,15 @@ function viewTrend(){
     const ins=document.createElement("div"); ins.className="ins";
     ins.style.borderLeftColor=B<0?"var(--alert)":"var(--acc)";
     ins.innerHTML="<b>"+(Math.abs(dd)<Math.max(1,Math.abs(A)*.05)?"Vas parejo":dd>0?"Vas subiendo":"Vas bajando")
-      +"</b>: "+fmtPts(A)+" puntos al día hace tres meses, "+fmtPts(B)+" ahora."
-      +"<small>Promedio móvil de 7 días en "+scopeName()
-      +". Debajo de la línea punteada, el día te resta más de lo que suma.</small>";
+      +"</b>: "+fmtPts(A)+" puntos al día hace tres meses, "+fmtPts(B)+" ahora "
+      +"("+(dd>0?"+":"")+Math.round(dd)+")."
+      +"<small>"+(trendMode==="raw"
+        ? "Puntos de cada día en "+scopeName()+", sin suavizar: un solo día malo se ve de golpe. "
+        : "Cada punto es el promedio de los últimos 7 días en "+scopeName()
+          +", así que un día suelto solo mueve la línea una séptima parte. ")
+      +"La escala se acerca o se aleja sola "
+      +"según qué tan movida esté: ahorita va de "+fmtPts(Math.round(lo))+" a "+fmtPts(Math.round(hi))+"."
+      +(zeroIn?" Debajo de la línea punteada, el día te resta más de lo que suma.":"")+"</small>";
     w.appendChild(ins);
   }
   return w;
@@ -2445,9 +3114,14 @@ function viewPatterns(){
   }
   return w;
 }
+let lastAnimView=null;
 function renderViews(){
   document.querySelectorAll("#viewPicker button").forEach(b=>b.classList.toggle("on",b.dataset.v===recView));
   const body=$("#viewBody"); body.innerHTML="";
+  /* la animación de entrada solo cuando de verdad cambias de gráfica; si solo
+     te mueves de día, se dibuja casi de golpe para no marear */
+  body.classList.toggle("fast",lastAnimView===recView);
+  lastAnimView=recView;
   body.appendChild({year:viewYear,month:viewMonth,week:viewWeek,trend:viewTrend,patterns:viewPatterns}[recView]());
 }
 $("#viewPicker").onclick=e=>{const b=e.target.closest("button");if(!b)return;recView=b.dataset.v;renderViews();};
@@ -2472,7 +3146,6 @@ function renderTrends(){
       const i=document.createElement("i"), g=hGrade(h,k);
       if(g!=null) i.className="v"+g;
       if(g!=null&&isAssumed(h,k)) i.classList.add("dim");
-      if((chgMap()[k]||[]).some(c=>c.h.id===h.id)) i.classList.add("chg");
       if(k===cursor) i.classList.add("sel");
       i.title=k; i.onclick=()=>setDay(k);
       cs.appendChild(i);
@@ -2533,6 +3206,104 @@ function renderNights(){
   ins.innerHTML="<b>"+fmtH(avg)+" en promedio</b> en "+got.length+" noche"+(got.length===1?"":"s")+"."
     +"<small>La más corta "+fmtH(Math.min(...got))+", la más larga "+fmtH(Math.max(...got))+".</small>";
   body.appendChild(ins);
+  renderSleepSpans(body);
+}
+
+/* de qué minuto a qué minuto dormiste, contando desde el mediodía anterior */
+function bedWake(k){
+  const d=rawDay(k);
+  if(!d||!d.sleep||!d.wake) return null;
+  const[sh,sm]=d.sleep.split(":").map(Number);
+  const[wh,wm]=d.wake.split(":").map(Number);
+  const bed=(sh>=12?(sh*60+sm)-720:(sh*60+sm)+720);
+  const wake=(wh*60+wm)+720;
+  return (wake>bed&&wake-bed<20*60)?{bed,wake}:null;
+}
+const clockAt=m=>pad(Math.floor(((720+m)/60)%24));
+/* Una barra por noche, con la medianoche de eje.
+   La escala deja siempre un respiro fijo a los lados (HYP_PAD) porque en las
+   puntas de cada barra va escrita la hora: si no, el número de la noche más
+   extrema se sale de la caja. Ese respiro está en píxeles y el resto del ancho
+   se reparte en porcentaje, así que la gráfica se acerca o se aleja sola según
+   qué tan dispersas anden tus noches, pero las horas siempre caben. */
+function renderSleepSpans(host){
+  const days=last14().slice().reverse();          /* lo más reciente arriba */
+  const got=days.map(k=>[k,bedWake(k)]).filter(x=>x[1]);
+  if(got.length<2) return;
+  const MID=720;                                   /* medianoche en esta escala */
+  let mn=Math.min.apply(null,got.map(x=>x[1].bed))-MID;
+  let mx=Math.max.apply(null,got.map(x=>x[1].wake))-MID;
+  mn=Math.floor(mn/60)*60-20; mx=Math.ceil(mx/60)*60+20;
+  if(mx-mn<8*60){ const c=(mx+mn)/2; mn=c-4*60; mx=c+4*60; }
+  const span=mx-mn;
+  const step=span<=10*60?120:span<=16*60?180:240;
+  const pctOf=m=>((m-mn)/span)*100;
+  const clk=m=>pad(Math.floor(((m+2880)/60)%24));
+  const hhmm2=m=>clk(m)+":"+pad(((m%60)+60)%60);
+  /* el mismo cálculo que usa el CSS para la columna de etiquetas y el respiro */
+  const atX=pct=>"calc(var(--hl) + var(--hg) + var(--hp) + (100% - var(--hl) - var(--hg) - var(--hp)*2) * "
+    +(pct/100)+")";
+
+  const t=document.createElement("div"); t.className="shk";
+  t.textContent="De qué hora a qué hora dormiste";
+  host.appendChild(t);
+  const box=document.createElement("div"); box.className="hyp";
+
+  /* eje de horas arriba */
+  const ax=document.createElement("div"); ax.className="hypax";
+  ax.innerHTML='<span class="d"></span><span class="tk"><span class="in"></span></span>';
+  const atk=ax.querySelector(".in");
+  for(let m=Math.ceil(mn/step)*step;m<=mx;m+=step){
+    const sp=document.createElement("span");
+    sp.style.left=pctOf(m)+"%";
+    sp.textContent=clk(m);
+    if(m===0){ sp.className="mid"; }
+    atk.appendChild(sp);
+  }
+  box.appendChild(ax);
+
+  const plot=document.createElement("div"); plot.className="hypplot";
+  const line=document.createElement("span"); line.className="hypmid";
+  line.style.left=atX(pctOf(0));
+  plot.appendChild(line);
+
+  days.forEach(k=>{
+    const bw=bedWake(k), d=parseKey(k);
+    const row=document.createElement("div");
+    row.className="hyprow"+(k===cursor?" sel":"");
+    row.innerHTML='<span class="d"></span><span class="tk"><span class="in"></span></span>';
+    row.querySelector(".d").textContent=DOW3[(d.getDay()+6)%7]+" "+d.getDate();
+    const inn=row.querySelector(".in");
+    if(bw){
+      const a=bw.bed-MID, b=bw.wake-MID, h=(b-a)/60;
+      const bar=document.createElement("span"); bar.className="bar";
+      bar.style.left=pctOf(a)+"%";
+      bar.style.width=Math.max(1.5,pctOf(b)-pctOf(a))+"%";
+      inn.appendChild(bar);
+      const l1=document.createElement("span"); l1.className="tm a";
+      l1.style.left=pctOf(a)+"%"; l1.textContent=hhmm2(a); inn.appendChild(l1);
+      const l2=document.createElement("span"); l2.className="tm b";
+      l2.style.left=pctOf(b)+"%"; l2.textContent=hhmm2(b); inn.appendChild(l2);
+      row.title=k+" — "+fmtH(h);
+    }else{
+      const e=document.createElement("span"); e.className="nd"; e.textContent="sin datos";
+      inn.appendChild(e);
+    }
+    row.onclick=()=>setDay(k);
+    plot.appendChild(row);
+  });
+  box.appendChild(plot);
+  host.appendChild(box);
+
+  const bedAvg=got.reduce((a,x)=>a+x[1].bed,0)/got.length-MID;
+  const wakeAvg=got.reduce((a,x)=>a+x[1].wake,0)/got.length-MID;
+  const late=got.filter(x=>x[1].bed>=MID).length;
+  const ins=document.createElement("div"); ins.className="ins";
+  ins.innerHTML="<b>Normalmente duermes cerca de las "+hhmm2(Math.round(bedAvg))
+    +"</b> y despiertas cerca de las "+hhmm2(Math.round(wakeAvg))+"."
+    +"<small>"+late+" de "+got.length+" noches te dormiste ya pasada la medianoche. "
+    +"La línea clara son las 12; el eje se estira solo para que quepan las noches raras.</small>";
+  host.appendChild(ins);
 }
 
 /* ---- horas ---- */
@@ -2594,6 +3365,16 @@ function renderHours(){
 }
 
 /* ---- cambios de metas ---- */
+function dayEvHTML(k){
+  const list=evOn(k);
+  if(!list.length) return "";
+  return list.map(e=>'<div class="daychg dayev" data-ev="'+e.id+'" style="border-left-color:'+evColor(e)+'">'
+    +"<b>"+esc(e.name)+"</b>"
+    +"<small>A partir de este día. Toca para ver el antes y el después.</small></div>").join("");
+}
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-ev]"); if(b) openEvView(b.dataset.ev);
+});
 function dayChgHTML(k){
   const list=chgMap()[k]||[];
   if(!list.length) return "";
@@ -2622,12 +3403,39 @@ function renderChanges(){
   });
 }
 
+/* los cambios de un hábito dentro del mes que estás viendo */
+function openChgHab(id){
+  const h=db.habits.find(x=>x.id===id); if(!h) return;
+  const m=chgMap();
+  const list=[];
+  Object.keys(m).sort().reverse().forEach(k=>{
+    const d=parseKey(k);
+    if(d.getFullYear()!==mCur.y||d.getMonth()!==mCur.m) return;
+    m[k].forEach(x=>{ if(x.h.id===id) list.push([k,x]); });
+  });
+  $("#chgHabTitle").textContent=h.name;
+  $("#chgHabLead").textContent=list.length+" cambio"+(list.length===1?"":"s")+" en "
+    +MESES[mCur.m]+" de "+mCur.y+". Los días anteriores se siguen calificando con la meta vieja.";
+  const host=$("#chgHabBody"); host.innerHTML="";
+  list.forEach(([k,c])=>{
+    const d=parseKey(k);
+    const el=document.createElement("div"); el.className="clog";
+    el.innerHTML='<button class="when"></button><span class="what"><b></b><i></i></span>';
+    el.querySelector(".when").textContent=d.getDate()+" "+MES3[d.getMonth()];
+    el.querySelector(".when").onclick=()=>{ setDay(k); closeAll(); go("today"); };
+    el.querySelector("b").textContent="Desde el "+DIAS[d.getDay()]+" "+d.getDate();
+    el.querySelector("i").textContent=diffText(c.prev,c.next);
+    host.appendChild(el);
+  });
+  openSheetEl("#chgHab");
+}
+
 /* ================= Record ================= */
 function renderRecord(){
   const d=parseKey(cursor);
   $("#dayBreakHint").textContent=cap(DIAS[d.getDay()])+" "+d.getDate()+" de "+MESES[d.getMonth()]
     +(logged(cursor)?"":cursor<todayKey()?" · no lo registraste":" · sin registrar todavía");
-  $("#dayChgR").innerHTML=dayChgHTML(cursor);
+  $("#dayChgR").innerHTML=dayEvHTML(cursor)+dayChgHTML(cursor);
   const pc=$("#dayPts"); pc.innerHTML="";
   if(db.habits.length){
     const total=dayPoints(cursor), dg=dayGrade(cursor);
@@ -2705,7 +3513,7 @@ function renderRecord(){
     const avg=n?sum/n:0, ag=n?Math.max(1,Math.min(5,Math.round(avg))):0;
     const el=document.createElement("div"); el.className="stat";
     el.innerHTML='<span class="nm"><b></b><small>'
-      +(total?fmtMin(total)+" en total · ":"")
+      +(total?fmtU(specAt(h,todayKey()),total)+" en total · ":"")
       +good+" de "+n+" días bien · racha "+streak
       +(skipped?" · "+skipped+" sin registrar":"")+(rest?" · "+rest+" libres":"")+"</small></span>"
       +'<span class="fig">'+(n?avg.toFixed(1):"—")+'<small>'+(ag?SHORT[ag]:"sin datos")+"</small></span>";
@@ -2972,7 +3780,8 @@ function makeSortable(list,apply,scroller,onTap){
 }
 
 /* ================= hojas ================= */
-const SHEETS=["#sheet","#trSheet","#mSheet","#allSheet","#bulkSheet","#wSheet","#thSheet","#orderSheet","#noteSheet","#tagSheet","#askSheet"];
+const SHEETS=["#sheet","#trSheet","#mSheet","#allSheet","#bulkSheet","#wSheet","#thSheet","#orderSheet",
+  "#noteSheet","#tagSheet","#histSheet","#chgSheet","#chgHab","#evSheet","#evView","#askSheet"];
 let sheetStack=[];
 function openSheetEl(sel){
   const sh=$(sel);
@@ -3112,12 +3921,14 @@ function openSheet(h){
   const sp0=h?specAt(h,todayKey()):null;
   form={kind:sp0?sp0.kind:"build",mode:sp0?sp0.mode:"rate",
         editing:h?h.id:null, color:h?(h.color||PALETTE[0]):nextColor(db.habits.length),
-        states:h?statesOf(sp0).map(x=>({...x})):mkStates("build","simple",null)};
+        states:h?statesOf(sp0).map(x=>({...x})):mkStates("build","rate",null)};
   const s=h?specAt(h,todayKey()):null;
+  form.cuts=(s&&s.mode==="time")?cutsOf(s).slice():spread(60,form.states.length);
   $("#sheetTitle").textContent=h?h.name:"Agregar hábito";
   $("#fName").value=h?h.name:"";
-  $("#fGoal").value=s&&s.mode==="time"?s.goal:60;
-  $("#fStretch").value=s&&s.mode==="time"?s.stretch:90;
+  $("#fUnit").value=h?(h.unit||""):"";
+  $("#fGoal").value=0;
+  $("#fStretch").value=form.cuts[form.cuts.length-1];
   renderColors(); renderStates();
   $("#fromField").style.display=h?"":"none";
   $("#delHabit").style.display=h?"":"none";
@@ -3146,7 +3957,7 @@ function renderRuleHist(h){
           +" se volverán a calificar con la meta anterior.",ok:"Mantén para quitar"})) return;
       h.rules.splice(i,1);
       const last=h.rules[h.rules.length-1];
-      Object.assign(h,{kind:last.kind,mode:last.mode,goal:last.goal,stretch:last.stretch});
+      Object.assign(h,{kind:last.kind,mode:last.mode,goal:last.goal,stretch:last.stretch,cuts:last.cuts});
       _chg=null; save(); renderRuleHist(h); renderAll(); toast("Cambio quitado");
     };
     host.appendChild(row);
@@ -3173,12 +3984,30 @@ function renderColors(){
   host.appendChild(lab);
 }
 let stOpen=-1;
+function renderStatesHead(i,x){
+  const row=$("#stList").querySelectorAll(".strow")[i]; if(!row) return;
+  const fake={kind:form.kind,mode:form.mode,states:form.states,cuts:form.cuts,
+    unit:$("#fUnit").value.trim()};
+  row.querySelector(".lb").textContent=(form.mode==="time"
+    ? fmtU(fake,minutesForIdx(fake,i))+" · " : "")+(x.label||"(sin nombre)");
+}
+/* los dos renglones de arriba se llaman como los estados de las puntas */
+function syncWords(){
+  const build=form.kind==="build", st=form.states, n=st.length;
+  const low=st[build?0:n-1], top=st[build?n-1:0];
+  $("#goalWord").textContent="unidades, «"+((low&&low.label)||"lo mínimo")+"»";
+  $("#stretchWord").textContent="desde aquí, «"+((top&&top.label)||"lo máximo")+"»";
+}
 function renderStates(){
   const host=$("#stList"); if(!host) return;
   const time=form.mode==="time";
-  $("#stLabel").textContent=time?"Los cinco estados y sus puntos":"Estados posibles";
+  if(time&&form.states.length!==NST) form.states=mkStates(form.kind,"time",null);
+  if(time&&(!form.cuts||form.cuts.length!==form.states.length))
+    form.cuts=spread(topCut({kind:form.kind,states:form.states,cuts:form.cuts}),form.states.length);
+  const fu=()=>$("#fUnit").value.trim();
+  $("#stLabel").textContent=time?"Los cinco estados":"Estados posibles";
   $("#stHint").textContent=time
-    ? "Los minutos deciden en cuál caes. Los nombres son fijos, pero los puntos y el color son tuyos."
+    ? "Siempre son cinco. La cantidad decide en cuál caes; los puntos, el color y desde cuántas unidades empieza cada uno son tuyos."
     : "De peor a mejor. Toca uno para cambiar sus puntos, su color o borrarlo.";
   $("#addState").style.display=(!time&&form.states.length<MAX_STATES)?"":"none";
   host.innerHTML="";
@@ -3187,7 +4016,7 @@ function renderStates(){
   const list=document.createElement("div");
   list.className=time?"":"sortlist";
   host.appendChild(list);
-  const fake={kind:form.kind,mode:form.mode,states:form.states};
+  const fake={kind:form.kind,mode:form.mode,states:form.states,cuts:form.cuts,unit:fu()};
   form.states.forEach((x,i)=>{
     const row=document.createElement("div");
     row.className="strow"+(stOpen===i?" open":"");
@@ -3198,7 +4027,8 @@ function renderStates(){
       +'<span class="car">›</span></div>'
       +'<div class="stbody"></div>';
     row.querySelector(".sw").style.background=stateColor(fake,i);
-    row.querySelector(".lb").textContent=x.label||"(sin nombre)";
+    row.querySelector(".lb").textContent=(time?fmtU(fake,minutesForIdx(fake,i))+" · ":"")
+      +(x.label||"(sin nombre)");
     const pv=row.querySelector(".pv");
     pv.textContent=fmtPts(x.pts); pv.className="pv "+(x.pts>0?"pos":x.pts<0?"neg":"zero");
     row.querySelector(".sthead").onclick=e=>{
@@ -3210,8 +4040,29 @@ function renderStates(){
     const nm=document.createElement("input");
     nm.className="nmi"; nm.maxLength=32; nm.value=x.label;
     nm.placeholder=time?"Cómo le llamas a este tramo":"Nombre del estado";
-    nm.oninput=()=>{ x.label=nm.value; row.querySelector(".lb").textContent=nm.value||"(sin nombre)"; drawPreview(); };
+    nm.oninput=()=>{ x.label=nm.value; renderStatesHead(i,x); drawPreview(); syncWords(); };
     body.appendChild(nm);
+    if(time){
+      const b=bandOf(fake,i);
+      const cl2=document.createElement("div"); cl2.className="stlab";
+      cl2.textContent=b===0?"Empieza en":"Empieza a partir de";
+      body.appendChild(cl2);
+      const cw=document.createElement("div"); cw.className="goalwrap";
+      const ci2=document.createElement("input");
+      ci2.type="number"; ci2.inputMode="numeric"; ci2.min=String(b); ci2.value=form.cuts[b];
+      ci2.disabled=(b===0);
+      const note=document.createElement("span");
+      note.textContent=b===0?"siempre cero, no se cambia"
+        :b===form.cuts.length-1?fu()+" · mover el tope reparte los de en medio"
+        :fu()+" · los demás se recorren solos";
+      cw.appendChild(ci2); cw.appendChild(note); body.appendChild(cw);
+      ci2.onclick=e=>e.stopPropagation();
+      ci2.onchange=()=>{
+        form.cuts=setCut(form.cuts,b,parseInt(ci2.value,10));
+        $("#fStretch").value=form.cuts[form.cuts.length-1];
+        renderStates();
+      };
+    }
     const pl=document.createElement("div"); pl.className="stlab"; pl.textContent="Puntos";
     body.appendChild(pl);
     /* arriba el 0 y los negativos, abajo los positivos, cada uno bajo su par */
@@ -3299,34 +4150,37 @@ function syncSheet(resetStretch){
   document.querySelectorAll("#fKind button").forEach(b=>b.classList.toggle("on",b.dataset.k===form.kind));
   document.querySelectorAll("#fMode button").forEach(b=>b.classList.toggle("on",b.dataset.m===form.mode));
   $("#timeFields").style.display=form.mode==="time"?"":"none";
-  const build=form.kind==="build";
-  $("#goalLabel").textContent=build?"Meta diaria (llegar justo aquí es Meh)":"Límite diario (llegar justo aquí es Meh)";
-  $("#goalWord").textContent=build?"minutos, mínimo":"minutos, máximo";
-  $("#stretchLabel").textContent=build?"Umbral de Really good":"Umbral de Really bad";
-  $("#stretchWord").textContent=build?"desde aquí, excelente":"pasando esto, muy mal";
-  if(resetStretch&&!form.editing) $("#fStretch").value=defStretch({kind:form.kind,mode:"time",goal:+$("#fGoal").value||0});
+  $("#goalLabel").textContent="Lo mínimo";
+  $("#stretchLabel").textContent="El tope";
+  if(form.mode==="time"){
+    if(!form.cuts||form.cuts.length!==form.states.length) form.cuts=spread(60,form.states.length);
+    $("#fGoal").value=0;
+    $("#fStretch").value=form.cuts[form.cuts.length-1];
+  }
+  syncWords();
   renderStates();
 }
 function drawPreview(){
   const p=$("#preview");
-  const fake={kind:form.kind,mode:form.mode,states:form.states,
-    goal:Math.max(0,+$("#fGoal").value||0),stretch:Math.max(0,+$("#fStretch").value||0)};
+  const fake={kind:form.kind,mode:form.mode,states:form.states,cuts:form.cuts,
+    unit:$("#fUnit").value.trim()};
   const w=form.editing?weightOf(db.habits.find(x=>x.id===form.editing)):DEF_WEIGHT;
   p.innerHTML=form.states.map((x,i)=>{
-    const left=form.mode==="time"?fmtMin(minutesForIdx(fake,i)):(x.label||"(sin nombre)");
+    const left=form.mode==="time"?fmtU(fake,minutesForIdx(fake,i)):(x.label||"(sin nombre)");
     const pts=w*x.pts;
     return '<div><span>'+esc(left)+'</span><span class="lv" style="color:'
       +stateColor(fake,i)+'">'+esc(x.label&&form.mode==="time"?x.label:"")+"</span>"
       +'<span class="lv '+(pts>0?"c5":pts<0?"c1":"c3")+'">'+fmtPts(pts)+"</span></div>";
   }).join("");
 }
-/* cambiar de tipo no debe borrar estados que ya tocaste; cambiar de modo sí,
-   porque los de minutos son cinco por estructura */
+/* cambiar de tipo o de modo no borra estados que ya tocaste: solo se
+   regeneran si seguían siendo los de fábrica. Los de unidades son cinco
+   por estructura, así que si vienes con otra cantidad, se rehacen. */
 function reseed(force){
-  const prevKind=form.states.length===2?"simple":(form.mode==="time"?"time":"rate");
-  if(force||isDefaultStates(form.states,form.prevKind||form.kind,prevKind)){
-    form.states=mkStates(form.kind,form.mode==="time"?"time":(form.states.length===2?"simple":"rate"),null);
-  }
+  if(force||isDefaultStates(form.states,form.prevKind||form.kind,form.mode))
+    form.states=mkStates(form.kind,form.mode==="time"?"time":"rate",null);
+  if(form.mode==="time"&&form.states.length!==NST)
+    form.states=mkStates(form.kind,"time",null);
   stOpen=-1;
 }
 $("#fKind").onclick=e=>{
@@ -3335,16 +4189,17 @@ $("#fKind").onclick=e=>{
 };
 $("#fMode").onclick=e=>{
   const b=e.target.closest("button"); if(!b||b.dataset.m===form.mode) return;
-  const was=form.mode; form.mode=b.dataset.m;
-  if(was==="time"||form.mode==="time") reseed(true); else reseed(false);
+  form.mode=b.dataset.m;
+  reseed(false);
   syncSheet(true);
 };
-/* solo al crear: si ya existe, el umbral es una decisión tuya y no se pisa */
-$("#fGoal").oninput=()=>{
-  if(!form.editing) $("#fStretch").value=defStretch({kind:form.kind,mode:"time",goal:+$("#fGoal").value||0});
-  drawPreview();
+/* mover el tope reparte de nuevo los tramos de en medio */
+$("#fStretch").onchange=()=>{
+  form.cuts=setCut(form.cuts,form.cuts.length-1,parseInt($("#fStretch").value,10));
+  $("#fStretch").value=form.cuts[form.cuts.length-1];
+  renderStates();
 };
-$("#fStretch").oninput=drawPreview;
+$("#fUnit").oninput=()=>{ renderStates(); };
 $("#addBtn").onclick=()=>openSheet();
 $("#cancelHabit").onclick=closeTop;
 $("#delHabit").onclick=async()=>{
@@ -3372,20 +4227,22 @@ $("#delTr").onclick=async()=>{
 $("#saveHabit").onclick=()=>{
   const name=$("#fName").value.trim();
   if(!name){$("#fName").focus();toast("Ponle nombre");return;}
-  let goal=0,stretch=0;
+  let goal=0,stretch=0,cuts=null;
   if(form.mode==="time"){
-    goal=Math.max(0,parseInt($("#fGoal").value,10)||0);
-    stretch=Math.max(0,parseInt($("#fStretch").value,10)||0);
-    if(stretch<=goal){ /* solo se corrige si quedó imposible */
-      stretch=form.kind==="build"?(goal>0?Math.round(goal*1.5):30):(goal>0?goal*2:30);
-    }
+    cuts=normCuts(form.cuts.slice(0,form.states.length));
+    stretch=cuts[cuts.length-1];
+    goal=cuts[Math.floor((cuts.length-1)/2)];
   }
+  const unit=$("#fUnit").value.trim();
   form.states.forEach((x,i)=>{ if(!x.label.trim()) x.label="Estado "+(i+1); });
-  const spec={kind:form.kind,mode:form.mode,goal,stretch};
-  const same=(a,b)=>a.kind===b.kind&&a.mode===b.mode&&a.goal===b.goal&&a.stretch===b.stretch;
+  const snap={name,unit,color:form.color,states:form.states.map(x=>({label:x.label,pts:x.pts}))};
+  const spec={kind:form.kind,mode:form.mode,goal,stretch,cuts,snap};
+  const same=(a,b)=>a.kind===b.kind&&a.mode===b.mode
+    &&(a.cuts||[]).join()===(b.cuts||[]).join()&&a.goal===b.goal&&a.stretch===b.stretch
+    &&JSON.stringify(a.snap||null)===JSON.stringify(b.snap||null);
   if(form.editing){
     const h=db.habits.find(x=>x.id===form.editing);
-    h.name=name; h.color=form.color; h.states=form.states.map(x=>({...x}));
+    h.name=name; h.color=form.color; h.unit=unit; h.states=form.states.map(x=>({...x}));
     let from=$("#fFrom").value||todayKey();
     if(from>todayKey()) from=todayKey();
     if(from<h.since) from=h.since;
@@ -3396,12 +4253,12 @@ $("#saveHabit").onclick=()=>{
       h.rules.sort((a,b)=>a.from<b.from?-1:1);
     }
     const last=h.rules[h.rules.length-1];
-    Object.assign(h,{kind:last.kind,mode:last.mode,goal:last.goal,stretch:last.stretch});
+    Object.assign(h,{kind:last.kind,mode:last.mode,goal:last.goal,stretch:last.stretch,cuts:last.cuts});
     const d=parseKey(from);
     toast(changed?"Cambio guardado desde el "+d.getDate()+" de "+MESES[d.getMonth()]:"Actualizado");
   }else{
     const from=todayKey();
-    db.habits.push({id:uid(),name,color:form.color,weight:DEF_WEIGHT,
+    db.habits.push({id:uid(),name,color:form.color,weight:DEF_WEIGHT,unit,
       states:form.states.map(x=>({...x})),...spec,since:from,rules:[{from,...spec}]});
     toast("Agregado "+name);
   }
@@ -3550,6 +4407,17 @@ function renderThresholds(){
       +"), así que se ajustan solos cuando cambias tus hábitos.";
 }
 function renderProfileSums(){
+  const hs=$("#histSum");
+  if(hs){
+    const all=allNotes();
+    const au=all.filter(([,n])=>n.kind==="audio").length;
+    hs.textContent=all.length?all.length+" en total · "+au+" de voz":"todavía ninguno";
+  }
+  const cs=$("#chgSum");
+  if(cs){
+    let n=0; const m=chgMap(); Object.keys(m).forEach(k=>{n+=m[k].length;});
+    cs.textContent=n?n+" cambio"+(n===1?"":"s")+" guardado"+(n===1?"":"s"):"ninguno todavía";
+  }
   const w=$("#wSum"); if(!w) return;
   const eq=db.habits.every(h=>weightOf(h)===DEF_WEIGHT);
   w.textContent=db.habits.length
@@ -3761,7 +4629,9 @@ $("#nsSave").onclick=()=>{
     n.text=txt;
   }
   n.times=nsTimes.slice(); n.tags=nsTags.slice();
-  _start=null; save(); closeTop(); renderToday(); renderRecord(); toast("Comentario guardado");
+  _start=null; save(); closeTop(); renderToday(); renderRecord();
+  if($("#evView").classList.contains("on")) renderEvView();
+  toast("Comentario guardado");
 };
 $("#nsDel").onclick=async()=>{
   const d=day(nsKey), n=d.notes.find(x=>x.id===nsId); if(!n) return;
