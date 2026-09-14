@@ -738,8 +738,10 @@ html[data-theme=light]{--daypick:#5AA0DC}
   animation-duration:.05s;animation-delay:0s}
 /* ===== noches: a qué hora dormiste ===== */
 /* --hl columna de días, --hg separación, --hp respiro para las horas escritas */
-.hyp{--hl:42px; --hg:8px; --hp:36px; margin-top:4px;position:relative}
-@media (max-width:379px){ .hyp{--hl:38px; --hp:31px} }
+.hyp{--hl:42px; --hg:8px; --hp:44px; --tmbg:#272E3B; --barink:#33383F;
+  margin-top:4px;position:relative}
+html[data-theme=light] .hyp{--tmbg:#DDE2EA}
+@media (max-width:379px){ .hyp{--hl:36px; --hp:39px} }
 .hypax{display:flex;gap:var(--hg);margin-bottom:5px}
 .hypax .d{width:var(--hl);flex:0 0 auto}
 .hypax .tk{flex:1;position:relative;height:14px}
@@ -748,8 +750,9 @@ html[data-theme=light]{--daypick:#5AA0DC}
   font-variant-numeric:tabular-nums}
 .hypax .in span.mid{color:var(--text);font-weight:700}
 .hypplot{position:relative}
-.hypmid{position:absolute;top:1px;bottom:1px;width:2px;margin-left:-1px;border-radius:2px;
-  background:var(--text);opacity:.45;pointer-events:none}
+.hypmid{position:absolute;top:1px;bottom:1px;width:2px;margin-left:-1px;
+  background-image:repeating-linear-gradient(180deg,var(--text) 0 3px,transparent 3px 7px);
+  opacity:.55;pointer-events:none}
 .hyprow{display:flex;align-items:center;gap:var(--hg);height:21px;margin-bottom:4px;width:100%;
   background:none;border:0;padding:0;cursor:pointer;position:relative}
 .hyprow .d{width:var(--hl);flex:0 0 auto;font-size:10.5px;color:var(--dim);text-align:right;
@@ -759,12 +762,15 @@ html[data-theme=light]{--daypick:#5AA0DC}
 .hyprow .tk::before{content:"";position:absolute;left:var(--hp);right:var(--hp);top:50%;
   height:1px;background:var(--line)}
 .hyprow .in{position:absolute;left:var(--hp);right:var(--hp);top:0;bottom:0}
-.hyprow .bar{position:absolute;top:4px;bottom:4px;border-radius:7px;background:var(--acc)}
+.hyprow .bar{position:absolute;top:4px;bottom:4px;border-radius:7px;background:var(--acc);
+  display:flex;align-items:center;justify-content:center;color:var(--barink);
+  font-size:9.5px;font-weight:500;letter-spacing:.02em;overflow:hidden}
 .hyprow.sel .bar{box-shadow:0 0 0 1.5px var(--text)}
-.hyprow .tm{position:absolute;top:50%;transform:translateY(-50%);font-size:9.5px;color:var(--muted);
-  font-variant-numeric:tabular-nums;white-space:nowrap}
-.hyprow .tm.a{transform:translate(-100%,-50%);padding-right:6px}
-.hyprow .tm.b{padding-left:6px}
+.hyprow .tm{position:absolute;top:50%;transform:translateY(-50%);font-size:9px;color:var(--muted);
+  font-variant-numeric:tabular-nums;white-space:nowrap;background:var(--tmbg);
+  border-radius:999px;padding:2px 6px;line-height:1.25}
+.hyprow .tm.a{transform:translate(-100%,-50%);margin-left:-6px}
+.hyprow .tm.b{margin-left:6px}
 .hyprow.sel .tm{color:var(--text)}
 .hyprow .nd{position:absolute;left:0;top:50%;transform:translateY(-50%);font-size:9.5px;color:var(--dim)}
 
@@ -780,7 +786,6 @@ html[data-theme=light]{--sbar:#767E8C; --forced:#0E9E76}
   background-repeat:no-repeat,no-repeat;
   background-position:left center,right center;
   background-size:28% 9px,28% 9px}
-.cell.dim .n{font-weight:800}
 /* Lo que fijaste tú se marca en el contorno, en un tono que no existe
    en la escala de calificaciones. */
 .cell.forced{box-shadow:inset 0 0 0 2px var(--forced)}
@@ -793,6 +798,13 @@ html[data-theme=light]{--sbar:#767E8C; --forced:#0E9E76}
   border-radius:999px;padding:3px 10px;letter-spacing:.02em}
 .bars2 .c{position:relative;z-index:1}
 .avgline{z-index:3}
+
+/* ===== selector de hábito en Progreso ===== */
+.chips .selbtn{display:inline-flex;align-items:center;gap:7px}
+.chips .selbtn .car{color:var(--dim);font-size:10px;margin-left:1px}
+.chips .selbtn.on .car{color:var(--onacc);opacity:.7}
+#scopeBody .mrow.pick .go{color:var(--acc);font-weight:700}
+#scopeBody .mrow.pick b{color:var(--acc)}
 </style>
 </head>
 <body>
@@ -1064,6 +1076,14 @@ html[data-theme=light]{--sbar:#767E8C; --forced:#0E9E76}
   <button class="btn" id="nsSave">Guardar</button>
   <button class="btn gh" data-close="1">Cancelar</button>
   <button class="btn dg" id="nsDel">Eliminar comentario</button>
+</div>
+
+<div class="sheet" id="scopeSheet" role="dialog" aria-modal="true">
+  <div class="grab"></div>
+  <h2>¿Qué quieres ver?</h2>
+  <p class="lead">Las gráficas se ajustan a lo que elijas.</p>
+  <div id="scopeBody"></div>
+  <button class="btn gh" data-close="1">Cerrar</button>
 </div>
 
 <div class="sheet" id="chgHab" role="dialog" aria-modal="true">
@@ -2666,15 +2686,42 @@ function scopeName(){
 }
 function renderScopePicker(){
   const p=$("#scopePicker"); p.innerHTML="";
-  const mk=(id,label,color)=>{
-    const b=document.createElement("button");
-    if(color){ b.innerHTML='<span class="hdot"></span>'; b.querySelector(".hdot").style.background=color; }
-    b.appendChild(document.createTextNode(label));
-    b.classList.toggle("on",recScope===id);
-    b.onclick=()=>{recScope=id;renderRecord();};
-    p.appendChild(b);
+  const all=document.createElement("button");
+  all.textContent="Todo el día";
+  all.classList.toggle("on",!recScope);
+  all.onclick=()=>{ recScope=null; renderRecord(); };
+  p.appendChild(all);
+  if(!db.habits.length) return;
+  /* con muchos hábitos, buscarlos de lado era una lata: mejor una lista */
+  const h=recScope?db.habits.find(x=>x.id===recScope):null;
+  const sel=document.createElement("button"); sel.className="selbtn";
+  sel.classList.toggle("on",!!h);
+  if(h){ sel.innerHTML='<span class="hdot"></span>';
+    sel.querySelector(".hdot").style.background=specAt(h,todayKey()).color; }
+  sel.appendChild(document.createTextNode(h?h.name:"Seleccionar hábito"));
+  const c=document.createElement("span"); c.className="car"; c.textContent="▾";
+  sel.appendChild(c);
+  sel.onclick=openScopeSheet;
+  p.appendChild(sel);
+}
+function openScopeSheet(){
+  const host=$("#scopeBody"); host.innerHTML="";
+  const g=document.createElement("div"); g.className="grp";
+  const row=(id,name,color,sub)=>{
+    const b=document.createElement("button"); b.className="mrow"+(recScope===id?" pick":"");
+    b.innerHTML='<span class="dot"></span><span class="nm"><b></b><small></small></span><span class="go"></span>';
+    const d=b.querySelector(".dot");
+    if(color) d.style.background=color; else d.classList.add("n");
+    b.querySelector("b").textContent=name;
+    b.querySelector("small").textContent=sub||"";
+    b.querySelector(".go").textContent=recScope===id?"✓":"›";
+    b.onclick=()=>{ recScope=id; closeTop(); renderRecord(); };
+    g.appendChild(b);
   };
-  mk(null,"Todo el día"); db.habits.forEach(h=>mk(h.id,h.name,specAt(h,todayKey()).color));
+  row(null,"Todo el día",null,"la suma de todos tus hábitos");
+  db.habits.forEach(h=>row(h.id,h.name,specAt(h,todayKey()).color,goalText(specAt(h,todayKey()))));
+  host.appendChild(g);
+  openSheetEl("#scopeSheet");
 }
 function allKeys(){
   const out=[]; let k=startKey(); const t=todayKey(); let guard=0;
@@ -3278,7 +3325,9 @@ function renderSleepSpans(host){
       const a=bw.bed-MID, b=bw.wake-MID, h=(b-a)/60;
       const bar=document.createElement("span"); bar.className="bar";
       bar.style.left=pctOf(a)+"%";
-      bar.style.width=Math.max(1.5,pctOf(b)-pctOf(a))+"%";
+      const wpc=Math.max(1.5,pctOf(b)-pctOf(a));
+      bar.style.width=wpc+"%";
+      if(wpc>9) bar.textContent=Math.round(h)+"H";   /* lo exacto va en las puntas */
       inn.appendChild(bar);
       const l1=document.createElement("span"); l1.className="tm a";
       l1.style.left=pctOf(a)+"%"; l1.textContent=hhmm2(a); inn.appendChild(l1);
@@ -3781,7 +3830,7 @@ function makeSortable(list,apply,scroller,onTap){
 
 /* ================= hojas ================= */
 const SHEETS=["#sheet","#trSheet","#mSheet","#allSheet","#bulkSheet","#wSheet","#thSheet","#orderSheet",
-  "#noteSheet","#tagSheet","#histSheet","#chgSheet","#chgHab","#evSheet","#evView","#askSheet"];
+  "#noteSheet","#tagSheet","#histSheet","#chgSheet","#chgHab","#scopeSheet","#evSheet","#evView","#askSheet"];
 let sheetStack=[];
 function openSheetEl(sel){
   const sh=$(sel);
