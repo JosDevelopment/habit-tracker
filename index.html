@@ -828,7 +828,16 @@ html[data-theme=light]{--sbar:#767E8C; --forced:#0E9E76}
   border-radius:999px;padding:3px 7px;flex:0 0 auto}
 .abody{padding:0 13px 13px;border-top:1px solid var(--line)}
 .abody>*{margin-top:10px}
+.olist .orow+.orow{margin-top:10px}
 .orow{display:flex;align-items:center;gap:6px}
+.orow .ogrip{width:22px;height:34px;flex:0 0 auto;position:relative;padding:0;background:none;
+  border:0;touch-action:none}
+.orow .ogrip::before,.orow .ogrip::after{content:"";position:absolute;left:4px;right:4px;height:2px;
+  border-radius:1px;background:var(--line)}
+.orow .ogrip::before{top:13px} .orow .ogrip::after{top:19px}
+.orow.lift .ogrip::before,.orow.lift .ogrip::after{background:var(--acc)}
+.olist.sorting .orow,#adjList.sorting .afld{transition:transform .16s}
+.afld.lift,.orow.lift{position:relative;z-index:3;box-shadow:0 8px 20px -8px rgba(0,0,0,.5)}
 .orow .on2{flex:1;min-width:0}
 .orow .vi{width:58px;flex:0 0 auto;text-align:center;padding-left:4px;padding-right:4px}
 .orow .stp{width:34px;height:38px;flex:0 0 auto;background:var(--card);border:1px solid var(--line);
@@ -845,20 +854,20 @@ html[data-theme=light]{--sbar:#767E8C; --forced:#0E9E76}
 /* receta */
 .phrase{background:var(--up);border-left:3px solid var(--acc);border-radius:0 10px 10px 0;
   padding:11px 12px;font-size:13.5px;line-height:1.55;margin-bottom:13px;color:var(--text)}
-.step{display:flex;align-items:center;gap:10px;background:var(--up);border-radius:11px;padding:10px 11px;
+.rstep{display:flex;align-items:center;gap:10px;background:var(--up);border-radius:11px;padding:10px 11px;
   margin-bottom:8px}
-.step .n{width:22px;height:22px;border-radius:50%;background:var(--card);color:var(--muted);
+.rstep .n{width:22px;height:22px;border-radius:50%;background:var(--card);color:var(--muted);
   display:grid;place-items:center;font-size:11px;flex:0 0 auto}
-.step .w{flex:1;display:flex;gap:7px;align-items:center;flex-wrap:wrap;min-width:0}
-.step .k{font-size:12.5px;color:var(--muted)}
-.step select{flex:1;min-width:88px;background:var(--card);border:1px solid var(--line);color:var(--text);
+.rstep .w{flex:1;display:flex;gap:7px;align-items:center;flex-wrap:wrap;min-width:0}
+.rstep .k{font-size:12.5px;color:var(--muted)}
+.rstep select{flex:1;min-width:88px;background:var(--card);border:1px solid var(--line);color:var(--text);
   border-radius:9px;padding:9px 8px;font:inherit;font-size:13px}
-.step .x{background:none;border:0;color:var(--dim);font-size:17px;flex:0 0 auto}
+.rstep .x{background:none;border:0;color:var(--dim);font-size:17px;flex:0 0 auto}
 /* el día */
-.frow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
-.frow .fk{width:96px;flex:0 0 auto}
-.frow .fk b{display:block;font-size:13px;font-weight:600}
-.frow .fk small{display:block;font-size:10px;color:var(--dim);margin-top:1px}
+.afrow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.afrow .fk{width:96px;flex:0 0 auto}
+.afrow .fk b{display:block;font-size:13px;font-weight:600}
+.afrow .fk small{display:block;font-size:10px;color:var(--dim);margin-top:1px}
 .fnum{display:flex;align-items:center;gap:6px;flex:1}
 .fnum .stp{width:36px;height:38px;background:var(--up);border:1px solid var(--line);border-radius:999px;
   color:var(--text);font-size:16px;flex:0 0 auto}
@@ -2168,7 +2177,7 @@ function padFor(h,s,off,has,v,ctx){
     const vals=(e&&typeof e==="object"&&e.f)||{};
     const inRec=id=>termsOf(s).some(t=>t.f===id);
     fieldsOf(s).forEach(f=>{
-      const r=document.createElement("div"); r.className="frow";
+      const r=document.createElement("div"); r.className="afrow";
       const k=document.createElement("span"); k.className="fk";
       k.innerHTML="<b></b><small></small>";
       k.querySelector("b").textContent=f.name;
@@ -4226,7 +4235,8 @@ function openSheet(h){
         states:h?statesOf(sp0).map(x=>({...x})):mkStates("build","rate",null)};
   const s=h?specAt(h,todayKey()):null;
   form.cuts=(s&&numMode(s))?cutsOf(s).slice():spread(60,form.states.length);
-  form.fields=(s&&s.fields?s.fields:[]).map(f=>({...f,options:(f.options||[]).map(o=>({...o}))}));
+  form.fields=(s&&s.fields?s.fields:[]).map(f=>({...f,
+    options:(f.options||[]).map(o=>({...o,id:o.id||fid()}))}));
   form.terms=(s&&s.terms?s.terms:[]).map(t=>({...t}));
   fOpen=null;
   $("#sheetTitle").textContent=h?h.name:"Agregar hábito";
@@ -4483,6 +4493,7 @@ function renderAdjFields(){
     const inRec=(form.terms||[]).some(t=>t.f===f.id);
     const el=document.createElement("div");
     el.className="afld"+(fOpen===f.id?" open":"");
+    el.dataset.id=f.id;
     el.innerHTML='<button class="ahead"><span class="ico"></span>'
       +'<span class="tx"><b></b><small></small></span></button><div class="abody"></div>';
     el.querySelector(".ico").textContent=f.type==="num"?"123":(fieldUsable(f)?"1·2":"≡");
@@ -4521,9 +4532,12 @@ function renderAdjFields(){
       const lb=document.createElement("div"); lb.className="stlab";
       lb.textContent="Opciones y cuánto vale cada una";
       body.appendChild(lb);
+      const ol=document.createElement("div"); ol.className="olist";
       (f.options||[]).forEach((o,i)=>{
-        const r=document.createElement("div"); r.className="orow";
-        r.innerHTML='<input class="on2"><button class="stp mn" type="button">−</button>'
+        if(!o.id) o.id=fid();
+        const r=document.createElement("div"); r.className="orow"; r.dataset.id=o.id;
+        r.innerHTML='<button class="grip ogrip" type="button" aria-label="Mover opción"></button>'
+          +'<input class="on2"><button class="stp mn" type="button">−</button>'
           +'<input class="vi" inputmode="decimal"><button class="stp pl" type="button">+</button>'
           +'<button class="rm" type="button" aria-label="Quitar">&times;</button>';
         const a=r.querySelector(".on2"); a.value=o.name; a.placeholder="Opción"; a.maxLength=24;
@@ -4538,8 +4552,15 @@ function renderAdjFields(){
         r.querySelector(".pl").onclick=()=>step(1);
         r.querySelector(".rm").onclick=()=>{ f.options.splice(i,1); cleanTerms();
           renderAdjFields(); renderScoreLine(); };
-        body.appendChild(r);
+        ol.appendChild(r);
       });
+      body.appendChild(ol);
+      if((f.options||[]).length>1){
+        makeSortable(ol,ids=>{
+          f.options=ids.map(id=>f.options.find(o=>o.id===id)).filter(Boolean);
+          setTimeout(()=>{ renderAdjFields(); renderScoreLine(); },0);
+        },$("#sheet").querySelector(".sbody"));
+      }
       const add=document.createElement("button"); add.className="act-s wide"; add.type="button";
       add.textContent="+ Agregar opción";
       add.onclick=()=>{ f.options.push({name:"",value:null}); renderAdjFields(); };
@@ -4557,6 +4578,15 @@ function renderAdjFields(){
     body.appendChild(del);
     host.appendChild(el);
   });
+  if(form.fields.length>1){
+    makeSortable(host,ids=>{
+      form.fields=ids.map(id=>form.fields.find(f=>f.id===id)).filter(Boolean);
+      setTimeout(()=>{ renderAdjFields(); renderScoreLine(); },0);
+    },$("#sheet").querySelector(".sbody"));
+    const t=document.createElement("p"); t.className="hint"; t.style.margin="9px 0 0";
+    t.textContent="Mantén presionado un campo para cambiar su orden; las opciones se mueven desde su agarradera.";
+    host.appendChild(t);
+  }
 }
 function renderScoreLine(){
   const eq=$("#adjEq"); if(!eq) return;
@@ -4600,7 +4630,7 @@ function renderRecipe(){
     host.appendChild(p); return;
   }
   form.terms.forEach((t,i)=>{
-    const el=document.createElement("div"); el.className="step";
+    const el=document.createElement("div"); el.className="rstep";
     el.innerHTML='<span class="n"></span><span class="w"></span>';
     el.querySelector(".n").textContent=i+1;
     const w=el.querySelector(".w");
