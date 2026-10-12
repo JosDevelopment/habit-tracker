@@ -900,6 +900,8 @@ html[data-theme=light]{--sbar:#767E8C; --forced:#0E9E76}
 .ftot b{font-size:19px;font-variant-numeric:tabular-nums}
 .ftot small{font-size:11.5px;color:var(--dim)}
 .scale .scl.ro{cursor:default}
+
+.clog .what em.added{display:block;font-style:normal;font-size:11px;color:var(--dim);margin-top:4px}
 </style>
 </head>
 <body>
@@ -1108,13 +1110,9 @@ html[data-theme=light]{--sbar:#767E8C; --forced:#0E9E76}
     <div class="fld"><label>Qué anotas cada día</label>
       <div id="adjList"></div>
       <button class="act-s wide" id="addField">+ Agregar un campo</button></div>
-    <div class="fld"><label>¿Cuántas veces al día lo registras?</label>
-      <div class="seg two" id="fRepeat"><button data-r="0">Una sola vez</button>
-        <button data-r="1">Por tandas</button></div>
-      <div id="aggBox" style="margin-top:9px">
-        <div class="seg three" id="fAgg"><button data-a="sum">Se suman</button>
-          <button data-a="avg">Se promedian</button><button data-a="max">La mayor</button></div>
-      </div>
+    <div class="fld"><label>Las tandas del día</label>
+      <div class="seg three" id="fAgg"><button data-a="sum">Se suman</button>
+        <button data-a="avg">Se promedian</button><button data-a="max">La mayor</button></div>
       <p class="hint" id="repHint" style="margin:8px 0 0"></p></div>
 
     <div class="fld"><label>Cómo se califica</label>
@@ -1142,9 +1140,16 @@ html[data-theme=light]{--sbar:#767E8C; --forced:#0E9E76}
     <div id="stList"></div>
     <button class="btn gh" id="addState" style="margin-top:8px">Agregar estado</button>
   </div>
-  <div class="fld" id="fromField" style="display:none"><label for="fFrom">Este cambio aplica desde</label>
-    <input id="fFrom" type="date">
-    <p class="hint" style="margin:7px 0 0">Los días anteriores conservan la meta que tenían.</p></div>
+  <div class="fld" id="fromField" style="display:none">
+    <button class="act-s wide" id="addFrom">+ Agregar fecha para el cambio</button>
+    <div id="fromWrap" style="display:none">
+      <label for="fFrom" style="margin-top:12px">Este cambio aplica desde</label>
+      <input id="fFrom" type="date">
+      <p class="hint" style="margin:7px 0 0">Los días anteriores conservan la meta que tenían.</p>
+      <button class="act-x wide" id="clearFrom">Quitar la fecha</button>
+    </div>
+    <p class="hint" id="fromHint" style="margin:8px 0 0">Sin fecha, el cambio aplica a todos tus días.</p>
+  </div>
   <div id="ruleHist"></div>
   <div class="preview" id="preview"></div>
   <button class="btn" id="saveHabit">Guardar</button>
@@ -1258,7 +1263,8 @@ html[data-theme=light]{--sbar:#767E8C; --forced:#0E9E76}
 <div class="sheet" id="chgSheet" role="dialog" aria-modal="true">
   <div class="grab"></div>
   <h2>Cambios de metas</h2>
-  <p class="lead">Cada vez que cambiaste una meta y desde qué día empezó a contar.</p>
+  <p class="lead">Cada vez que cambiaste una meta: desde qué día empezó a contar y cuándo lo anotaste.</p>
+  <div class="chips" id="chgFilter" style="margin-bottom:6px"></div>
   <div id="changes"></div>
   <button class="btn gh" data-close="1">Cerrar</button>
 </div>
@@ -1271,6 +1277,19 @@ html[data-theme=light]{--sbar:#767E8C; --forced:#0E9E76}
   <button class="btn hold" id="askOk"><span class="fillbar"></span><span class="lbl"></span></button>
   <p class="holdhint">Mantén presionado hasta que se llene</p>
   <button class="btn gh" id="askNo">Cancelar</button>
+</div>
+
+<div class="sheet" id="ask2Sheet" role="dialog" aria-modal="true">
+  <div class="grab"></div>
+  <div class="askicon">?</div>
+  <h2>¿Desde cuándo aplica?</h2>
+  <p class="asktext" id="ask2Text"></p>
+  <button class="btn hold" id="ask2A"><span class="fillbar"></span>
+    <span class="lbl">Para todas las fechas</span></button>
+  <button class="btn hold" id="ask2B"><span class="fillbar"></span>
+    <span class="lbl">Desde el último cambio</span></button>
+  <p class="holdhint">Mantén presionado hasta que se llene</p>
+  <button class="btn gh" id="ask2No">Cancelar</button>
 </div>
 
 <div class="sheet" id="orderSheet" role="dialog" aria-modal="true">
@@ -1471,7 +1490,7 @@ function evSplit(k,win){
    Cada hábito define sus propios estados: nombre, puntos y color, ordenados de
    peor a mejor. Construir y evitar ya solo agrupan visualmente; quién suma y
    quién resta lo decide cada estado. Por eso "no caí" ahora puede premiar. */
-const PTS_MIN=-5, PTS_MAX=5, MIN_STATES=2, MAX_STATES=8;
+const PTS_MIN=-5, PTS_MAX=5, MIN_STATES=2, MAX_STATES=Infinity;
 const sid=()=>"s"+Math.random().toString(36).slice(2,8);
 const ST_DEF={
   time:{
@@ -1578,7 +1597,6 @@ const tandasOf=e=>{
 };
 function adjTotal(s,e){
   if(e&&typeof e==="object"&&e.tot!=null) return +e.tot||0;
-  if(!s.repeat) return recipeVal(s,(e&&typeof e==="object"&&e.f)||{});
   const vs=tandasOf(e).map(t=>recipeVal(s,t.f));
   if(!vs.length) return 0;
   const agg=s.agg||"sum";
@@ -1832,7 +1850,7 @@ function specAt(h,k){
   const src=r||h;
   return {...base,kind:src.kind,mode:src.mode,goal:src.goal,stretch:src.stretch,cuts:src.cuts,
     fields:src.fields||h.fields||[],terms:src.terms||h.terms||[],
-    repeat:!!(src.repeat!==undefined?src.repeat:h.repeat),agg:src.agg||h.agg||"sum",
+    agg:src.agg||h.agg||"sum",
     labels:src.labels};
 }
 const labelsFor=s=>statesOf(s).map(x=>x.label);
@@ -1846,7 +1864,7 @@ function chgMap(){
   db.habits.forEach(h=>{
     const rs=h.rules||[];
     for(let i=1;i<rs.length;i++)
-      (_chg[rs[i].from]=_chg[rs[i].from]||[]).push({h,prev:rs[i-1],next:rs[i]});
+      (_chg[rs[i].from]=_chg[rs[i].from]||[]).push({h,prev:rs[i-1],next:rs[i],at:rs[i].at||null});
   });
   return _chg;
 }
@@ -1950,9 +1968,7 @@ function diffText(prev,next){
       if(i!==j) movedF=true;
     });
     if(movedF&&pf.length===nf.length) out.push("los campos cambiaron de orden");
-    if(!!prev.repeat!==!!next.repeat)
-      out.push(next.repeat?"ahora se registra por tandas":"ahora se registra una sola vez al día");
-    else if(next.repeat&&(prev.agg||"sum")!==(next.agg||"sum"))
+    if((prev.agg||"sum")!==(next.agg||"sum"))
       out.push("las tandas del día ahora "+AGG[next.agg||"sum"]);
     if(adjPhrase(prev)!==adjPhrase(next))
       out.push("la receta pasó de «"+adjPhrase(prev)+"» a «"+adjPhrase(next)+"»");
@@ -2323,9 +2339,24 @@ function adjScale(p,s,h,cur,tappable){
   });
   p.appendChild(sc);
 }
+/* Redibuja una sola fila con su pad en vez de rehacer la lista entera.
+   Además de ser más rápido, evita que al tocar un botón del pad se reconstruya
+   todo lo demás y la pantalla dé un salto. Si la fila no está a la vista,
+   se cae de vuelta al render completo. */
+function redrawHabit(hid){
+  const pad=document.querySelector('.pad[data-h="'+hid+'"]');
+  const h=db.habits.find(x=>x.id===hid);
+  if(!pad||!pad.previousElementSibling||!h) return false;
+  const kids=[...habitRow(h).childNodes];
+  if(kids.length<2) return false;
+  pad.previousElementSibling.replaceWith(kids[0]);
+  pad.replaceWith(kids[1]);
+  return true;
+}
 function padFor(h,s,off,has,v,ctx){
   const p=document.createElement("div");
   p.className="pad"+(ctx.get()===h.id?" open":"");
+  p.dataset.h=h.id;
   if(s.mode==="rate"){
     const box=document.createElement("div"); box.className="opts";
     const cur=entryOf(cursor,h.id);
@@ -2346,7 +2377,7 @@ function padFor(h,s,off,has,v,ctx){
     p.appendChild(box);
   }else if(s.mode==="adj"){
     const e=entryOf(cursor,h.id);
-    if(s.repeat){
+    {
       const list=tandasOf(e);
       list.forEach((t,i)=>{
         const box=document.createElement("div");
@@ -2358,7 +2389,8 @@ function padFor(h,s,off,has,v,ctx){
         box.querySelector(".tx b").textContent=fmtU(s,recipeVal(s,t.f));
         box.querySelector(".tx small").textContent=tandaSum(s,t);
         box.querySelector(".thead").onclick=ev=>{ ev.stopPropagation();
-          openT=openT===t.id?null:t.id; renderToday(); };
+          openT=openT===t.id?null:t.id;
+          if(!redrawHabit(h.id)) renderToday(); };
         const body=box.querySelector(".tbody");
         if(openT===t.id){
           adjRows(body,s,h,t.f||{},t.id);
@@ -2373,16 +2405,13 @@ function padFor(h,s,off,has,v,ctx){
       add.textContent=list.length?"+ Agregar otra tanda":"+ Agregar la primera tanda";
       add.onclick=ev=>{ ev.stopPropagation(); addTanda(h.id); };
       p.appendChild(add);
-    }else{
-      adjRows(p,s,h,(e&&typeof e==="object"&&e.f)||{},null);
     }
     const tot=document.createElement("div"); tot.className="ftot";
     const t=adjTotal(s,e);
     tot.innerHTML="<b></b><small></small>";
     tot.querySelector("b").textContent=fmtU(s,t);
     tot.querySelector("small").textContent=!termsOf(s).length?"sin receta: no califica"
-      :s.repeat?(tandasOf(e).length+" tanda"+(tandasOf(e).length===1?"":"s")+", "+AGG[s.agg||"sum"])
-      :adjPhrase(s)+" = "+t;
+      :(tandasOf(e).length+" tanda"+(tandasOf(e).length===1?"":"s")+", "+AGG[s.agg||"sum"]);
     p.appendChild(tot);
     const c=document.createElement("button"); c.className="clr wide"; c.textContent="Borrar el día";
     c.onclick=ev=>{ ev.stopPropagation(); openT=null; setVal(h.id,null); };
@@ -2505,7 +2534,8 @@ function setField(id,f,v,tid){
   if(!e||typeof e!=="object"||Array.isArray(e)) e={};
   if(tid){
     const arr=tandasOf(e).map(t=>({id:t.id,f:{...t.f}}));
-    const t=arr.find(x=>x.id===tid); if(!t) return;
+    let t=arr.find(x=>x.id===tid);
+    if(!t){ t={id:tid,f:{}}; arr.push(t); }
     if(v===null||v===""||v===undefined) delete t.f[f]; else t.f[f]=v;
     e={r:arr};
   }else{
@@ -2515,7 +2545,9 @@ function setField(id,f,v,tid){
   }
   delete e.tot;                       /* al tocar un campo manda la receta */
   d.entries[id]=e;
-  _start=null; save(); renderBar(); renderToday(); renderRecord();
+  _start=null; save(); renderBar();
+  if(!redrawHabit(id)) renderToday();
+  renderRecord();
   if($("#allSheet").classList.contains("on")) renderAllSheet();
 }
 let openT=null;
@@ -2526,14 +2558,18 @@ function addTanda(id){
   const t={id:"t"+Math.random().toString(36).slice(2,8),f:{}};
   arr.push(t); openT=t.id;
   d.entries[id]={r:arr};
-  _start=null; save(); renderBar(); renderToday(); renderRecord();
+  _start=null; save(); renderBar();
+  if(!redrawHabit(id)) renderToday();
+  renderRecord();
 }
 function delTanda(id,tid){
   const d=day(cursor);
   const arr=tandasOf(d.entries[id]).filter(t=>t.id!==tid).map(t=>({id:t.id,f:{...t.f}}));
   if(arr.length) d.entries[id]={r:arr}; else delete d.entries[id];
   if(openT===tid) openT=null;
-  _start=null; save(); renderBar(); renderToday(); renderRecord();
+  _start=null; save(); renderBar();
+  if(!redrawHabit(id)) renderToday();
+  renderRecord();
 }
 /* el resumen de una tanda: "2 × 2 · Guiada" */
 function tandaSum(s,t){
@@ -3887,24 +3923,60 @@ function dayChgHTML(k){
     +list.map(c=>"<b>"+esc(c.h.name)+"</b>: "+esc(diffText(c.prev,c.next))).join("<br>")
     +"<small>Desde este día aplica la meta nueva. Los anteriores conservan la vieja.</small></div>";
 }
+/* "se agregó el 11 de octubre": cuándo lo anotaste, que no es lo mismo que
+   desde cuándo aplica */
+function addedTxt(at){
+  if(!at) return "";
+  const d=new Date(at);
+  return "Se agregó el "+d.getDate()+" de "+MESES[d.getMonth()]+" de "+d.getFullYear();
+}
+function chgRow(k,c){
+  const d=parseKey(k);
+  const el=document.createElement("div"); el.className="clog";
+  el.innerHTML='<button class="when"></button>'
+    +'<span class="what"><b></b><i></i><em class="added"></em></span>';
+  el.querySelector(".when").textContent=d.getDate()+" "+MES3[d.getMonth()]+" "
+    +String(d.getFullYear()).slice(2);
+  el.querySelector(".when").onclick=()=>{ setDay(k); closeAll(); go("today"); };
+  el.querySelector("b").textContent=c.h.name;
+  el.querySelector("i").textContent=diffText(c.prev,c.next);
+  const ad=el.querySelector(".added"), t=addedTxt(c.at);
+  if(t) ad.textContent=t; else ad.remove();
+  return el;
+}
+let chgHab=null;
+function renderChangeFilter(hs){
+  const host=$("#chgFilter"); if(!host) return;
+  host.innerHTML="";
+  if(hs.length<2){ host.style.display="none"; return; }
+  host.style.display="";
+  const mk=(id,label)=>{
+    const b=document.createElement("button");
+    b.textContent=label; b.className=chgHab===id?"on":"";
+    b.onclick=()=>{ chgHab=id; chgPage=0; renderChanges(); };
+    host.appendChild(b);
+  };
+  mk(null,"Todos");
+  hs.forEach(h=>mk(h.id,h.name));
+}
 function renderChanges(){
-  const host=$("#changes"); host.innerHTML="";
+  const host=$("#changes"); if(!host) return;
+  host.innerHTML="";
   const m=chgMap(), keys=Object.keys(m).sort().reverse();
-  const flat=[];
-  keys.forEach(k=>m[k].forEach(c=>flat.push([k,c])));
+  const all=[];
+  keys.forEach(k=>m[k].forEach(c=>all.push([k,c])));
+  const withChg=db.habits.filter(h=>all.some(([,c])=>c.h.id===h.id));
+  if(chgHab&&!withChg.some(h=>h.id===chgHab)) chgHab=null;
+  renderChangeFilter(withChg);
+  const flat=all.filter(([,c])=>!chgHab||c.h.id===chgHab);
   if(!flat.length){
-    host.innerHTML='<p class="hint">Todavía no has cambiado ninguna meta. Edita un hábito y elige desde qué día aplica.</p>';
+    host.innerHTML='<p class="hint">'+(all.length
+      ? "Ese hábito no tiene cambios con fecha."
+      : "Todavía no has cambiado ninguna meta con fecha. Al editar un hábito puedes agregar una fecha para que el cambio aplique solo de ahí en adelante.")+"</p>";
     return;
   }
   chgPage=paged(host,flat,8,chgPage,n=>{chgPage=n;renderChanges();},([k,c])=>{
-    const d=parseKey(k);
-    const el=document.createElement("div"); el.className="clog";
-    el.innerHTML='<button class="when"></button><span class="what"><b></b><i></i></span>';
-    el.querySelector(".when").textContent=d.getDate()+" "+MES3[d.getMonth()]+" "+String(d.getFullYear()).slice(2);
-    el.querySelector(".when").onclick=()=>setDay(k);
-    el.querySelector("b").textContent=c.h.name;
-    el.querySelector("i").textContent=diffText(c.prev,c.next);
-    host.appendChild(el);
+    host.appendChild(chgRow(k,c));
   });
 }
 
@@ -3923,13 +3995,9 @@ function openChgHab(id){
     +MESES[mCur.m]+" de "+mCur.y+". Los días anteriores se siguen calificando con la meta vieja.";
   const host=$("#chgHabBody"); host.innerHTML="";
   list.forEach(([k,c])=>{
+    const el=chgRow(k,c);
     const d=parseKey(k);
-    const el=document.createElement("div"); el.className="clog";
-    el.innerHTML='<button class="when"></button><span class="what"><b></b><i></i></span>';
-    el.querySelector(".when").textContent=d.getDate()+" "+MES3[d.getMonth()];
-    el.querySelector(".when").onclick=()=>{ setDay(k); closeAll(); go("today"); };
     el.querySelector("b").textContent="Desde el "+DIAS[d.getDay()]+" "+d.getDate();
-    el.querySelector("i").textContent=diffText(c.prev,c.next);
     host.appendChild(el);
   });
   openSheetEl("#chgHab");
@@ -4286,7 +4354,7 @@ function makeSortable(list,apply,scroller,onTap){
 
 /* ================= hojas ================= */
 const SHEETS=["#sheet","#trSheet","#mSheet","#allSheet","#bulkSheet","#wSheet","#thSheet","#orderSheet",
-  "#noteSheet","#tagSheet","#histSheet","#chgSheet","#chgHab","#scopeSheet","#recipeSheet",
+  "#noteSheet","#tagSheet","#histSheet","#chgSheet","#chgHab","#scopeSheet","#recipeSheet","#ask2Sheet",
   "#evSheet","#evView","#askSheet"];
 let sheetStack=[];
 function openSheetEl(sel){
@@ -4310,6 +4378,7 @@ function stackZ(){
 function closeSheet(sel){
   const sh=$(sel); if(!sh) return;
   if(sel==="#askSheet"&&askResolve){ const r=askResolve; askResolve=null; cancelHold(); r(false); }
+  if(sel==="#ask2Sheet"&&ask2Resolve){ const r=ask2Resolve; ask2Resolve=null; r(null); }
   sh.classList.remove("on","dragging"); sh.style.transform="";
   sheetStack=sheetStack.filter(x=>x!==sel);
   sh.style.zIndex="";
@@ -4433,7 +4502,7 @@ function openSheet(h){
   form.fields=(s&&s.fields?s.fields:[]).map(f=>({...f,
     options:(f.options||[]).map(o=>({...o,id:o.id||fid()}))}));
   form.terms=(s&&s.terms?s.terms:[]).map(t=>({...t}));
-  form.repeat=!!(s&&s.repeat); form.agg=(s&&s.agg)||"sum";
+  form.agg=(s&&s.agg)||"sum";
   fOpen=null;
   $("#sheetTitle").textContent=h?h.name:"Agregar hábito";
   $("#fName").value=h?h.name:"";
@@ -4442,6 +4511,10 @@ function openSheet(h){
   $("#fStretch").value=form.cuts[form.cuts.length-1];
   renderColors(); renderStates();
   $("#fromField").style.display=h?"":"none";
+  form.fromSet=false;
+  $("#fromWrap").style.display="none";
+  $("#addFrom").style.display="";
+  $("#fromHint").textContent="Sin fecha, el cambio aplica a todos tus días.";
   $("#delHabit").style.display=h?"":"none";
   $("#fFrom").max=todayKey(); $("#fFrom").value=todayKey();
   renderRuleHist(h||null);
@@ -4469,7 +4542,7 @@ function renderRuleHist(h){
       h.rules.splice(i,1);
       const last=h.rules[h.rules.length-1];
       Object.assign(h,{kind:last.kind,mode:last.mode,goal:last.goal,stretch:last.stretch,
-        cuts:last.cuts,fields:last.fields,terms:last.terms,repeat:last.repeat,agg:last.agg});
+        cuts:last.cuts,fields:last.fields,terms:last.terms,agg:last.agg});
       _chg=null; save(); renderRuleHist(h); renderAll(); toast("Cambio quitado");
     };
     host.appendChild(row);
@@ -4510,18 +4583,24 @@ function syncWords(){
   $("#goalWord").textContent="unidades, «"+((low&&low.label)||"lo mínimo")+"»";
   $("#stretchWord").textContent="desde aquí, «"+((top&&top.label)||"lo máximo")+"»";
 }
+/* los tramos siempre son tantos como estados: al agregar o quitar uno se
+   reparten de nuevo respetando el tope que ya tenías */
+function fitCuts(){
+  if(!numMode(form)) return;
+  const n=form.states.length;
+  if(!form.cuts||!form.cuts.length) form.cuts=spread(60,n);
+  else if(form.cuts.length!==n) form.cuts=spread(form.cuts[form.cuts.length-1],n);
+}
 function renderStates(){
   const host=$("#stList"); if(!host) return;
   const time=numMode(form);
-  if(time&&form.states.length!==NST) form.states=mkStates(form.kind,"time",null);
-  if(time&&(!form.cuts||form.cuts.length!==form.states.length))
-    form.cuts=spread(topCut({kind:form.kind,states:form.states,cuts:form.cuts}),form.states.length);
+  fitCuts();
   const fu=()=>(form.mode==="adj"?adjUnit(formSpec()):$("#fUnit").value.trim());
   $("#stLabel").textContent=time?"Los cinco estados":"Estados posibles";
   $("#stHint").textContent=time
     ? "Siempre son cinco. La cantidad decide en cuál caes; los puntos, el color y desde cuántas unidades empieza cada uno son tuyos."
     : "De peor a mejor. Toca uno para cambiar sus puntos, su color o borrarlo.";
-  $("#addState").style.display=(!time&&form.states.length<MAX_STATES)?"":"none";
+  $("#addState").style.display="";
   host.innerHTML="";
   /* contenedor nuevo en cada render: si reusáramos el mismo, makeSortable
      iría apilando escuchas una encima de otra */
@@ -4630,14 +4709,14 @@ function renderStates(){
     });
     body.appendChild(cols2);
 
-    if(!time&&form.states.length>MIN_STATES){
+    if(form.states.length>MIN_STATES){
       const del=document.createElement("button");
       del.className="stdel"; del.textContent="Eliminar este estado";
       del.onclick=async()=>{
         if(!await ask({danger:1,title:"Eliminar «"+(x.label||"sin nombre")+"»",
           text:"Los días en que habías marcado este estado quedarán sin calificar.",
           ok:"Mantén para eliminar"})) return;
-        form.states.splice(i,1); stOpen=-1; renderStates(); drawPreview();
+        form.states.splice(i,1); fitCuts(); stOpen=-1; renderStates(); drawPreview();
       };
       body.appendChild(del);
     }
@@ -4652,9 +4731,22 @@ function renderStates(){
   }
   drawPreview();
 }
+$("#addFrom").onclick=()=>{
+  form.fromSet=true;
+  $("#fFrom").value=todayKey();
+  $("#fromWrap").style.display="";
+  $("#addFrom").style.display="none";
+  $("#fromHint").textContent="Desde ese día en adelante; lo de antes no se toca.";
+};
+$("#clearFrom").onclick=()=>{
+  form.fromSet=false;
+  $("#fromWrap").style.display="none";
+  $("#addFrom").style.display="";
+  $("#fromHint").textContent="Sin fecha, el cambio aplica a todos tus días.";
+};
 $("#addState").onclick=()=>{
-  if(form.states.length>=MAX_STATES){ toast("Máximo "+MAX_STATES+" estados"); return; }
   form.states.push({id:sid(),label:"",pts:0,color:null});
+  fitCuts();
   stOpen=form.states.length-1; renderStates();
   setTimeout(()=>{ const i=$("#stList .strow.open input.nmi"); if(i) i.focus(); },60);
 };
@@ -4665,7 +4757,7 @@ $("#addState").onclick=()=>{
 let fOpen=null;
 const fid=()=>"f"+Math.random().toString(36).slice(2,8);
 const formSpec=()=>({kind:form.kind,mode:form.mode,states:form.states,cuts:form.cuts,
-  fields:form.fields,terms:form.terms,repeat:form.repeat,agg:form.agg,
+  fields:form.fields,terms:form.terms,agg:form.agg,
   unit:$("#fUnit").value.trim()});
 function fieldSub(f){
   if(f.type==="num") return "cantidad · "+(f.unit||"sin unidad");
@@ -4807,7 +4899,7 @@ function renderScoreLine(){
   const u=adjUnit(sp);
   $("#adjHint").textContent=t.length
     ? "El resultado se mide en "+(u||"unidades")
-      +(form.repeat?", por cada tanda, y las del día "+AGG[form.agg||"sum"]:"")
+      +", por cada tanda, y las del día "+AGG[form.agg||"sum"]
       +". De ahí sale el tramo de abajo."
     : "Agrega un campo de cantidad, o ponle valor a alguna opción, para poder calificar.";
   if(form.mode==="adj"){ $("#stretchWord").textContent="desde aquí, «"
@@ -4874,24 +4966,15 @@ $("#addField").onclick=()=>{
   setTimeout(()=>{ const i=$("#adjList .afld.open input.nmi"); if(i) i.focus(); },60);
 };
 $("#openRecipe").onclick=()=>{ renderRecipe(); openSheetEl("#recipeSheet"); };
-$("#fRepeat").onclick=e=>{
-  const b=e.target.closest("button"); if(!b) return;
-  form.repeat=b.dataset.r==="1"; renderRepeat(); renderScoreLine();
-};
 $("#fAgg").onclick=e=>{
   const b=e.target.closest("button"); if(!b) return;
   form.agg=b.dataset.a; renderRepeat(); renderScoreLine();
 };
 function renderRepeat(){
-  document.querySelectorAll("#fRepeat button").forEach(b=>
-    b.classList.toggle("on",(b.dataset.r==="1")===!!form.repeat));
   document.querySelectorAll("#fAgg button").forEach(b=>
     b.classList.toggle("on",b.dataset.a===(form.agg||"sum")));
-  $("#aggBox").style.display=form.repeat?"":"none";
-  $("#repHint").textContent=form.repeat
-    ? "Cada tanda se calcula con la receta por su cuenta y luego "+AGG[form.agg||"sum"]
-      +". Así puedes anotar dos de dos minutos y tres de tres el mismo día."
-    : "Un solo juego de valores por día.";
+  $("#repHint").textContent="Cada tanda se calcula con la receta por su cuenta y luego "
+    +AGG[form.agg||"sum"]+". Así puedes anotar dos de dos minutos y tres de tres el mismo día.";
 }
 
 function syncSheet(resetStretch){
@@ -4905,7 +4988,7 @@ function syncSheet(resetStretch){
   $("#stretchLabel").textContent="El tope";
   if(form.mode==="adj"){ renderRepeat(); renderAdjFields(); renderScoreLine(); }
   if(numeric){
-    if(!form.cuts||form.cuts.length!==form.states.length) form.cuts=spread(60,form.states.length);
+    fitCuts();
     $("#fGoal").value=0;
     $("#fStretch").value=form.cuts[form.cuts.length-1];
   }
@@ -4930,8 +5013,7 @@ function drawPreview(){
 function reseed(force){
   if(force||isDefaultStates(form.states,form.prevKind||form.kind,form.mode))
     form.states=mkStates(form.kind,numMode(form)?"time":"rate",null);
-  if(numMode(form)&&form.states.length!==NST)
-    form.states=mkStates(form.kind,"time",null);
+  fitCuts();
   stOpen=-1;
 }
 $("#fKind").onclick=e=>{
@@ -4942,6 +5024,7 @@ $("#fMode").onclick=e=>{
   const b=e.target.closest("button"); if(!b||b.dataset.m===form.mode) return;
   form.mode=b.dataset.m;
   reseed(false);
+  fitCuts();
   syncSheet(true);
 };
 /* mover el tope reparte de nuevo los tramos de en medio */
@@ -4975,7 +5058,7 @@ $("#delTr").onclick=async()=>{
   if(trScope===t.id) trScope=null;
   _start=null; save(); closeAll(); renderAll(); toast("Registro eliminado");
 };
-$("#saveHabit").onclick=()=>{
+$("#saveHabit").onclick=async()=>{
   const name=$("#fName").value.trim();
   if(!name){$("#fName").focus();toast("Ponle nombre");return;}
   let goal=0,stretch=0,cuts=null;
@@ -4996,35 +5079,60 @@ $("#saveHabit").onclick=()=>{
   const spec={kind:form.kind,mode:form.mode,goal,stretch,cuts,snap,
     fields:form.mode==="adj"?form.fields.map(f=>({...f,options:(f.options||[]).map(o=>({...o}))})):[],
     terms:form.mode==="adj"?form.terms.map(t=>({...t})):[],
-    repeat:form.mode==="adj"?!!form.repeat:false,
     agg:form.mode==="adj"?(form.agg||"sum"):"sum"};
   const same=(a,b)=>a.kind===b.kind&&a.mode===b.mode
     &&(a.cuts||[]).join()===(b.cuts||[]).join()&&a.goal===b.goal&&a.stretch===b.stretch
     &&JSON.stringify(a.snap||null)===JSON.stringify(b.snap||null)
     &&JSON.stringify(a.fields||[])===JSON.stringify(b.fields||[])
     &&JSON.stringify(a.terms||[])===JSON.stringify(b.terms||[])
-    &&!!a.repeat===!!b.repeat&&(a.agg||"sum")===(b.agg||"sum");
+    &&(a.agg||"sum")===(b.agg||"sum");
   if(form.editing){
     const h=db.habits.find(x=>x.id===form.editing);
     h.name=name; h.color=form.color; h.unit=unit; h.states=form.states.map(x=>({...x}));
-    let from=$("#fFrom").value||todayKey();
-    if(from>todayKey()) from=todayKey();
-    if(from<h.since) from=h.since;
-    const changed=!same(specAt(h,from),spec);
-    if(changed){
-      const i=h.rules.findIndex(r=>r.from===from);
-      if(i>=0) h.rules[i]={from,...spec}; else h.rules.push({from,...spec});
-      h.rules.sort((a,b)=>a.from<b.from?-1:1);
+    const now=Date.now();
+    let msg="Actualizado";
+    if(form.fromSet){
+      /* con fecha: nace un cambio nuevo y lo anterior queda como estaba */
+      let from=$("#fFrom").value||todayKey();
+      if(from>todayKey()) from=todayKey();
+      if(from<h.since) from=h.since;
+      if(!same(specAt(h,from),spec)){
+        const i=h.rules.findIndex(r=>r.from===from);
+        if(i>=0) h.rules[i]={from,at:h.rules[i].at||now,...spec};
+        else h.rules.push({from,at:now,...spec});
+        h.rules.sort((a,b)=>a.from<b.from?-1:1);
+        const d=parseKey(from);
+        msg="Cambio guardado desde el "+d.getDate()+" de "+MESES[d.getMonth()];
+      }
+    }else if(h.rules.length>1){
+      /* ya hay cambios con fecha: hay que decidir qué pasa con ellos */
+      const lastR=h.rules[h.rules.length-1], ld=parseKey(lastR.from);
+      const lastTxt=ld.getDate()+" de "+MESES[ld.getMonth()];
+      const r=await ask2("Este hábito ya tiene "+(h.rules.length-1)+" cambio"
+        +(h.rules.length-1===1?"":"s")+" con fecha. Puedes dejarlo parejo en toda tu historia "
+        +"o cambiar solo del último cambio en adelante.",lastTxt);
+      if(r===null) return;
+      if(r==="all"){
+        h.rules=[{from:h.rules[0].from,at:h.rules[0].at||now,...spec}];
+        msg="Aplicado a todas tus fechas";
+      }else{
+        h.rules[h.rules.length-1]={from:lastR.from,at:lastR.at||now,...spec};
+        msg="Aplicado desde el "+lastTxt;
+      }
+    }else{
+      /* lo normal: un solo juego de reglas, se actualiza entero */
+      h.rules=[{from:(h.rules[0]||{}).from||h.since,at:(h.rules[0]||{}).at||now,...spec}];
+      msg="Aplicado a todas tus fechas";
     }
     const last=h.rules[h.rules.length-1];
     Object.assign(h,{kind:last.kind,mode:last.mode,goal:last.goal,stretch:last.stretch,
-      cuts:last.cuts,fields:last.fields,terms:last.terms,repeat:last.repeat,agg:last.agg});
-    const d=parseKey(from);
-    toast(changed?"Cambio guardado desde el "+d.getDate()+" de "+MESES[d.getMonth()]:"Actualizado");
+      cuts:last.cuts,fields:last.fields,terms:last.terms,agg:last.agg});
+    toast(msg);
   }else{
     const from=todayKey();
     db.habits.push({id:uid(),name,color:form.color,weight:DEF_WEIGHT,unit,
-      states:form.states.map(x=>({...x})),...spec,since:from,rules:[{from,...spec}]});
+      states:form.states.map(x=>({...x})),...spec,since:from,
+      rules:[{from,at:Date.now(),...spec}]});
     toast("Agregado "+name);
   }
   _start=null; _chg=null; save(); closeAll(); renderAll();
@@ -5245,41 +5353,58 @@ function askDone(v){
   closeSheet("#askSheet");
   if(r) r(v);
 }
-function cancelHold(){
-  if(holdRAF){ (window.cancelAnimationFrame||clearTimeout)(holdRAF); holdRAF=null; }
-  const f=$("#askOk").querySelector(".fillbar");
-  if(f) f.style.width="0%";
-}
-function startHold(){
-  if(holdRAF) return;
-  holdT0=Date.now();
-  const fill=$("#askOk").querySelector(".fillbar");
+/* "mantén presionado hasta que se llene", sirve para cualquier botón */
+function bindHold(el,done){
+  let raf=null,t0=0;
+  const fill=el.querySelector(".fillbar");
   const RAF=window.requestAnimationFrame||(f=>setTimeout(f,16));
+  const CAF=window.cancelAnimationFrame||clearTimeout;
+  const stop=()=>{ if(raf){ CAF(raf); raf=null; } if(fill) fill.style.width="0%"; };
   const step=()=>{
-    const p=Math.min(1,(Date.now()-holdT0)/HOLD_MS);
-    fill.style.width=(p*100)+"%";
-    if(p>=1){
-      holdRAF=null;
-      $("#askOk").classList.add("done");
+    const p=Math.min(1,(Date.now()-t0)/HOLD_MS);
+    if(fill) fill.style.width=(p*100)+"%";
+    if(p>=1){ raf=null; el.classList.add("done");
       try{ navigator.vibrate&&navigator.vibrate(18); }catch(e){}
-      askDone(true);
-      return;
-    }
-    holdRAF=RAF(step);
+      done(); return; }
+    raf=RAF(step);
   };
-  holdRAF=RAF(step);
+  const start=()=>{ if(raf) return; t0=Date.now(); raf=RAF(step); };
+  el.addEventListener("touchstart",e=>{ e.preventDefault(); start(); },{passive:false});
+  el.addEventListener("touchend",stop);
+  el.addEventListener("touchcancel",stop);
+  el.addEventListener("pointerdown",e=>{ if(e.pointerType==="mouse") start(); });
+  el.addEventListener("pointerup",e=>{ if(e.pointerType==="mouse") stop(); });
+  el.addEventListener("pointerleave",stop);
+  el.addEventListener("click",e=>e.preventDefault());
+  return { reset:()=>{ stop(); el.classList.remove("done"); } };
 }
+let holdOk=null, hold2A=null, hold2B=null;
+function cancelHold(){ if(holdOk) holdOk.reset(); }
 (function(){
-  const ok=$("#askOk");
-  ok.addEventListener("touchstart",e=>{ e.preventDefault(); startHold(); },{passive:false});
-  ok.addEventListener("touchend",cancelHold);
-  ok.addEventListener("touchcancel",cancelHold);
-  ok.addEventListener("pointerdown",e=>{ if(e.pointerType==="mouse") startHold(); });
-  ok.addEventListener("pointerup",e=>{ if(e.pointerType==="mouse") cancelHold(); });
-  ok.addEventListener("pointerleave",cancelHold);
-  ok.addEventListener("click",e=>e.preventDefault());
+  holdOk=bindHold($("#askOk"),()=>askDone(true));
   $("#askNo").onclick=()=>askDone(false);
+  hold2A=bindHold($("#ask2A"),()=>ask2Done("all"));
+  hold2B=bindHold($("#ask2B"),()=>ask2Done("last"));
+  $("#ask2No").onclick=()=>ask2Done(null);
 })();
+/* dos salidas, las dos con espera: aplicar a todo o desde el último cambio */
+let ask2Resolve=null;
+function ask2(text,lastFrom){
+  return new Promise(res=>{
+    ask2Resolve=res;
+    $("#ask2Text").textContent=text;
+    $("#ask2B").querySelector(".lbl").textContent=lastFrom
+      ? "Desde el "+lastFrom : "Desde el último cambio";
+    hold2A.reset(); hold2B.reset();
+    openSheetEl("#ask2Sheet");
+  });
+}
+function ask2Done(v){
+  hold2A.reset(); hold2B.reset();
+  const r=ask2Resolve; ask2Resolve=null;
+  closeSheet("#ask2Sheet");
+  if(r) r(v);
+}
 
 
 /* ================= reordenar la lista completa ================= */
