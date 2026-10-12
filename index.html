@@ -1759,6 +1759,10 @@ function migrate(p){
     if(h.mode==="time"&&h.stretch==null) h.stretch=defStretch(h);
     if(!Array.isArray(h.fields)) h.fields=[];
     if(!Array.isArray(h.terms)) h.terms=[];
+    /* los ajustables ya no tienen modo "una sola vez": todos son por tandas,
+       y el registro viejo de un solo juego de valores se lee como la tanda 1 */
+    delete h.repeat;
+    (h.rules||[]).forEach(r=>{ delete r.repeat; });
     /* v7: de niveles fijos a estados propios. Los valores guardados eran
        posiciones (1..5) o 0/1 en los de sí o no; aquí se traducen al id del
        estado, que es estable aunque después reordenes o borres estados. */
