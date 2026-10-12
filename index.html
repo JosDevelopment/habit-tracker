@@ -2348,19 +2348,31 @@ function adjScale(p,s,h,cur,tappable){
    todo lo demás y la pantalla dé un salto. Si la fila no está a la vista,
    se cae de vuelta al render completo. */
 function redrawHabit(hid){
-  const pad=document.querySelector('.pad[data-h="'+hid+'"]');
   const h=db.habits.find(x=>x.id===hid);
-  if(!pad||!pad.previousElementSibling||!h) return false;
-  const kids=[...habitRow(h).childNodes];
-  if(kids.length<2) return false;
-  pad.previousElementSibling.replaceWith(kids[0]);
-  pad.replaceWith(kids[1]);
-  return true;
+  if(!h) return false;
+  /* El mismo hábito puede estar dibujado en dos sitios a la vez (la lista del
+     día y la hoja de "ver todos"), y cada sitio lleva su propia cuenta de qué
+     pad está abierto. Hay que redibujar los dos y, sobre todo, con el contexto
+     de cada uno: con el equivocado el pad renacía cerrado y la app se quedaba
+     creyendo que seguía abierto. */
+  const pads=[...document.querySelectorAll('.pad[data-h="'+hid+'"]')];
+  let done=false;
+  pads.forEach(pad=>{
+    const row=pad.previousElementSibling;
+    if(!row||!row.classList.contains("row")) return;
+    const kids=[...habitRow(h,pad.__ctx).childNodes];
+    if(kids.length<2) return;
+    row.replaceWith(kids[0]);
+    pad.replaceWith(kids[1]);
+    done=true;
+  });
+  return done;
 }
 function padFor(h,s,off,has,v,ctx){
   const p=document.createElement("div");
   p.className="pad"+(ctx.get()===h.id?" open":"");
   p.dataset.h=h.id;
+  p.__ctx=ctx;                       /* para poder redibujarlo sin perder quién lo abrió */
   if(s.mode==="rate"){
     const box=document.createElement("div"); box.className="opts";
     const cur=entryOf(cursor,h.id);
@@ -2550,9 +2562,9 @@ function setField(id,f,v,tid){
   delete e.tot;                       /* al tocar un campo manda la receta */
   d.entries[id]=e;
   _start=null; save(); renderBar();
-  if(!redrawHabit(id)) renderToday();
+  const ok=redrawHabit(id);
+  if(!ok){ renderToday(); if($("#allSheet").classList.contains("on")) renderAllSheet(); }
   renderRecord();
-  if($("#allSheet").classList.contains("on")) renderAllSheet();
 }
 let openT=null;
 function addTanda(id){
